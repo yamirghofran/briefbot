@@ -53,25 +53,25 @@ Run these commands in order to test the full flow:
 
 # 1. Create user
 
-curl -X POST http://localhost:8081/users -H "Content-Type: application/json" -d '{"name":"Test User","email":"test@example.com"}'
+curl -X POST http://localhost:8080/users -H "Content-Type: application/json" -d '{"name":"Test User","email":"test@example.com"}'
 
 # 2. Create item (use user ID from response above)
 
-curl -X POST http://localhost:8081/items -H "Content-Type: application/json" -d '{"user_id":1,"url":"https://test.com",
+curl -X POST http://localhost:8080/items -H "Content-Type: application/json" -d '{"user_id":1,"url":"https://test.com",
 "text_content":"Test content"}'
 
 # 3. Get user
 
-curl -X GET http://localhost:8081/users/1
+curl -X GET http://localhost:8080/users/1
 
 # 4. Get items for user
 
-curl -X GET http://localhost:8081/items/user/1
+curl -X GET http://localhost:8080/items/user/1
 
 # 5. Mark item as read
 
-curl -X PATCH http://localhost:8081/items/1/read
+curl -X PATCH http://localhost:8080/items/1/read
 
 # 6. Check unread items (should be empty now)
 
-curl -X GET http://localhost:8081/items/user/1/unread
+curl -X GET http://localhost:8080/items/user/1/unread

@@ -8,12 +8,17 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
+	"github.com/joho/godotenv"
 	"github.com/yamirghofran/briefbot/internal/db"
 	"github.com/yamirghofran/briefbot/internal/handlers"
 	"github.com/yamirghofran/briefbot/internal/services"
 )
 
 func main() {
+	// Load .env file into the environment
+	if err := godotenv.Load(); err != nil {
+		log.Fatalf("Error loading .env file: %v", err)
+	}
 	// Get database URL from environment or use default
 	databaseURL := os.Getenv("DATABASE_URL")
 	if databaseURL == "" {
