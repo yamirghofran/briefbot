@@ -1,0 +1,3 @@
+driver: postgres
+dbstring: postgres://yamirghofran0:@localhost:5432/briefbot?sslmode=disable
+dir: sql/migrations
