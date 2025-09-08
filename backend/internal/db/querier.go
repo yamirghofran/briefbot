@@ -14,11 +14,13 @@ type Querier interface {
 	CreateItemType(ctx context.Context, arg CreateItemTypeParams) (ItemType, error)
 	CreatePlatform(ctx context.Context, arg CreatePlatformParams) (Platform, error)
 	CreateTag(ctx context.Context, arg CreateTagParams) (Tag, error)
+	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteAuthor(ctx context.Context, id int32) error
 	DeleteItem(ctx context.Context, id int32) error
 	DeleteItemType(ctx context.Context, id int32) error
 	DeletePlatform(ctx context.Context, id int32) error
 	DeleteTag(ctx context.Context, id int32) error
+	DeleteUser(ctx context.Context, id int32) error
 	// Authors
 	GetAuthor(ctx context.Context, id int32) (Author, error)
 	GetAuthorsByUser(ctx context.Context, userID *int32) ([]Author, error)
@@ -34,12 +36,15 @@ type Querier interface {
 	GetTag(ctx context.Context, id int32) (Tag, error)
 	GetTagsByUser(ctx context.Context, userID *int32) ([]Tag, error)
 	GetUnreadItemsByUser(ctx context.Context, userID *int32) ([]Item, error)
+	GetUser(ctx context.Context, id int32) (User, error)
+	GetUserByEmail(ctx context.Context, email *string) (User, error)
 	MarkItemAsRead(ctx context.Context, id int32) error
 	UpdateAuthor(ctx context.Context, arg UpdateAuthorParams) error
 	UpdateItem(ctx context.Context, arg UpdateItemParams) error
 	UpdateItemType(ctx context.Context, arg UpdateItemTypeParams) error
 	UpdatePlatform(ctx context.Context, arg UpdatePlatformParams) error
 	UpdateTag(ctx context.Context, arg UpdateTagParams) error
+	UpdateUser(ctx context.Context, arg UpdateUserParams) error
 }
 
 var _ Querier = (*Queries)(nil)
