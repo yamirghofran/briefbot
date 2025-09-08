@@ -16,6 +16,7 @@ An AI-enabled platform for managing links and extracting knowledge faster.
 - Gin
 - PostgreSQL
 - Qdrant (Vector Database)
+- Redis (Background jobs and pipeline management)
 - Eleven Labs API (text-to-speech)
 - Groq API (LLM)
 - Cloudflare Browser Rendering

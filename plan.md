@@ -8,9 +8,11 @@ Database Schema
   - Authors (e.g. Wallstreet Jourrnal, Greg Pauloski)
   - Tags (e.g. AI, Computer Science, Politics, News, Databases, Go)
   - isRead (boolean)
+  - File URL (Cloudflare R2)
+  - Text content
+  - Summary
   - createdAt
   - modifiedAt
-  - File URL (Cloudflare R2)
 
 - Embedding Pipeline
 - Text -> Chunking -> Gemini Embedding -> -> Store in Database -> Store in Qdrant
