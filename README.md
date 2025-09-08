@@ -18,3 +18,5 @@ An AI-enabled platform for managing links and extracting knowledge faster.
 - Qdrant (Vector Database)
 - Eleven Labs API (text-to-speech)
 - Groq API (LLM)
+- Cloudflare Browser Rendering
+- Cloudflare R2 (Object Storage)
