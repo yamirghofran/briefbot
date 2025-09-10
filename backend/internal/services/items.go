@@ -7,7 +7,7 @@ import (
 )
 
 type ItemService interface {
-	CreateItem(ctx context.Context, userID *int32, url, fileKey, textContent, summary *string) (*db.Item, error)
+	CreateItem(ctx context.Context, userID *int32, url, fileKey) (*db.Item, error)
 	GetItem(ctx context.Context, id int32) (*db.Item, error)
 	GetItemsByUser(ctx context.Context, userID *int32) ([]db.Item, error)
 	GetUnreadItemsByUser(ctx context.Context, userID *int32) ([]db.Item, error)
@@ -24,13 +24,11 @@ func NewItemService(querier db.Querier) ItemService {
 	return &itemService{querier: querier}
 }
 
-func (s *itemService) CreateItem(ctx context.Context, userID *int32, url, fileKey, textContent, summary *string) (*db.Item, error) {
+func (s *itemService) CreateItem(ctx context.Context, userID *int32, url, fileKey) (*db.Item, error) {
 	params := db.CreateItemParams{
 		UserID:      userID,
 		Url:         url,
 		FileKey:     fileKey,
-		TextContent: textContent,
-		Summary:     summary,
 	}
 	item, err := s.querier.CreateItem(ctx, params)
 	if err != nil {

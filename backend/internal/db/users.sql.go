@@ -92,6 +92,39 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email *string) (User, erro
 	return i, err
 }
 
+const listUsers = `-- name: ListUsers :many
+SELECT id, name, email, auth_provider, oauth_id, password_hash, created_at, updated_at FROM users ORDER BY created_at DESC
+`
+
+func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
+	rows, err := q.db.Query(ctx, listUsers)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []User{}
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Email,
+			&i.AuthProvider,
+			&i.OauthID,
+			&i.PasswordHash,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateUser = `-- name: UpdateUser :exec
 UPDATE users SET name = $2, email = $3, auth_provider = $4, oauth_id = $5, password_hash = $6, updated_at = CURRENT_TIMESTAMP WHERE id = $1
 `

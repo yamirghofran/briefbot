@@ -10,6 +10,7 @@ type UserService interface {
 	CreateUser(ctx context.Context, name, email, authProvider, oauthID, passwordHash *string) (*db.User, error)
 	GetUser(ctx context.Context, id int32) (*db.User, error)
 	GetUserByEmail(ctx context.Context, email *string) (*db.User, error)
+	ListUsers(ctx context.Context) ([]db.User, error)
 	UpdateUser(ctx context.Context, id int32, name, email, authProvider, oauthID, passwordHash *string) error
 	DeleteUser(ctx context.Context, id int32) error
 }
@@ -51,6 +52,14 @@ func (s *userService) GetUserByEmail(ctx context.Context, email *string) (*db.Us
 		return nil, err
 	}
 	return &user, nil
+}
+
+func (s *userService) ListUsers(ctx context.Context) ([]db.User, error) {
+	users, err := s.querier.ListUsers(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
 }
 
 func (s *userService) UpdateUser(ctx context.Context, id int32, name, email, authProvider, oauthID, passwordHash *string) error {

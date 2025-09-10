@@ -38,6 +38,7 @@ type Querier interface {
 	GetUnreadItemsByUser(ctx context.Context, userID *int32) ([]Item, error)
 	GetUser(ctx context.Context, id int32) (User, error)
 	GetUserByEmail(ctx context.Context, email *string) (User, error)
+	ListUsers(ctx context.Context) ([]User, error)
 	MarkItemAsRead(ctx context.Context, id int32) error
 	UpdateAuthor(ctx context.Context, arg UpdateAuthorParams) error
 	UpdateItem(ctx context.Context, arg UpdateItemParams) error

@@ -21,6 +21,7 @@ func (h *Handler) SetupRoutes(router *gin.Engine) {
 	// User routes
 	userGroup := router.Group("/users")
 	{
+		userGroup.GET("", h.ListUsers)
 		userGroup.POST("", h.CreateUser)
 		userGroup.GET("/:id", h.GetUser)
 		userGroup.GET("/email/:email", h.GetUserByEmail)

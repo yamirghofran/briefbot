@@ -9,6 +9,14 @@ export default function Header() {
         </div>
 
         <div className="px-2 font-bold">
+          <Link to="/users">Users</Link>
+        </div>
+
+        <div className="px-2 font-bold">
+          <Link to="/items">Items</Link>
+        </div>
+
+        <div className="px-2 font-bold">
           <Link to="/demo/db-chat">DB Chat</Link>
         </div>
 

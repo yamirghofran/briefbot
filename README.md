@@ -14,6 +14,7 @@ An AI-enabled platform for managing links and extracting knowledge faster.
 - ShadcnUI
 - Go
 - Gin
+- Colly
 - PostgreSQL
 - Qdrant (Vector Database)
 - Redis (Background jobs and pipeline management)

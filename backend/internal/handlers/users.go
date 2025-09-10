@@ -63,6 +63,16 @@ func (h *Handler) GetUserByEmail(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
+func (h *Handler) ListUsers(c *gin.Context) {
+	users, err := h.userService.ListUsers(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, users)
+}
+
 func (h *Handler) UpdateUser(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseInt(idStr, 10, 32)
