@@ -56,6 +56,15 @@ Database Schema
 - Daily podcast
   Organize and keep track of pipelines with Redis.
 
+## Telegram Authentication
+
+1. User creates account "normally" (e.g. email/password, Google OAuth, Magic link, etc.)
+2. User chooses to "authenticate with telegram"
+3. Web app displays a unique 1-min code the user has to send via the bot.
+4. User sends the code to the bot within timeframe.
+5. App links the user's telegram id to the user entity: users(telegram_id).
+6. telegram_id is used to associate items with users.
+
 ## Task List
 
 - [ ] Ugly Frontend (Basic CRUD functionality)
