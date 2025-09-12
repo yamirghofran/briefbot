@@ -21,6 +21,11 @@ function ItemsPage() {
     user_id: 1,
     url: '',
     text_content: '',
+    summary: '',
+    type: '',
+    platform: '',
+    tags: [],
+    authors: [],
   })
 
   // Fetch items based on filter
@@ -40,7 +45,7 @@ function ItemsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['items', selectedUserId] })
       setShowForm(false)
-      setFormData({ user_id: selectedUserId, url: '', text_content: '' })
+      setFormData({ user_id: selectedUserId, url: '', text_content: '', summary: '', type: '', platform: '', tags: [], authors: [] })
     },
   })
 
@@ -61,7 +66,12 @@ function ItemsPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (formData.url && formData.text_content) {
-      createItemMutation.mutate(formData)
+      const data = {
+        ...formData,
+        tags: formData.tags?.length ? formData.tags : undefined,
+        authors: formData.authors?.length ? formData.authors : undefined,
+      }
+      createItemMutation.mutate(data)
     }
   }
 
@@ -141,16 +151,61 @@ function ItemsPage() {
                 required
               />
             </div>
-            <div>
-              <Label htmlFor="text_content">Text Content</Label>
-              <Textarea
-                id="text_content"
-                value={formData.text_content}
-                onChange={(e) => setFormData({ ...formData, text_content: e.target.value })}
-                rows={4}
-                required
-              />
-            </div>
+             <div>
+               <Label htmlFor="text_content">Text Content</Label>
+               <Textarea
+                 id="text_content"
+                 value={formData.text_content}
+                 onChange={(e) => setFormData({ ...formData, text_content: e.target.value })}
+                 rows={4}
+                 required
+               />
+             </div>
+             <div>
+               <Label htmlFor="summary">Summary</Label>
+               <Textarea
+                 id="summary"
+                 value={formData.summary || ''}
+                 onChange={(e) => setFormData({ ...formData, summary: e.target.value })}
+                 rows={2}
+               />
+             </div>
+             <div>
+               <Label htmlFor="type">Type</Label>
+               <Input
+                 id="type"
+                 type="text"
+                 value={formData.type || ''}
+                 onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+               />
+             </div>
+             <div>
+               <Label htmlFor="platform">Platform</Label>
+               <Input
+                 id="platform"
+                 type="text"
+                 value={formData.platform || ''}
+                 onChange={(e) => setFormData({ ...formData, platform: e.target.value })}
+               />
+             </div>
+             <div>
+               <Label htmlFor="tags">Tags (comma-separated)</Label>
+               <Input
+                 id="tags"
+                 type="text"
+                 value={formData.tags?.join(', ') || ''}
+                 onChange={(e) => setFormData({ ...formData, tags: e.target.value.split(',').map(t => t.trim()).filter(t => t) })}
+               />
+             </div>
+             <div>
+               <Label htmlFor="authors">Authors (comma-separated)</Label>
+               <Input
+                 id="authors"
+                 type="text"
+                 value={formData.authors?.join(', ') || ''}
+                 onChange={(e) => setFormData({ ...formData, authors: e.target.value.split(',').map(a => a.trim()).filter(a => a) })}
+               />
+             </div>
             <Button type="submit" disabled={createItemMutation.isPending}>
               {createItemMutation.isPending ? 'Creating...' : 'Create Item'}
             </Button>
@@ -215,12 +270,32 @@ function ItemsPage() {
                       <p className="text-sm text-gray-700 line-clamp-3">{item.text_content}</p>
                     </div>
                   )}
-                  {item.summary && (
-                    <div className="mt-3 p-3 bg-gray-50 rounded">
-                      <h4 className="text-sm font-medium text-gray-900 mb-1">Summary:</h4>
-                      <p className="text-sm text-gray-700">{item.summary}</p>
-                    </div>
-                  )}
+                   {item.summary && (
+                     <div className="mt-3 p-3 bg-gray-50 rounded">
+                       <h4 className="text-sm font-medium text-gray-900 mb-1">Summary:</h4>
+                       <p className="text-sm text-gray-700">{item.summary}</p>
+                     </div>
+                   )}
+                   {item.type && (
+                     <div className="mt-2">
+                       <span className="text-xs text-gray-500">Type: {item.type}</span>
+                     </div>
+                   )}
+                   {item.platform && (
+                     <div className="mt-2">
+                       <span className="text-xs text-gray-500">Platform: {item.platform}</span>
+                     </div>
+                   )}
+                   {item.tags && item.tags.length > 0 && (
+                     <div className="mt-2">
+                       <span className="text-xs text-gray-500">Tags: {item.tags.join(', ')}</span>
+                     </div>
+                   )}
+                   {item.authors && item.authors.length > 0 && (
+                     <div className="mt-2">
+                       <span className="text-xs text-gray-500">Authors: {item.authors.join(', ')}</span>
+                     </div>
+                   )}
                 </div>
               ))}
             </div>

@@ -71,9 +71,8 @@ export const itemApi = {
     return response.data
   },
 
-  updateItem: async (id: number, data: UpdateItemRequest): Promise<Item> => {
-    const response = await api.put<Item>(`/items/${id}`, data)
-    return response.data
+  updateItem: async (id: number, data: UpdateItemRequest): Promise<void> => {
+    await api.put(`/items/${id}`, data)
   },
 
   markItemAsRead: async (id: number): Promise<Item> => {
