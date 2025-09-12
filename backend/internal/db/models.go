@@ -8,68 +8,19 @@ import (
 	"time"
 )
 
-type Author struct {
-	ID        int32      `json:"id"`
-	UserID    *int32     `json:"user_id"`
-	Title     *string    `json:"title"`
-	CreatedAt *time.Time `json:"created_at"`
-	UpdatedAt *time.Time `json:"updated_at"`
-}
-
 type Item struct {
 	ID          int32      `json:"id"`
 	UserID      *int32     `json:"user_id"`
 	Url         *string    `json:"url"`
 	IsRead      *bool      `json:"is_read"`
-	FileKey     *string    `json:"file_key"`
 	TextContent *string    `json:"text_content"`
 	Summary     *string    `json:"summary"`
+	Type        *string    `json:"type"`
+	Tags        []string   `json:"tags"`
+	Platform    *string    `json:"platform"`
+	Authors     []string   `json:"authors"`
 	CreatedAt   *time.Time `json:"created_at"`
 	ModifiedAt  *time.Time `json:"modified_at"`
-}
-
-type ItemAuthor struct {
-	ItemID   int32 `json:"item_id"`
-	AuthorID int32 `json:"author_id"`
-}
-
-type ItemItemType struct {
-	ItemID     int32 `json:"item_id"`
-	ItemTypeID int32 `json:"item_type_id"`
-}
-
-type ItemPlatform struct {
-	ItemID     int32 `json:"item_id"`
-	PlatformID int32 `json:"platform_id"`
-}
-
-type ItemTag struct {
-	ItemID int32 `json:"item_id"`
-	TagID  int32 `json:"tag_id"`
-}
-
-type ItemType struct {
-	ID        int32      `json:"id"`
-	UserID    *int32     `json:"user_id"`
-	Title     *string    `json:"title"`
-	CreatedAt *time.Time `json:"created_at"`
-	UpdatedAt *time.Time `json:"updated_at"`
-}
-
-type Platform struct {
-	ID        int32      `json:"id"`
-	UserID    *int32     `json:"user_id"`
-	Title     *string    `json:"title"`
-	CreatedAt *time.Time `json:"created_at"`
-	UpdatedAt *time.Time `json:"updated_at"`
-}
-
-type Tag struct {
-	ID        int32      `json:"id"`
-	UserID    *int32     `json:"user_id"`
-	Title     *string    `json:"title"`
-	CreatedAt *time.Time `json:"created_at"`
-	UpdatedAt *time.Time `json:"updated_at"`
 }
 
 type User struct {

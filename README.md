@@ -32,6 +32,7 @@ An AI-enabled platform for managing links and extracting knowledge faster.
 
 ### User Endpoints:
 
+- GET /users - List all users
 - POST /users - Create user
 - GET /users/:id - Get user by ID
 - GET /users/email/:email - Get user by email
@@ -55,14 +56,13 @@ Run these commands in order to test the full flow:
 # 1. Create user
 
 ```
-curl -X POST http://localhost:8080/users -H "Content-Type: application/json" -d '{"name":"Test User","email":"test@example.com"}'
+curl -X POST http://localhost:8080/users -H "Content-Type: application/json" -d '{"name":"Test User","email":"test@example.com","auth_provider":"local","oauth_id":null,"password_hash":"hashedpassword"}'
 ```
 
 # 2. Create item (use user ID from response above)
 
 ```
-curl -X POST http://localhost:8080/items -H "Content-Type: application/json" -d '{"user_id":1,"url":"https://test.com",
-"text_content":"Test content"}'
+curl -X POST http://localhost:8080/items -H "Content-Type: application/json" -d '{"user_id":1,"url":"https://test.com","text_content":"Test content","summary":"Test summary","type":"article","platform":"web","tags":["test"],"authors":["Test Author"]}'
 ```
 
 # 3. Get user

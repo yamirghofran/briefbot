@@ -9,11 +9,14 @@ import (
 
 func (h *Handler) CreateItem(c *gin.Context) {
 	var req struct {
-		UserID      *int32  `json:"user_id"`
-		URL         *string `json:"url"`
-		FileKey     *string `json:"file_key"`
-		TextContent *string `json:"text_content"`
-		Summary     *string `json:"summary"`
+		UserID      *int32   `json:"user_id"`
+		URL         *string  `json:"url"`
+		TextContent *string  `json:"text_content"`
+		Summary     *string  `json:"summary"`
+		Type        *string  `json:"type"`
+		Platform    *string  `json:"platform"`
+		Tags        []string `json:"tags"`
+		Authors     []string `json:"authors"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -21,7 +24,7 @@ func (h *Handler) CreateItem(c *gin.Context) {
 		return
 	}
 
-	item, err := h.itemService.CreateItem(c.Request.Context(), req.UserID, req.URL, req.FileKey, req.TextContent, req.Summary)
+	item, err := h.itemService.CreateItem(c.Request.Context(), req.UserID, req.URL, req.TextContent, req.Summary, req.Type, req.Platform, req.Tags, req.Authors)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -92,11 +95,14 @@ func (h *Handler) UpdateItem(c *gin.Context) {
 	}
 
 	var req struct {
-		URL         *string `json:"url"`
-		FileKey     *string `json:"file_key"`
-		TextContent *string `json:"text_content"`
-		Summary     *string `json:"summary"`
-		IsRead      *bool   `json:"is_read"`
+		URL         *string  `json:"url"`
+		TextContent *string  `json:"text_content"`
+		Summary     *string  `json:"summary"`
+		Type        *string  `json:"type"`
+		Platform    *string  `json:"platform"`
+		Tags        []string `json:"tags"`
+		Authors     []string `json:"authors"`
+		IsRead      *bool    `json:"is_read"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -104,7 +110,7 @@ func (h *Handler) UpdateItem(c *gin.Context) {
 		return
 	}
 
-	err = h.itemService.UpdateItem(c.Request.Context(), int32(id), req.URL, req.FileKey, req.TextContent, req.Summary, req.IsRead)
+	err = h.itemService.UpdateItem(c.Request.Context(), int32(id), req.URL, req.TextContent, req.Summary, req.Type, req.Platform, req.Tags, req.Authors, req.IsRead)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
