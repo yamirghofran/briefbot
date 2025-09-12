@@ -9,47 +9,31 @@ import (
 	"context"
 )
 
-const createAuthor = `-- name: CreateAuthor :one
-INSERT INTO authors (user_id, title) VALUES ($1, $2) RETURNING id, user_id, title, created_at, updated_at
-`
-
-type CreateAuthorParams struct {
-	UserID *int32  `json:"user_id"`
-	Title  *string `json:"title"`
-}
-
-func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) (Author, error) {
-	row := q.db.QueryRow(ctx, createAuthor, arg.UserID, arg.Title)
-	var i Author
-	err := row.Scan(
-		&i.ID,
-		&i.UserID,
-		&i.Title,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
-}
-
 const createItem = `-- name: CreateItem :one
-INSERT INTO items (user_id, url, file_key, text_content, summary) VALUES ($1, $2, $3, $4, $5) RETURNING id, user_id, url, is_read, file_key, text_content, summary, created_at, modified_at
+INSERT INTO items (user_id, url, text_content, summary, type, tags, platform, authors) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, user_id, url, is_read, text_content, summary, type, tags, platform, authors, created_at, modified_at
 `
 
 type CreateItemParams struct {
-	UserID      *int32  `json:"user_id"`
-	Url         *string `json:"url"`
-	FileKey     *string `json:"file_key"`
-	TextContent *string `json:"text_content"`
-	Summary     *string `json:"summary"`
+	UserID      *int32   `json:"user_id"`
+	Url         *string  `json:"url"`
+	TextContent *string  `json:"text_content"`
+	Summary     *string  `json:"summary"`
+	Type        *string  `json:"type"`
+	Tags        []string `json:"tags"`
+	Platform    *string  `json:"platform"`
+	Authors     []string `json:"authors"`
 }
 
 func (q *Queries) CreateItem(ctx context.Context, arg CreateItemParams) (Item, error) {
 	row := q.db.QueryRow(ctx, createItem,
 		arg.UserID,
 		arg.Url,
-		arg.FileKey,
 		arg.TextContent,
 		arg.Summary,
+		arg.Type,
+		arg.Tags,
+		arg.Platform,
+		arg.Authors,
 	)
 	var i Item
 	err := row.Scan(
@@ -57,88 +41,16 @@ func (q *Queries) CreateItem(ctx context.Context, arg CreateItemParams) (Item, e
 		&i.UserID,
 		&i.Url,
 		&i.IsRead,
-		&i.FileKey,
 		&i.TextContent,
 		&i.Summary,
+		&i.Type,
+		&i.Tags,
+		&i.Platform,
+		&i.Authors,
 		&i.CreatedAt,
 		&i.ModifiedAt,
 	)
 	return i, err
-}
-
-const createItemType = `-- name: CreateItemType :one
-INSERT INTO item_types (user_id, title) VALUES ($1, $2) RETURNING id, user_id, title, created_at, updated_at
-`
-
-type CreateItemTypeParams struct {
-	UserID *int32  `json:"user_id"`
-	Title  *string `json:"title"`
-}
-
-func (q *Queries) CreateItemType(ctx context.Context, arg CreateItemTypeParams) (ItemType, error) {
-	row := q.db.QueryRow(ctx, createItemType, arg.UserID, arg.Title)
-	var i ItemType
-	err := row.Scan(
-		&i.ID,
-		&i.UserID,
-		&i.Title,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
-}
-
-const createPlatform = `-- name: CreatePlatform :one
-INSERT INTO platforms (user_id, title) VALUES ($1, $2) RETURNING id, user_id, title, created_at, updated_at
-`
-
-type CreatePlatformParams struct {
-	UserID *int32  `json:"user_id"`
-	Title  *string `json:"title"`
-}
-
-func (q *Queries) CreatePlatform(ctx context.Context, arg CreatePlatformParams) (Platform, error) {
-	row := q.db.QueryRow(ctx, createPlatform, arg.UserID, arg.Title)
-	var i Platform
-	err := row.Scan(
-		&i.ID,
-		&i.UserID,
-		&i.Title,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
-}
-
-const createTag = `-- name: CreateTag :one
-INSERT INTO tags (user_id, title) VALUES ($1, $2) RETURNING id, user_id, title, created_at, updated_at
-`
-
-type CreateTagParams struct {
-	UserID *int32  `json:"user_id"`
-	Title  *string `json:"title"`
-}
-
-func (q *Queries) CreateTag(ctx context.Context, arg CreateTagParams) (Tag, error) {
-	row := q.db.QueryRow(ctx, createTag, arg.UserID, arg.Title)
-	var i Tag
-	err := row.Scan(
-		&i.ID,
-		&i.UserID,
-		&i.Title,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
-}
-
-const deleteAuthor = `-- name: DeleteAuthor :exec
-DELETE FROM authors WHERE id = $1
-`
-
-func (q *Queries) DeleteAuthor(ctx context.Context, id int32) error {
-	_, err := q.db.Exec(ctx, deleteAuthor, id)
-	return err
 }
 
 const deleteItem = `-- name: DeleteItem :exec
@@ -150,83 +62,8 @@ func (q *Queries) DeleteItem(ctx context.Context, id int32) error {
 	return err
 }
 
-const deleteItemType = `-- name: DeleteItemType :exec
-DELETE FROM item_types WHERE id = $1
-`
-
-func (q *Queries) DeleteItemType(ctx context.Context, id int32) error {
-	_, err := q.db.Exec(ctx, deleteItemType, id)
-	return err
-}
-
-const deletePlatform = `-- name: DeletePlatform :exec
-DELETE FROM platforms WHERE id = $1
-`
-
-func (q *Queries) DeletePlatform(ctx context.Context, id int32) error {
-	_, err := q.db.Exec(ctx, deletePlatform, id)
-	return err
-}
-
-const deleteTag = `-- name: DeleteTag :exec
-DELETE FROM tags WHERE id = $1
-`
-
-func (q *Queries) DeleteTag(ctx context.Context, id int32) error {
-	_, err := q.db.Exec(ctx, deleteTag, id)
-	return err
-}
-
-const getAuthor = `-- name: GetAuthor :one
-SELECT id, user_id, title, created_at, updated_at FROM authors WHERE id = $1
-`
-
-// Authors
-func (q *Queries) GetAuthor(ctx context.Context, id int32) (Author, error) {
-	row := q.db.QueryRow(ctx, getAuthor, id)
-	var i Author
-	err := row.Scan(
-		&i.ID,
-		&i.UserID,
-		&i.Title,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
-}
-
-const getAuthorsByUser = `-- name: GetAuthorsByUser :many
-SELECT id, user_id, title, created_at, updated_at FROM authors WHERE user_id = $1 ORDER BY created_at DESC
-`
-
-func (q *Queries) GetAuthorsByUser(ctx context.Context, userID *int32) ([]Author, error) {
-	rows, err := q.db.Query(ctx, getAuthorsByUser, userID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []Author{}
-	for rows.Next() {
-		var i Author
-		if err := rows.Scan(
-			&i.ID,
-			&i.UserID,
-			&i.Title,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getItem = `-- name: GetItem :one
-SELECT id, user_id, url, is_read, file_key, text_content, summary, created_at, modified_at FROM items WHERE id = $1
+SELECT id, user_id, url, is_read, text_content, summary, type, tags, platform, authors, created_at, modified_at FROM items WHERE id = $1
 `
 
 func (q *Queries) GetItem(ctx context.Context, id int32) (Item, error) {
@@ -237,65 +74,20 @@ func (q *Queries) GetItem(ctx context.Context, id int32) (Item, error) {
 		&i.UserID,
 		&i.Url,
 		&i.IsRead,
-		&i.FileKey,
 		&i.TextContent,
 		&i.Summary,
+		&i.Type,
+		&i.Tags,
+		&i.Platform,
+		&i.Authors,
 		&i.CreatedAt,
 		&i.ModifiedAt,
 	)
 	return i, err
 }
 
-const getItemType = `-- name: GetItemType :one
-SELECT id, user_id, title, created_at, updated_at FROM item_types WHERE id = $1
-`
-
-// Item Types
-func (q *Queries) GetItemType(ctx context.Context, id int32) (ItemType, error) {
-	row := q.db.QueryRow(ctx, getItemType, id)
-	var i ItemType
-	err := row.Scan(
-		&i.ID,
-		&i.UserID,
-		&i.Title,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
-}
-
-const getItemTypesByUser = `-- name: GetItemTypesByUser :many
-SELECT id, user_id, title, created_at, updated_at FROM item_types WHERE user_id = $1 ORDER BY created_at DESC
-`
-
-func (q *Queries) GetItemTypesByUser(ctx context.Context, userID *int32) ([]ItemType, error) {
-	rows, err := q.db.Query(ctx, getItemTypesByUser, userID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []ItemType{}
-	for rows.Next() {
-		var i ItemType
-		if err := rows.Scan(
-			&i.ID,
-			&i.UserID,
-			&i.Title,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getItemsByUser = `-- name: GetItemsByUser :many
-SELECT id, user_id, url, is_read, file_key, text_content, summary, created_at, modified_at FROM items WHERE user_id = $1 ORDER BY created_at DESC
+SELECT id, user_id, url, is_read, text_content, summary, type, tags, platform, authors, created_at, modified_at FROM items WHERE user_id = $1 ORDER BY created_at DESC
 `
 
 func (q *Queries) GetItemsByUser(ctx context.Context, userID *int32) ([]Item, error) {
@@ -312,9 +104,12 @@ func (q *Queries) GetItemsByUser(ctx context.Context, userID *int32) ([]Item, er
 			&i.UserID,
 			&i.Url,
 			&i.IsRead,
-			&i.FileKey,
 			&i.TextContent,
 			&i.Summary,
+			&i.Type,
+			&i.Tags,
+			&i.Platform,
+			&i.Authors,
 			&i.CreatedAt,
 			&i.ModifiedAt,
 		); err != nil {
@@ -328,104 +123,8 @@ func (q *Queries) GetItemsByUser(ctx context.Context, userID *int32) ([]Item, er
 	return items, nil
 }
 
-const getPlatform = `-- name: GetPlatform :one
-SELECT id, user_id, title, created_at, updated_at FROM platforms WHERE id = $1
-`
-
-// Platforms
-func (q *Queries) GetPlatform(ctx context.Context, id int32) (Platform, error) {
-	row := q.db.QueryRow(ctx, getPlatform, id)
-	var i Platform
-	err := row.Scan(
-		&i.ID,
-		&i.UserID,
-		&i.Title,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
-}
-
-const getPlatformsByUser = `-- name: GetPlatformsByUser :many
-SELECT id, user_id, title, created_at, updated_at FROM platforms WHERE user_id = $1 ORDER BY created_at DESC
-`
-
-func (q *Queries) GetPlatformsByUser(ctx context.Context, userID *int32) ([]Platform, error) {
-	rows, err := q.db.Query(ctx, getPlatformsByUser, userID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []Platform{}
-	for rows.Next() {
-		var i Platform
-		if err := rows.Scan(
-			&i.ID,
-			&i.UserID,
-			&i.Title,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getTag = `-- name: GetTag :one
-SELECT id, user_id, title, created_at, updated_at FROM tags WHERE id = $1
-`
-
-// Tags
-func (q *Queries) GetTag(ctx context.Context, id int32) (Tag, error) {
-	row := q.db.QueryRow(ctx, getTag, id)
-	var i Tag
-	err := row.Scan(
-		&i.ID,
-		&i.UserID,
-		&i.Title,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
-}
-
-const getTagsByUser = `-- name: GetTagsByUser :many
-SELECT id, user_id, title, created_at, updated_at FROM tags WHERE user_id = $1 ORDER BY created_at DESC
-`
-
-func (q *Queries) GetTagsByUser(ctx context.Context, userID *int32) ([]Tag, error) {
-	rows, err := q.db.Query(ctx, getTagsByUser, userID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []Tag{}
-	for rows.Next() {
-		var i Tag
-		if err := rows.Scan(
-			&i.ID,
-			&i.UserID,
-			&i.Title,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getUnreadItemsByUser = `-- name: GetUnreadItemsByUser :many
-SELECT id, user_id, url, is_read, file_key, text_content, summary, created_at, modified_at FROM items WHERE user_id = $1 AND is_read = FALSE ORDER BY created_at DESC
+SELECT id, user_id, url, is_read, text_content, summary, type, tags, platform, authors, created_at, modified_at FROM items WHERE user_id = $1 AND is_read = FALSE ORDER BY created_at DESC
 `
 
 func (q *Queries) GetUnreadItemsByUser(ctx context.Context, userID *int32) ([]Item, error) {
@@ -442,9 +141,12 @@ func (q *Queries) GetUnreadItemsByUser(ctx context.Context, userID *int32) ([]It
 			&i.UserID,
 			&i.Url,
 			&i.IsRead,
-			&i.FileKey,
 			&i.TextContent,
 			&i.Summary,
+			&i.Type,
+			&i.Tags,
+			&i.Platform,
+			&i.Authors,
 			&i.CreatedAt,
 			&i.ModifiedAt,
 		); err != nil {
@@ -467,31 +169,20 @@ func (q *Queries) MarkItemAsRead(ctx context.Context, id int32) error {
 	return err
 }
 
-const updateAuthor = `-- name: UpdateAuthor :exec
-UPDATE authors SET title = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1
-`
-
-type UpdateAuthorParams struct {
-	ID    int32   `json:"id"`
-	Title *string `json:"title"`
-}
-
-func (q *Queries) UpdateAuthor(ctx context.Context, arg UpdateAuthorParams) error {
-	_, err := q.db.Exec(ctx, updateAuthor, arg.ID, arg.Title)
-	return err
-}
-
 const updateItem = `-- name: UpdateItem :exec
-UPDATE items SET url = $2, is_read = $3, file_key = $4, text_content = $5, summary = $6, modified_at = CURRENT_TIMESTAMP WHERE id = $1
+UPDATE items SET url = $2, is_read = $3, text_content = $4, summary = $5, type = $6, tags = $7, platform = $8, authors = $9, modified_at = CURRENT_TIMESTAMP WHERE id = $1
 `
 
 type UpdateItemParams struct {
-	ID          int32   `json:"id"`
-	Url         *string `json:"url"`
-	IsRead      *bool   `json:"is_read"`
-	FileKey     *string `json:"file_key"`
-	TextContent *string `json:"text_content"`
-	Summary     *string `json:"summary"`
+	ID          int32    `json:"id"`
+	Url         *string  `json:"url"`
+	IsRead      *bool    `json:"is_read"`
+	TextContent *string  `json:"text_content"`
+	Summary     *string  `json:"summary"`
+	Type        *string  `json:"type"`
+	Tags        []string `json:"tags"`
+	Platform    *string  `json:"platform"`
+	Authors     []string `json:"authors"`
 }
 
 func (q *Queries) UpdateItem(ctx context.Context, arg UpdateItemParams) error {
@@ -499,51 +190,12 @@ func (q *Queries) UpdateItem(ctx context.Context, arg UpdateItemParams) error {
 		arg.ID,
 		arg.Url,
 		arg.IsRead,
-		arg.FileKey,
 		arg.TextContent,
 		arg.Summary,
+		arg.Type,
+		arg.Tags,
+		arg.Platform,
+		arg.Authors,
 	)
-	return err
-}
-
-const updateItemType = `-- name: UpdateItemType :exec
-UPDATE item_types SET title = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1
-`
-
-type UpdateItemTypeParams struct {
-	ID    int32   `json:"id"`
-	Title *string `json:"title"`
-}
-
-func (q *Queries) UpdateItemType(ctx context.Context, arg UpdateItemTypeParams) error {
-	_, err := q.db.Exec(ctx, updateItemType, arg.ID, arg.Title)
-	return err
-}
-
-const updatePlatform = `-- name: UpdatePlatform :exec
-UPDATE platforms SET title = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1
-`
-
-type UpdatePlatformParams struct {
-	ID    int32   `json:"id"`
-	Title *string `json:"title"`
-}
-
-func (q *Queries) UpdatePlatform(ctx context.Context, arg UpdatePlatformParams) error {
-	_, err := q.db.Exec(ctx, updatePlatform, arg.ID, arg.Title)
-	return err
-}
-
-const updateTag = `-- name: UpdateTag :exec
-UPDATE tags SET title = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1
-`
-
-type UpdateTagParams struct {
-	ID    int32   `json:"id"`
-	Title *string `json:"title"`
-}
-
-func (q *Queries) UpdateTag(ctx context.Context, arg UpdateTagParams) error {
-	_, err := q.db.Exec(ctx, updateTag, arg.ID, arg.Title)
 	return err
 }
