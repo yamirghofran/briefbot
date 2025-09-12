@@ -7,11 +7,11 @@ import (
 )
 
 type ItemService interface {
-	CreateItem(ctx context.Context, userID *int32, url, fileKey) (*db.Item, error)
+	CreateItem(ctx context.Context, userID *int32, url *string, textContent *string, summary *string, itemType *string, platform *string, tags []string, authors []string) (*db.Item, error)
 	GetItem(ctx context.Context, id int32) (*db.Item, error)
 	GetItemsByUser(ctx context.Context, userID *int32) ([]db.Item, error)
 	GetUnreadItemsByUser(ctx context.Context, userID *int32) ([]db.Item, error)
-	UpdateItem(ctx context.Context, id int32, url, fileKey, textContent, summary *string, isRead *bool) error
+	UpdateItem(ctx context.Context, id int32, url *string, textContent *string, summary *string, itemType *string, platform *string, tags []string, authors []string, isRead *bool) error
 	MarkItemAsRead(ctx context.Context, id int32) error
 	DeleteItem(ctx context.Context, id int32) error
 }
@@ -24,11 +24,16 @@ func NewItemService(querier db.Querier) ItemService {
 	return &itemService{querier: querier}
 }
 
-func (s *itemService) CreateItem(ctx context.Context, userID *int32, url, fileKey) (*db.Item, error) {
+func (s *itemService) CreateItem(ctx context.Context, userID *int32, url *string, textContent *string, summary *string, itemType *string, platform *string, tags []string, authors []string) (*db.Item, error) {
 	params := db.CreateItemParams{
 		UserID:      userID,
 		Url:         url,
-		FileKey:     fileKey,
+		TextContent: textContent,
+		Summary:     summary,
+		Type:        itemType,
+		Tags:        tags,
+		Platform:    platform,
+		Authors:     authors,
 	}
 	item, err := s.querier.CreateItem(ctx, params)
 	if err != nil {
@@ -61,14 +66,17 @@ func (s *itemService) GetUnreadItemsByUser(ctx context.Context, userID *int32) (
 	return items, nil
 }
 
-func (s *itemService) UpdateItem(ctx context.Context, id int32, url, fileKey, textContent, summary *string, isRead *bool) error {
+func (s *itemService) UpdateItem(ctx context.Context, id int32, url *string, textContent *string, summary *string, itemType *string, platform *string, tags []string, authors []string, isRead *bool) error {
 	params := db.UpdateItemParams{
 		ID:          id,
 		Url:         url,
 		IsRead:      isRead,
-		FileKey:     fileKey,
 		TextContent: textContent,
 		Summary:     summary,
+		Type:        itemType,
+		Tags:        tags,
+		Platform:    platform,
+		Authors:     authors,
 	}
 	return s.querier.UpdateItem(ctx, params)
 }
