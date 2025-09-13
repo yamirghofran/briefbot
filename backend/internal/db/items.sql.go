@@ -10,11 +10,12 @@ import (
 )
 
 const createItem = `-- name: CreateItem :one
-INSERT INTO items (user_id, url, text_content, summary, type, tags, platform, authors) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, user_id, url, is_read, text_content, summary, type, tags, platform, authors, created_at, modified_at
+INSERT INTO items (user_id, title, url, text_content, summary, type, tags, platform, authors) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id, user_id, url, is_read, text_content, summary, type, tags, platform, authors, created_at, modified_at, title
 `
 
 type CreateItemParams struct {
 	UserID      *int32   `json:"user_id"`
+	Title       string   `json:"title"`
 	Url         *string  `json:"url"`
 	TextContent *string  `json:"text_content"`
 	Summary     *string  `json:"summary"`
@@ -27,6 +28,7 @@ type CreateItemParams struct {
 func (q *Queries) CreateItem(ctx context.Context, arg CreateItemParams) (Item, error) {
 	row := q.db.QueryRow(ctx, createItem,
 		arg.UserID,
+		arg.Title,
 		arg.Url,
 		arg.TextContent,
 		arg.Summary,
@@ -49,6 +51,7 @@ func (q *Queries) CreateItem(ctx context.Context, arg CreateItemParams) (Item, e
 		&i.Authors,
 		&i.CreatedAt,
 		&i.ModifiedAt,
+		&i.Title,
 	)
 	return i, err
 }
@@ -63,7 +66,7 @@ func (q *Queries) DeleteItem(ctx context.Context, id int32) error {
 }
 
 const getItem = `-- name: GetItem :one
-SELECT id, user_id, url, is_read, text_content, summary, type, tags, platform, authors, created_at, modified_at FROM items WHERE id = $1
+SELECT id, user_id, url, is_read, text_content, summary, type, tags, platform, authors, created_at, modified_at, title FROM items WHERE id = $1
 `
 
 func (q *Queries) GetItem(ctx context.Context, id int32) (Item, error) {
@@ -82,12 +85,13 @@ func (q *Queries) GetItem(ctx context.Context, id int32) (Item, error) {
 		&i.Authors,
 		&i.CreatedAt,
 		&i.ModifiedAt,
+		&i.Title,
 	)
 	return i, err
 }
 
 const getItemsByUser = `-- name: GetItemsByUser :many
-SELECT id, user_id, url, is_read, text_content, summary, type, tags, platform, authors, created_at, modified_at FROM items WHERE user_id = $1 ORDER BY created_at DESC
+SELECT id, user_id, url, is_read, text_content, summary, type, tags, platform, authors, created_at, modified_at, title FROM items WHERE user_id = $1 ORDER BY created_at DESC
 `
 
 func (q *Queries) GetItemsByUser(ctx context.Context, userID *int32) ([]Item, error) {
@@ -112,6 +116,7 @@ func (q *Queries) GetItemsByUser(ctx context.Context, userID *int32) ([]Item, er
 			&i.Authors,
 			&i.CreatedAt,
 			&i.ModifiedAt,
+			&i.Title,
 		); err != nil {
 			return nil, err
 		}
@@ -124,7 +129,7 @@ func (q *Queries) GetItemsByUser(ctx context.Context, userID *int32) ([]Item, er
 }
 
 const getUnreadItemsByUser = `-- name: GetUnreadItemsByUser :many
-SELECT id, user_id, url, is_read, text_content, summary, type, tags, platform, authors, created_at, modified_at FROM items WHERE user_id = $1 AND is_read = FALSE ORDER BY created_at DESC
+SELECT id, user_id, url, is_read, text_content, summary, type, tags, platform, authors, created_at, modified_at, title FROM items WHERE user_id = $1 AND is_read = FALSE ORDER BY created_at DESC
 `
 
 func (q *Queries) GetUnreadItemsByUser(ctx context.Context, userID *int32) ([]Item, error) {
@@ -149,6 +154,7 @@ func (q *Queries) GetUnreadItemsByUser(ctx context.Context, userID *int32) ([]It
 			&i.Authors,
 			&i.CreatedAt,
 			&i.ModifiedAt,
+			&i.Title,
 		); err != nil {
 			return nil, err
 		}
@@ -170,11 +176,12 @@ func (q *Queries) MarkItemAsRead(ctx context.Context, id int32) error {
 }
 
 const updateItem = `-- name: UpdateItem :exec
-UPDATE items SET url = $2, is_read = $3, text_content = $4, summary = $5, type = $6, tags = $7, platform = $8, authors = $9, modified_at = CURRENT_TIMESTAMP WHERE id = $1
+UPDATE items SET title = $2, url = $3, is_read = $4, text_content = $5, summary = $6, type = $7, tags = $8, platform = $9, authors = $10, modified_at = CURRENT_TIMESTAMP WHERE id = $1
 `
 
 type UpdateItemParams struct {
 	ID          int32    `json:"id"`
+	Title       string   `json:"title"`
 	Url         *string  `json:"url"`
 	IsRead      *bool    `json:"is_read"`
 	TextContent *string  `json:"text_content"`
@@ -188,6 +195,7 @@ type UpdateItemParams struct {
 func (q *Queries) UpdateItem(ctx context.Context, arg UpdateItemParams) error {
 	_, err := q.db.Exec(ctx, updateItem,
 		arg.ID,
+		arg.Title,
 		arg.Url,
 		arg.IsRead,
 		arg.TextContent,
