@@ -62,7 +62,7 @@ curl -X POST http://localhost:8080/users -H "Content-Type: application/json" -d 
 # 2. Create item (use user ID from response above)
 
 ```
-curl -X POST http://localhost:8080/items -H "Content-Type: application/json" -d '{"user_id":1,"url":"https://test.com","text_content":"Test content","summary":"Test summary","type":"article","platform":"web","tags":["test"],"authors":["Test Author"]}'
+curl -X POST http://localhost:8080/items -H "Content-Type: application/json" -d '{"title":"Test Title","user_id":1,"url":"https://test.com","text_content":"Test content","summary":"Test summary","type":"article","platform":"web","tags":["test"],"authors":["Test Author"]}'
 ```
 
 # 3. Get user

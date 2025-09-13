@@ -21,6 +21,7 @@ type Item struct {
 	Authors     []string   `json:"authors"`
 	CreatedAt   *time.Time `json:"created_at"`
 	ModifiedAt  *time.Time `json:"modified_at"`
+	Title       string     `json:"title"`
 }
 
 type User struct {
