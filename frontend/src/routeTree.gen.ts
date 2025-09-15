@@ -15,6 +15,7 @@ import { Route as UsersRouteImport } from './routes/users'
 import { Route as ItemsRouteImport } from './routes/items'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DemoTanstackQueryRouteImport } from './routes/demo.tanstack-query'
+import { Route as DemoTableStyledRouteImport } from './routes/demo.table-styled'
 import { Route as DemoTableRouteImport } from './routes/demo.table'
 import { Route as DemoDbChatRouteImport } from './routes/demo.db-chat'
 import { Route as DemoStartServerFuncsRouteImport } from './routes/demo.start.server-funcs'
@@ -45,6 +46,11 @@ const IndexRoute = IndexRouteImport.update({
 const DemoTanstackQueryRoute = DemoTanstackQueryRouteImport.update({
   id: '/demo/tanstack-query',
   path: '/demo/tanstack-query',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoTableStyledRoute = DemoTableStyledRouteImport.update({
+  id: '/demo/table-styled',
+  path: '/demo/table-styled',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoTableRoute = DemoTableRouteImport.update({
@@ -99,6 +105,7 @@ export interface FileRoutesByFullPath {
   '/users': typeof UsersRoute
   '/demo/db-chat': typeof DemoDbChatRoute
   '/demo/table': typeof DemoTableRoute
+  '/demo/table-styled': typeof DemoTableStyledRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/demo/form/address': typeof DemoFormAddressRoute
   '/demo/form/simple': typeof DemoFormSimpleRoute
@@ -111,6 +118,7 @@ export interface FileRoutesByTo {
   '/users': typeof UsersRoute
   '/demo/db-chat': typeof DemoDbChatRoute
   '/demo/table': typeof DemoTableRoute
+  '/demo/table-styled': typeof DemoTableStyledRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/demo/form/address': typeof DemoFormAddressRoute
   '/demo/form/simple': typeof DemoFormSimpleRoute
@@ -124,6 +132,7 @@ export interface FileRoutesById {
   '/users': typeof UsersRoute
   '/demo/db-chat': typeof DemoDbChatRoute
   '/demo/table': typeof DemoTableRoute
+  '/demo/table-styled': typeof DemoTableStyledRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/demo/form/address': typeof DemoFormAddressRoute
   '/demo/form/simple': typeof DemoFormSimpleRoute
@@ -138,6 +147,7 @@ export interface FileRouteTypes {
     | '/users'
     | '/demo/db-chat'
     | '/demo/table'
+    | '/demo/table-styled'
     | '/demo/tanstack-query'
     | '/demo/form/address'
     | '/demo/form/simple'
@@ -150,6 +160,7 @@ export interface FileRouteTypes {
     | '/users'
     | '/demo/db-chat'
     | '/demo/table'
+    | '/demo/table-styled'
     | '/demo/tanstack-query'
     | '/demo/form/address'
     | '/demo/form/simple'
@@ -162,6 +173,7 @@ export interface FileRouteTypes {
     | '/users'
     | '/demo/db-chat'
     | '/demo/table'
+    | '/demo/table-styled'
     | '/demo/tanstack-query'
     | '/demo/form/address'
     | '/demo/form/simple'
@@ -175,6 +187,7 @@ export interface RootRouteChildren {
   UsersRoute: typeof UsersRoute
   DemoDbChatRoute: typeof DemoDbChatRoute
   DemoTableRoute: typeof DemoTableRoute
+  DemoTableStyledRoute: typeof DemoTableStyledRoute
   DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
   DemoFormAddressRoute: typeof DemoFormAddressRoute
   DemoFormSimpleRoute: typeof DemoFormSimpleRoute
@@ -243,6 +256,13 @@ declare module '@tanstack/react-router' {
       path: '/demo/tanstack-query'
       fullPath: '/demo/tanstack-query'
       preLoaderRoute: typeof DemoTanstackQueryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/table-styled': {
+      id: '/demo/table-styled'
+      path: '/demo/table-styled'
+      fullPath: '/demo/table-styled'
+      preLoaderRoute: typeof DemoTableStyledRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo/table': {
@@ -321,6 +341,7 @@ const rootRouteChildren: RootRouteChildren = {
   UsersRoute: UsersRoute,
   DemoDbChatRoute: DemoDbChatRoute,
   DemoTableRoute: DemoTableRoute,
+  DemoTableStyledRoute: DemoTableStyledRoute,
   DemoTanstackQueryRoute: DemoTanstackQueryRoute,
   DemoFormAddressRoute: DemoFormAddressRoute,
   DemoFormSimpleRoute: DemoFormSimpleRoute,

@@ -10,17 +10,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getCommonPinningStyles } from "@/lib/data-table";
 import { cn } from "@/lib/utils";
 
 interface DataTableProps<TData> extends React.ComponentProps<"div"> {
   table: TanstackTable<TData>;
   actionBar?: React.ReactNode;
+  pagination?: boolean;
 }
 
 export function DataTable<TData>({
   table,
   actionBar,
+  pagination = true,
   children,
   className,
   ...props
@@ -40,9 +41,6 @@ export function DataTable<TData>({
                   <TableHead
                     key={header.id}
                     colSpan={header.colSpan}
-                    style={{
-                      ...getCommonPinningStyles({ column: header.column }),
-                    }}
                   >
                     {header.isPlaceholder
                       ? null
@@ -65,9 +63,6 @@ export function DataTable<TData>({
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
                       key={cell.id}
-                      style={{
-                        ...getCommonPinningStyles({ column: cell.column }),
-                      }}
                     >
                       {flexRender(
                         cell.column.columnDef.cell,
@@ -91,7 +86,7 @@ export function DataTable<TData>({
         </Table>
       </div>
       <div className="flex flex-col gap-2.5">
-        <DataTablePagination table={table} />
+        {pagination && <DataTablePagination table={table} />}
         {actionBar &&
           table.getFilteredSelectedRowModel().rows.length > 0 &&
           actionBar}
