@@ -9,6 +9,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
 	"github.com/joho/godotenv"
+	"github.com/openai/openai-go"
+	"github.com/openai/openai-go/option"
 	"github.com/yamirghofran/briefbot/internal/db"
 	"github.com/yamirghofran/briefbot/internal/handlers"
 	"github.com/yamirghofran/briefbot/internal/services"
@@ -42,9 +44,19 @@ func main() {
 	// Initialize querier
 	querier := db.New(conn)
 
+	oaiClient := openai.NewClient(
+		option.WithBaseURL("https://api.groq.com/openai/v1"),
+		option.WithAPIKey(os.Getenv("GROQ_API_KEY")),
+	)
+
 	// Initialize services
+	aiService, err := services.NewAIService(&oaiClient)
+	if err != nil {
+		log.Fatal("Unable to start AI service")
+	}
+	scrapingService := services.NewScraper()
 	userService := services.NewUserService(querier)
-	itemService := services.NewItemService(querier)
+	itemService := services.NewItemService(querier, aiService, scrapingService)
 
 	// Initialize Gin router
 	router := gin.Default()

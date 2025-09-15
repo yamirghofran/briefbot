@@ -9,15 +9,15 @@ import (
 
 func (h *Handler) CreateItem(c *gin.Context) {
 	var req struct {
-		Title       string   `json:"title"`
-		UserID      *int32   `json:"user_id"`
-		URL         *string  `json:"url"`
-		TextContent *string  `json:"text_content"`
-		Summary     *string  `json:"summary"`
-		Type        *string  `json:"type"`
-		Platform    *string  `json:"platform"`
-		Tags        []string `json:"tags"`
-		Authors     []string `json:"authors"`
+		//Title       string   `json:"title"`
+		UserID *int32  `json:"user_id"`
+		URL    *string `json:"url"`
+		//TextContent *string  `json:"text_content"`
+		//Summary     *string  `json:"summary"`
+		//Type        *string  `json:"type"`
+		//Platform    *string  `json:"platform"`
+		//Tags        []string `json:"tags"`
+		//Authors     []string `json:"authors"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -25,7 +25,7 @@ func (h *Handler) CreateItem(c *gin.Context) {
 		return
 	}
 
-	item, err := h.itemService.CreateItem(c.Request.Context(), req.UserID, req.Title, req.URL, req.TextContent, req.Summary, req.Type, req.Platform, req.Tags, req.Authors)
+	item, err := h.itemService.ProcessURL(c.Request.Context(), *req.UserID, *req.URL)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
