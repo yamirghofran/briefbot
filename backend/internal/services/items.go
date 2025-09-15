@@ -2,11 +2,13 @@ package services
 
 import (
 	"context"
+	"strings"
 
 	"github.com/yamirghofran/briefbot/internal/db"
 )
 
 type ItemService interface {
+	ProcessURL(ctx context.Context, userID int32, url string) (*db.Item, error)
 	CreateItem(ctx context.Context, userID *int32, title string, url *string, textContent *string, summary *string, itemType *string, platform *string, tags []string, authors []string) (*db.Item, error)
 	GetItem(ctx context.Context, id int32) (*db.Item, error)
 	GetItemsByUser(ctx context.Context, userID *int32) ([]db.Item, error)
@@ -17,11 +19,34 @@ type ItemService interface {
 }
 
 type itemService struct {
-	querier db.Querier
+	querier         db.Querier
+	aiService       AIService
+	scrapingService ScrapingService
 }
 
-func NewItemService(querier db.Querier) ItemService {
-	return &itemService{querier: querier}
+func NewItemService(querier db.Querier, aiService AIService, scrapingService ScrapingService) ItemService {
+	return &itemService{querier: querier, aiService: aiService, scrapingService: scrapingService}
+}
+
+func (s *itemService) ProcessURL(ctx context.Context, userID int32, url string) (*db.Item, error) {
+	content, err := s.scrapingService.Scrape(url)
+	if err != nil {
+		return nil, err
+	}
+	extraction, err := s.aiService.ExtractContent(ctx, content)
+	if err != nil {
+		return nil, err
+	}
+
+	summary, err := s.aiService.SummarizeContent(ctx, content)
+	if err != nil {
+		return nil, err
+	}
+
+	concatenatedSummary := ConcatenateSummary(summary)
+
+	return s.CreateItem(ctx, &userID, extraction.Title, &url, &content, &concatenatedSummary, &extraction.Type, &extraction.Platform,
+		extraction.Tags, extraction.Authors)
 }
 
 func (s *itemService) CreateItem(ctx context.Context, userID *int32, title string, url *string, textContent *string, summary *string, itemType *string, platform *string, tags []string, authors []string) (*db.Item, error) {
@@ -89,4 +114,8 @@ func (s *itemService) MarkItemAsRead(ctx context.Context, id int32) error {
 
 func (s *itemService) DeleteItem(ctx context.Context, id int32) error {
 	return s.querier.DeleteItem(ctx, id)
+}
+
+func ConcatenateSummary(summary ItemSummary) string {
+	return summary.Overview + " " + strings.Join(summary.KeyPoints, " ")
 }
