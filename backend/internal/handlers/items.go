@@ -9,15 +9,8 @@ import (
 
 func (h *Handler) CreateItem(c *gin.Context) {
 	var req struct {
-		//Title       string   `json:"title"`
 		UserID *int32  `json:"user_id"`
 		URL    *string `json:"url"`
-		//TextContent *string  `json:"text_content"`
-		//Summary     *string  `json:"summary"`
-		//Type        *string  `json:"type"`
-		//Platform    *string  `json:"platform"`
-		//Tags        []string `json:"tags"`
-		//Authors     []string `json:"authors"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -25,13 +18,19 @@ func (h *Handler) CreateItem(c *gin.Context) {
 		return
 	}
 
-	item, err := h.itemService.ProcessURL(c.Request.Context(), *req.UserID, *req.URL)
+	// Use async creation - just save the URL and return immediately
+	item, err := h.itemService.CreateItemAsync(c.Request.Context(), *req.UserID, *req.URL)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusCreated, item)
+	// Return the item with pending status
+	c.JSON(http.StatusCreated, gin.H{
+		"item":              item,
+		"message":           "Item created successfully and will be processed in the background",
+		"processing_status": item.ProcessingStatus,
+	})
 }
 
 func (h *Handler) GetItem(c *gin.Context) {
@@ -153,4 +152,60 @@ func (h *Handler) DeleteItem(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Item deleted successfully"})
+}
+
+func (h *Handler) GetItemProcessingStatus(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.ParseInt(idStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid item ID"})
+		return
+	}
+
+	status, err := h.itemService.GetItemProcessingStatus(c.Request.Context(), int32(id))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"item_id":           status.Item.ID,
+		"processing_status": status.Item.ProcessingStatus,
+		"is_processing":     status.IsProcessing,
+		"is_completed":      status.IsCompleted,
+		"is_failed":         status.IsFailed,
+		"processing_error":  status.ProcessingError,
+	})
+}
+
+func (h *Handler) GetItemsByProcessingStatus(c *gin.Context) {
+	status := c.Query("status")
+	if status == "" {
+		status = "pending"
+	}
+
+	// Validate status
+	validStatuses := map[string]bool{
+		"pending":    true,
+		"processing": true,
+		"completed":  true,
+		"failed":     true,
+	}
+
+	if !validStatuses[status] {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid status. Must be one of: pending, processing, completed, failed"})
+		return
+	}
+
+	items, err := h.itemService.GetItemsByProcessingStatus(c.Request.Context(), &status)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status": status,
+		"items":  items,
+		"count":  len(items),
+	})
 }

@@ -34,6 +34,8 @@ func (h *Handler) SetupRoutes(router *gin.Engine) {
 	{
 		itemGroup.POST("", h.CreateItem)
 		itemGroup.GET("/:id", h.GetItem)
+		itemGroup.GET("/:id/status", h.GetItemProcessingStatus)
+		itemGroup.GET("/status", h.GetItemsByProcessingStatus)
 		itemGroup.GET("/user/:userID", h.GetItemsByUser)
 		itemGroup.GET("/user/:userID/unread", h.GetUnreadItemsByUser)
 		itemGroup.PUT("/:id", h.UpdateItem)
