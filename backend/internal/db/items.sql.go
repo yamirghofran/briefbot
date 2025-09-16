@@ -10,19 +10,21 @@ import (
 )
 
 const createItem = `-- name: CreateItem :one
-INSERT INTO items (user_id, title, url, text_content, summary, type, tags, platform, authors) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id, user_id, url, is_read, text_content, summary, type, tags, platform, authors, created_at, modified_at, title
+INSERT INTO items (user_id, title, url, text_content, summary, type, tags, platform, authors, processing_status, processing_error) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id, user_id, url, is_read, text_content, summary, type, tags, platform, authors, created_at, modified_at, title, processing_status, processing_error
 `
 
 type CreateItemParams struct {
-	UserID      *int32   `json:"user_id"`
-	Title       string   `json:"title"`
-	Url         *string  `json:"url"`
-	TextContent *string  `json:"text_content"`
-	Summary     *string  `json:"summary"`
-	Type        *string  `json:"type"`
-	Tags        []string `json:"tags"`
-	Platform    *string  `json:"platform"`
-	Authors     []string `json:"authors"`
+	UserID           *int32   `json:"user_id"`
+	Title            string   `json:"title"`
+	Url              *string  `json:"url"`
+	TextContent      *string  `json:"text_content"`
+	Summary          *string  `json:"summary"`
+	Type             *string  `json:"type"`
+	Tags             []string `json:"tags"`
+	Platform         *string  `json:"platform"`
+	Authors          []string `json:"authors"`
+	ProcessingStatus *string  `json:"processing_status"`
+	ProcessingError  *string  `json:"processing_error"`
 }
 
 func (q *Queries) CreateItem(ctx context.Context, arg CreateItemParams) (Item, error) {
@@ -36,6 +38,8 @@ func (q *Queries) CreateItem(ctx context.Context, arg CreateItemParams) (Item, e
 		arg.Tags,
 		arg.Platform,
 		arg.Authors,
+		arg.ProcessingStatus,
+		arg.ProcessingError,
 	)
 	var i Item
 	err := row.Scan(
@@ -52,6 +56,41 @@ func (q *Queries) CreateItem(ctx context.Context, arg CreateItemParams) (Item, e
 		&i.CreatedAt,
 		&i.ModifiedAt,
 		&i.Title,
+		&i.ProcessingStatus,
+		&i.ProcessingError,
+	)
+	return i, err
+}
+
+const createPendingItem = `-- name: CreatePendingItem :one
+INSERT INTO items (user_id, title, url, processing_status) VALUES ($1, $2, $3, 'pending') RETURNING id, user_id, url, is_read, text_content, summary, type, tags, platform, authors, created_at, modified_at, title, processing_status, processing_error
+`
+
+type CreatePendingItemParams struct {
+	UserID *int32  `json:"user_id"`
+	Title  string  `json:"title"`
+	Url    *string `json:"url"`
+}
+
+func (q *Queries) CreatePendingItem(ctx context.Context, arg CreatePendingItemParams) (Item, error) {
+	row := q.db.QueryRow(ctx, createPendingItem, arg.UserID, arg.Title, arg.Url)
+	var i Item
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Url,
+		&i.IsRead,
+		&i.TextContent,
+		&i.Summary,
+		&i.Type,
+		&i.Tags,
+		&i.Platform,
+		&i.Authors,
+		&i.CreatedAt,
+		&i.ModifiedAt,
+		&i.Title,
+		&i.ProcessingStatus,
+		&i.ProcessingError,
 	)
 	return i, err
 }
@@ -65,8 +104,48 @@ func (q *Queries) DeleteItem(ctx context.Context, id int32) error {
 	return err
 }
 
+const getFailedItemsForRetry = `-- name: GetFailedItemsForRetry :many
+SELECT id, user_id, url, is_read, text_content, summary, type, tags, platform, authors, created_at, modified_at, title, processing_status, processing_error FROM items WHERE processing_status = 'failed' AND created_at > NOW() - INTERVAL '24 hours' ORDER BY created_at ASC LIMIT $1
+`
+
+func (q *Queries) GetFailedItemsForRetry(ctx context.Context, limit int32) ([]Item, error) {
+	rows, err := q.db.Query(ctx, getFailedItemsForRetry, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Item{}
+	for rows.Next() {
+		var i Item
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Url,
+			&i.IsRead,
+			&i.TextContent,
+			&i.Summary,
+			&i.Type,
+			&i.Tags,
+			&i.Platform,
+			&i.Authors,
+			&i.CreatedAt,
+			&i.ModifiedAt,
+			&i.Title,
+			&i.ProcessingStatus,
+			&i.ProcessingError,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getItem = `-- name: GetItem :one
-SELECT id, user_id, url, is_read, text_content, summary, type, tags, platform, authors, created_at, modified_at, title FROM items WHERE id = $1
+SELECT id, user_id, url, is_read, text_content, summary, type, tags, platform, authors, created_at, modified_at, title, processing_status, processing_error FROM items WHERE id = $1
 `
 
 func (q *Queries) GetItem(ctx context.Context, id int32) (Item, error) {
@@ -86,12 +165,54 @@ func (q *Queries) GetItem(ctx context.Context, id int32) (Item, error) {
 		&i.CreatedAt,
 		&i.ModifiedAt,
 		&i.Title,
+		&i.ProcessingStatus,
+		&i.ProcessingError,
 	)
 	return i, err
 }
 
+const getItemsByProcessingStatus = `-- name: GetItemsByProcessingStatus :many
+SELECT id, user_id, url, is_read, text_content, summary, type, tags, platform, authors, created_at, modified_at, title, processing_status, processing_error FROM items WHERE processing_status = $1 ORDER BY created_at DESC
+`
+
+func (q *Queries) GetItemsByProcessingStatus(ctx context.Context, processingStatus *string) ([]Item, error) {
+	rows, err := q.db.Query(ctx, getItemsByProcessingStatus, processingStatus)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Item{}
+	for rows.Next() {
+		var i Item
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Url,
+			&i.IsRead,
+			&i.TextContent,
+			&i.Summary,
+			&i.Type,
+			&i.Tags,
+			&i.Platform,
+			&i.Authors,
+			&i.CreatedAt,
+			&i.ModifiedAt,
+			&i.Title,
+			&i.ProcessingStatus,
+			&i.ProcessingError,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getItemsByUser = `-- name: GetItemsByUser :many
-SELECT id, user_id, url, is_read, text_content, summary, type, tags, platform, authors, created_at, modified_at, title FROM items WHERE user_id = $1 ORDER BY created_at DESC
+SELECT id, user_id, url, is_read, text_content, summary, type, tags, platform, authors, created_at, modified_at, title, processing_status, processing_error FROM items WHERE user_id = $1 ORDER BY created_at DESC
 `
 
 func (q *Queries) GetItemsByUser(ctx context.Context, userID *int32) ([]Item, error) {
@@ -117,6 +238,48 @@ func (q *Queries) GetItemsByUser(ctx context.Context, userID *int32) ([]Item, er
 			&i.CreatedAt,
 			&i.ModifiedAt,
 			&i.Title,
+			&i.ProcessingStatus,
+			&i.ProcessingError,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getPendingItems = `-- name: GetPendingItems :many
+SELECT id, user_id, url, is_read, text_content, summary, type, tags, platform, authors, created_at, modified_at, title, processing_status, processing_error FROM items WHERE processing_status = 'pending' ORDER BY created_at ASC LIMIT $1
+`
+
+func (q *Queries) GetPendingItems(ctx context.Context, limit int32) ([]Item, error) {
+	rows, err := q.db.Query(ctx, getPendingItems, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Item{}
+	for rows.Next() {
+		var i Item
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Url,
+			&i.IsRead,
+			&i.TextContent,
+			&i.Summary,
+			&i.Type,
+			&i.Tags,
+			&i.Platform,
+			&i.Authors,
+			&i.CreatedAt,
+			&i.ModifiedAt,
+			&i.Title,
+			&i.ProcessingStatus,
+			&i.ProcessingError,
 		); err != nil {
 			return nil, err
 		}
@@ -129,7 +292,7 @@ func (q *Queries) GetItemsByUser(ctx context.Context, userID *int32) ([]Item, er
 }
 
 const getUnreadItemsByUser = `-- name: GetUnreadItemsByUser :many
-SELECT id, user_id, url, is_read, text_content, summary, type, tags, platform, authors, created_at, modified_at, title FROM items WHERE user_id = $1 AND is_read = FALSE ORDER BY created_at DESC
+SELECT id, user_id, url, is_read, text_content, summary, type, tags, platform, authors, created_at, modified_at, title, processing_status, processing_error FROM items WHERE user_id = $1 AND is_read = FALSE ORDER BY created_at DESC
 `
 
 func (q *Queries) GetUnreadItemsByUser(ctx context.Context, userID *int32) ([]Item, error) {
@@ -155,6 +318,8 @@ func (q *Queries) GetUnreadItemsByUser(ctx context.Context, userID *int32) ([]It
 			&i.CreatedAt,
 			&i.ModifiedAt,
 			&i.Title,
+			&i.ProcessingStatus,
+			&i.ProcessingError,
 		); err != nil {
 			return nil, err
 		}
@@ -205,5 +370,29 @@ func (q *Queries) UpdateItem(ctx context.Context, arg UpdateItemParams) error {
 		arg.Platform,
 		arg.Authors,
 	)
+	return err
+}
+
+const updateItemAsProcessing = `-- name: UpdateItemAsProcessing :exec
+UPDATE items SET processing_status = 'processing', modified_at = CURRENT_TIMESTAMP WHERE id = $1
+`
+
+func (q *Queries) UpdateItemAsProcessing(ctx context.Context, id int32) error {
+	_, err := q.db.Exec(ctx, updateItemAsProcessing, id)
+	return err
+}
+
+const updateItemProcessingStatus = `-- name: UpdateItemProcessingStatus :exec
+UPDATE items SET processing_status = $2, processing_error = $3, modified_at = CURRENT_TIMESTAMP WHERE id = $1
+`
+
+type UpdateItemProcessingStatusParams struct {
+	ID               int32   `json:"id"`
+	ProcessingStatus *string `json:"processing_status"`
+	ProcessingError  *string `json:"processing_error"`
+}
+
+func (q *Queries) UpdateItemProcessingStatus(ctx context.Context, arg UpdateItemProcessingStatusParams) error {
+	_, err := q.db.Exec(ctx, updateItemProcessingStatus, arg.ID, arg.ProcessingStatus, arg.ProcessingError)
 	return err
 }

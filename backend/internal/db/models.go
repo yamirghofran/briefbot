@@ -9,19 +9,21 @@ import (
 )
 
 type Item struct {
-	ID          int32      `json:"id"`
-	UserID      *int32     `json:"user_id"`
-	Url         *string    `json:"url"`
-	IsRead      *bool      `json:"is_read"`
-	TextContent *string    `json:"text_content"`
-	Summary     *string    `json:"summary"`
-	Type        *string    `json:"type"`
-	Tags        []string   `json:"tags"`
-	Platform    *string    `json:"platform"`
-	Authors     []string   `json:"authors"`
-	CreatedAt   *time.Time `json:"created_at"`
-	ModifiedAt  *time.Time `json:"modified_at"`
-	Title       string     `json:"title"`
+	ID               int32      `json:"id"`
+	UserID           *int32     `json:"user_id"`
+	Url              *string    `json:"url"`
+	IsRead           *bool      `json:"is_read"`
+	TextContent      *string    `json:"text_content"`
+	Summary          *string    `json:"summary"`
+	Type             *string    `json:"type"`
+	Tags             []string   `json:"tags"`
+	Platform         *string    `json:"platform"`
+	Authors          []string   `json:"authors"`
+	CreatedAt        *time.Time `json:"created_at"`
+	ModifiedAt       *time.Time `json:"modified_at"`
+	Title            string     `json:"title"`
+	ProcessingStatus *string    `json:"processing_status"`
+	ProcessingError  *string    `json:"processing_error"`
 }
 
 type User struct {

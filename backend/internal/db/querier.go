@@ -10,17 +10,23 @@ import (
 
 type Querier interface {
 	CreateItem(ctx context.Context, arg CreateItemParams) (Item, error)
+	CreatePendingItem(ctx context.Context, arg CreatePendingItemParams) (Item, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteItem(ctx context.Context, id int32) error
 	DeleteUser(ctx context.Context, id int32) error
+	GetFailedItemsForRetry(ctx context.Context, limit int32) ([]Item, error)
 	GetItem(ctx context.Context, id int32) (Item, error)
+	GetItemsByProcessingStatus(ctx context.Context, processingStatus *string) ([]Item, error)
 	GetItemsByUser(ctx context.Context, userID *int32) ([]Item, error)
+	GetPendingItems(ctx context.Context, limit int32) ([]Item, error)
 	GetUnreadItemsByUser(ctx context.Context, userID *int32) ([]Item, error)
 	GetUser(ctx context.Context, id int32) (User, error)
 	GetUserByEmail(ctx context.Context, email *string) (User, error)
 	ListUsers(ctx context.Context) ([]User, error)
 	MarkItemAsRead(ctx context.Context, id int32) error
 	UpdateItem(ctx context.Context, arg UpdateItemParams) error
+	UpdateItemAsProcessing(ctx context.Context, id int32) error
+	UpdateItemProcessingStatus(ctx context.Context, arg UpdateItemProcessingStatusParams) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) error
 }
 
