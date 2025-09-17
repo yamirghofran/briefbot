@@ -4,7 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
@@ -56,7 +60,24 @@ func main() {
 	}
 	scrapingService := services.NewScraper()
 	userService := services.NewUserService(querier)
-	itemService := services.NewItemService(querier, aiService, scrapingService)
+	jobQueueService := services.NewJobQueueService(querier)
+	itemService := services.NewItemService(querier, aiService, scrapingService, jobQueueService)
+
+	// Initialize worker service
+	workerConfig := services.WorkerConfig{
+		WorkerCount:  2,               // Number of concurrent workers
+		PollInterval: 5 * time.Second, // How often to check for new jobs
+		MaxRetries:   3,               // Max retries for failed jobs
+		BatchSize:    10,              // Number of items to process per batch
+	}
+	workerService := services.NewWorkerService(jobQueueService, aiService, scrapingService, workerConfig)
+
+	// Start worker service in background
+	go func() {
+		if err := workerService.Start(context.Background()); err != nil {
+			log.Printf("Failed to start worker service: %v", err)
+		}
+	}()
 
 	// Initialize Gin router
 	router := gin.Default()
@@ -86,7 +107,40 @@ func main() {
 
 	// Start server
 	fmt.Printf("Server starting on port %s\n", port)
-	if err := router.Run(":" + port); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
+	fmt.Println("Background worker service is running")
+
+	// Handle graceful shutdown
+	server := &http.Server{
+		Addr:    ":" + port,
+		Handler: router,
 	}
+
+	// Start server in a goroutine
+	go func() {
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Failed to start server: %v", err)
+		}
+	}()
+
+	// Wait for interrupt signal to gracefully shutdown
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+	<-quit
+
+	fmt.Println("\nShutting down server...")
+
+	// Stop worker service
+	if err := workerService.Stop(); err != nil {
+		log.Printf("Error stopping worker service: %v", err)
+	}
+
+	// Shutdown server with timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(ctx); err != nil {
+		log.Fatalf("Server forced to shutdown: %v", err)
+	}
+
+	fmt.Println("Server exited")
 }
