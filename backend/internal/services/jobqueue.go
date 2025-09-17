@@ -91,9 +91,9 @@ func (s *jobQueueService) CompleteItem(ctx context.Context, itemID int32, title,
 	// Update the item with processed data, using the AI-extracted title and preserving URL
 	params := db.UpdateItemParams{
 		ID:          itemID,
-		Title:       title,    // Use AI-extracted title
-		Url:         item.Url, // Preserve existing URL
-		IsRead:      nil,
+		Title:       title,       // Use AI-extracted title
+		Url:         item.Url,    // Preserve existing URL
+		IsRead:      item.IsRead, // Preserve existing is_read value
 		TextContent: &textContent,
 		Summary:     &summary,
 		Type:        &itemType,
