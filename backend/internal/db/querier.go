@@ -20,6 +20,8 @@ type Querier interface {
 	GetItemsByUser(ctx context.Context, userID *int32) ([]Item, error)
 	GetPendingItems(ctx context.Context, limit int32) ([]Item, error)
 	GetUnreadItemsByUser(ctx context.Context, userID *int32) ([]Item, error)
+	GetUnreadItemsFromPreviousDay(ctx context.Context) ([]Item, error)
+	GetUnreadItemsFromPreviousDayByUser(ctx context.Context, userID *int32) ([]Item, error)
 	GetUser(ctx context.Context, id int32) (User, error)
 	GetUserByEmail(ctx context.Context, email *string) (User, error)
 	ListUsers(ctx context.Context) ([]User, error)
