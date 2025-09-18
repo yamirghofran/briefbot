@@ -4,12 +4,15 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/ses"
 	"github.com/aws/aws-sdk-go-v2/service/ses/types"
+	"github.com/yamirghofran/briefbot/internal/db"
 )
 
 // EmailRequest contains the properties needed to send an email
@@ -131,4 +134,113 @@ func (s *emailService) SendEmail(ctx context.Context, request EmailRequest) erro
 		return fmt.Errorf("failed to send email: %w", err)
 	}
 	return nil
+}
+
+// GenerateDailyDigestEmail generates HTML and text content for a daily digest email
+func GenerateDailyDigestEmail(items []db.Item, date time.Time) (string, string) {
+	// Generate HTML content
+	htmlContent := generateDailyDigestHTML(items, date)
+
+	// Generate text content
+	textContent := generateDailyDigestText(items, date)
+
+	return htmlContent, textContent
+}
+
+func generateDailyDigestHTML(items []db.Item, date time.Time) string {
+	var html strings.Builder
+
+	html.WriteString(fmt.Sprintf(`
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Digest - %s</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .header h1 { color: #2c3e50; margin: 0; }
+        .item { background-color: #ffffff; border: 1px solid #e9ecef; border-radius: 8px; padding: 20px; margin-bottom: 15px; }
+        .item-title { font-size: 18px; font-weight: bold; color: #2c3e50; margin-bottom: 8px; }
+        .item-meta { color: #6c757d; font-size: 14px; margin-bottom: 10px; }
+        .item-summary { color: #495057; line-height: 1.5; }
+        .item-link { color: #007bff; text-decoration: none; }
+        .item-link:hover { text-decoration: underline; }
+        .footer { text-align: center; color: #6c757d; font-size: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e9ecef; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Daily Digest - %s</h1>
+        <p>Your unread items from yesterday</p>
+    </div>
+`, date.Format("January 2, 2006"), date.Format("January 2, 2006")))
+
+	for _, item := range items {
+		html.WriteString(fmt.Sprintf(`
+    <div class="item">
+        <div class="item-title"><a href="%s" class="item-link">%s</a></div>
+        <div class="item-meta">`,
+			*item.Url, item.Title))
+
+		if item.Platform != nil && *item.Platform != "" {
+			html.WriteString(fmt.Sprintf("%s | ", *item.Platform))
+		}
+		if item.Type != nil && *item.Type != "" {
+			html.WriteString(fmt.Sprintf("%s", *item.Type))
+		}
+		html.WriteString("</div>")
+
+		if item.Summary != nil && *item.Summary != "" {
+			html.WriteString(fmt.Sprintf(`
+        <div class="item-summary">%s</div>`, *item.Summary))
+		}
+
+		html.WriteString("\n    </div>")
+	}
+
+	html.WriteString(`
+    <div class="footer">
+        <p>Sent by BriefBot - Your personal content curator</p>
+    </div>
+</body>
+</html>`)
+
+	return html.String()
+}
+
+func generateDailyDigestText(items []db.Item, date time.Time) string {
+	var text strings.Builder
+
+	text.WriteString(fmt.Sprintf("Daily Digest - %s\n", date.Format("January 2, 2006")))
+	text.WriteString("Your unread items from yesterday\n")
+	text.WriteString(strings.Repeat("=", 50) + "\n\n")
+
+	for i, item := range items {
+		text.WriteString(fmt.Sprintf("%d. %s\n", i+1, item.Title))
+		text.WriteString(fmt.Sprintf("   Link: %s\n", *item.Url))
+
+		var meta []string
+		if item.Platform != nil && *item.Platform != "" {
+			meta = append(meta, fmt.Sprintf("Platform: %s", *item.Platform))
+		}
+		if item.Type != nil && *item.Type != "" {
+			meta = append(meta, fmt.Sprintf("Type: %s", *item.Type))
+		}
+		meta = append(meta, fmt.Sprintf("Added: %s", item.CreatedAt.Format("Jan 2, 3:04 PM")))
+
+		text.WriteString(fmt.Sprintf("   %s\n", strings.Join(meta, " | ")))
+
+		if item.Summary != nil && *item.Summary != "" {
+			text.WriteString(fmt.Sprintf("   Summary: %s\n", *item.Summary))
+		}
+
+		text.WriteString("\n")
+	}
+
+	text.WriteString(strings.Repeat("-", 50) + "\n")
+	text.WriteString("Sent by BriefBot - Your personal content curator\n")
+
+	return text.String()
 }
