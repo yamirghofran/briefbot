@@ -106,3 +106,13 @@ func (m *MockQuerier) UpdateUser(ctx context.Context, arg db.UpdateUserParams) e
 	args := m.Called(ctx, arg)
 	return args.Error(0)
 }
+
+func (m *MockQuerier) GetUnreadItemsFromPreviousDay(ctx context.Context) ([]db.Item, error) {
+	args := m.Called(ctx)
+	return args.Get(0).([]db.Item), args.Error(1)
+}
+
+func (m *MockQuerier) GetUnreadItemsFromPreviousDayByUser(ctx context.Context, userID *int32) ([]db.Item, error) {
+	args := m.Called(ctx, userID)
+	return args.Get(0).([]db.Item), args.Error(1)
+}
