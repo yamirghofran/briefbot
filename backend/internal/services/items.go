@@ -18,6 +18,7 @@ type ItemService interface {
 	GetItem(ctx context.Context, id int32) (*db.Item, error)
 	GetItemsByUser(ctx context.Context, userID *int32) ([]db.Item, error)
 	GetUnreadItemsByUser(ctx context.Context, userID *int32) ([]db.Item, error)
+	GetUnreadItemsFromPreviousDay(ctx context.Context) ([]db.Item, error)
 	UpdateItem(ctx context.Context, id int32, title string, url *string, textContent *string, summary *string, itemType *string, platform *string, tags []string, authors []string, isRead *bool) error
 	MarkItemAsRead(ctx context.Context, id int32) error
 	DeleteItem(ctx context.Context, id int32) error
@@ -157,6 +158,14 @@ func (s *itemService) GetItemsByProcessingStatus(ctx context.Context, status *st
 		return nil, fmt.Errorf("job queue service not available")
 	}
 	return s.jobQueueService.GetItemsByStatus(ctx, *status)
+}
+
+func (s *itemService) GetUnreadItemsFromPreviousDay(ctx context.Context) ([]db.Item, error) {
+	items, err := s.querier.GetUnreadItemsFromPreviousDay(ctx)
+	if err != nil {
+		return []db.Item{}, err
+	}
+	return items, nil
 }
 
 func ConcatenateSummary(summary ItemSummary) string {
