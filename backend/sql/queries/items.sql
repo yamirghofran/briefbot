@@ -37,4 +37,21 @@ SELECT * FROM items WHERE processing_status = $1 ORDER BY created_at DESC;
 -- name: GetFailedItemsForRetry :many
 SELECT * FROM items WHERE processing_status = 'failed' AND created_at > NOW() - INTERVAL '24 hours' ORDER BY created_at ASC LIMIT $1;
 
+-- name: GetUnreadItemsFromPreviousDay :many
+SELECT * FROM items 
+WHERE created_at >= DATE_TRUNC('day', NOW() - INTERVAL '1 day') 
+  AND created_at < DATE_TRUNC('day', NOW())
+  AND is_read = FALSE
+  AND processing_status = 'completed'
+ORDER BY created_at DESC;
+
+-- name: GetUnreadItemsFromPreviousDayByUser :many
+SELECT * FROM items 
+WHERE user_id = $1
+  AND created_at >= DATE_TRUNC('day', NOW() - INTERVAL '1 day') 
+  AND created_at < DATE_TRUNC('day', NOW())
+  AND is_read = FALSE
+  AND processing_status = 'completed'
+ORDER BY created_at DESC;
+
 
