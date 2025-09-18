@@ -6,14 +6,16 @@ import (
 )
 
 type Handler struct {
-	userService services.UserService
-	itemService services.ItemService
+	userService        services.UserService
+	itemService        services.ItemService
+	dailyDigestService services.DailyDigestService
 }
 
-func NewHandler(userService services.UserService, itemService services.ItemService) *Handler {
+func NewHandler(userService services.UserService, itemService services.ItemService, dailyDigestService services.DailyDigestService) *Handler {
 	return &Handler{
-		userService: userService,
-		itemService: itemService,
+		userService:        userService,
+		itemService:        itemService,
+		dailyDigestService: dailyDigestService,
 	}
 }
 
@@ -41,5 +43,12 @@ func (h *Handler) SetupRoutes(router *gin.Engine) {
 		itemGroup.PUT("/:id", h.UpdateItem)
 		itemGroup.PATCH("/:id/read", h.MarkItemAsRead)
 		itemGroup.DELETE("/:id", h.DeleteItem)
+	}
+
+	// Daily digest routes
+	digestGroup := router.Group("/daily-digest")
+	{
+		digestGroup.POST("/trigger", h.TriggerDailyDigest)
+		digestGroup.POST("/trigger/user/:userID", h.TriggerDailyDigestForUser)
 	}
 }

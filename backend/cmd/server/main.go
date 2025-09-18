@@ -63,6 +63,19 @@ func main() {
 	jobQueueService := services.NewJobQueueService(querier)
 	itemService := services.NewItemService(querier, aiService, scrapingService, jobQueueService)
 
+	// Initialize email service
+	emailService, err := services.NewEmailService()
+	if err != nil {
+		log.Printf("Warning: Email service not initialized: %v", err)
+		emailService = nil
+	}
+
+	// Initialize daily digest service
+	var dailyDigestService services.DailyDigestService
+	if emailService != nil {
+		dailyDigestService = services.NewDailyDigestService(querier, emailService)
+	}
+
 	// Initialize worker service
 	workerConfig := services.WorkerConfig{
 		WorkerCount:  2,               // Number of concurrent workers
@@ -97,7 +110,7 @@ func main() {
 	})
 
 	// Setup routes
-	handlers.SetupRoutes(router, userService, itemService)
+	handlers.SetupRoutes(router, userService, itemService, dailyDigestService)
 
 	// Get port from environment or use default
 	port := os.Getenv("PORT")

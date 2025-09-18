@@ -331,6 +331,97 @@ func (q *Queries) GetUnreadItemsByUser(ctx context.Context, userID *int32) ([]It
 	return items, nil
 }
 
+const getUnreadItemsFromPreviousDay = `-- name: GetUnreadItemsFromPreviousDay :many
+SELECT id, user_id, url, is_read, text_content, summary, type, tags, platform, authors, created_at, modified_at, title, processing_status, processing_error FROM items 
+WHERE created_at >= DATE_TRUNC('day', NOW() - INTERVAL '1 day') 
+  AND created_at < DATE_TRUNC('day', NOW())
+  AND is_read = FALSE
+  AND processing_status = 'completed'
+ORDER BY created_at DESC
+`
+
+func (q *Queries) GetUnreadItemsFromPreviousDay(ctx context.Context) ([]Item, error) {
+	rows, err := q.db.Query(ctx, getUnreadItemsFromPreviousDay)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Item{}
+	for rows.Next() {
+		var i Item
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Url,
+			&i.IsRead,
+			&i.TextContent,
+			&i.Summary,
+			&i.Type,
+			&i.Tags,
+			&i.Platform,
+			&i.Authors,
+			&i.CreatedAt,
+			&i.ModifiedAt,
+			&i.Title,
+			&i.ProcessingStatus,
+			&i.ProcessingError,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getUnreadItemsFromPreviousDayByUser = `-- name: GetUnreadItemsFromPreviousDayByUser :many
+SELECT id, user_id, url, is_read, text_content, summary, type, tags, platform, authors, created_at, modified_at, title, processing_status, processing_error FROM items 
+WHERE user_id = $1
+  AND created_at >= DATE_TRUNC('day', NOW() - INTERVAL '1 day') 
+  AND created_at < DATE_TRUNC('day', NOW())
+  AND is_read = FALSE
+  AND processing_status = 'completed'
+ORDER BY created_at DESC
+`
+
+func (q *Queries) GetUnreadItemsFromPreviousDayByUser(ctx context.Context, userID *int32) ([]Item, error) {
+	rows, err := q.db.Query(ctx, getUnreadItemsFromPreviousDayByUser, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Item{}
+	for rows.Next() {
+		var i Item
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Url,
+			&i.IsRead,
+			&i.TextContent,
+			&i.Summary,
+			&i.Type,
+			&i.Tags,
+			&i.Platform,
+			&i.Authors,
+			&i.CreatedAt,
+			&i.ModifiedAt,
+			&i.Title,
+			&i.ProcessingStatus,
+			&i.ProcessingError,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const markItemAsRead = `-- name: MarkItemAsRead :exec
 UPDATE items SET is_read = TRUE, modified_at = CURRENT_TIMESTAMP WHERE id = $1
 `
