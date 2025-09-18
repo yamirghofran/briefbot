@@ -1,0 +1,135 @@
+name: SQLC
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+env:
+  SQLC_VERSION: "1.30.0"
+
+jobs:
+  # SQLC diff check - ensures generated code is up to date
+  diff:
+    name: SQLC Diff Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up SQLC
+        uses: sqlc-dev/setup-sqlc@v4
+        with:
+          sqlc-version: ${{ env.SQLC_VERSION }}
+
+      - name: Run SQLC Diff
+        run: sqlc diff
+
+  # SQLC vet - validates SQL queries
+  vet:
+    name: SQLC Vet
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up SQLC
+        uses: sqlc-dev/setup-sqlc@v4
+        with:
+          sqlc-version: ${{ env.SQLC_VERSION }}
+
+      - name: Run SQLC Vet
+        run: sqlc vet
+        env:
+          POSTGRESQL_SERVER_URI: postgres://postgres:postgres@localhost:5432/test?sslmode=disable
+
+  # SQLC generate - ensures code generation works
+  generate:
+    name: SQLC Generate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up SQLC
+        uses: sqlc-dev/setup-sqlc@v4
+        with:
+          sqlc-version: ${{ env.SQLC_VERSION }}
+
+      - name: Generate SQLC code
+        run: sqlc generate
+
+      - name: Check for uncommitted changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "SQLC generated code that is not committed. Please run 'sqlc generate' and commit the changes."
+            git status
+            exit 1
+          fi
+
+  # SQLC push - pushes to sqlc cloud (only on main branch)
+  push:
+    name: SQLC Push
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    needs: [diff, vet, generate]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up SQLC
+        uses: sqlc-dev/setup-sqlc@v4
+        with:
+          sqlc-version: ${{ env.SQLC_VERSION }}
+
+      - name: Push to SQLC Cloud
+        run: sqlc push
+        env:
+          SQLC_AUTH_TOKEN: ${{ secrets.SQLC_AUTH_TOKEN }}
+        continue-on-error: true # Continue if SQLC Cloud is not configured
+
+  # SQLC verify - verifies database migrations (only on main branch)
+  verify:
+    name: SQLC Verify
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    needs: [diff, vet, generate]
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up SQLC
+        uses: sqlc-dev/setup-sqlc@v4
+        with:
+          sqlc-version: ${{ env.SQLC_VERSION }}
+
+      - name: Verify database migrations
+        run: sqlc verify
+        env:
+          POSTGRESQL_SERVER_URI: postgres://postgres:postgres@localhost:5432/test?sslmode=disable
+          SQLC_AUTH_TOKEN: ${{ secrets.SQLC_AUTH_TOKEN }}
+        continue-on-error: true # Continue if SQLC Cloud is not configured

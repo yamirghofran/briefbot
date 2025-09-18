@@ -1,4 +1,4 @@
-.PHONY: test test-unit test-services test-coverage test-watch help
+.PHONY: test test-unit test-services test-coverage test-watch help fmt lint ci-deps clean
 
 # Default target
 help:
@@ -8,6 +8,10 @@ help:
 	@echo "  test-services - Run service layer tests"
 	@echo "  test-coverage - Run tests with coverage report"
 	@echo "  test-watch    - Run tests in watch mode"
+	@echo "  fmt           - Format code with gofmt"
+	@echo "  lint          - Run golangci-lint"
+	@echo "  ci-deps       - Install CI dependencies"
+	@echo "  clean         - Clean test artifacts"
 
 # Run all tests
 test:
