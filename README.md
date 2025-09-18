@@ -7,6 +7,7 @@ An AI-enabled platform for managing links and extracting knowledge faster.
 - Browser Plugin
 - Telegram Bot Integration
 - Web UI
+- Daily Digest Email Notifications
 
 ## Tech Stack
 
@@ -25,8 +26,20 @@ An AI-enabled platform for managing links and extracting knowledge faster.
 
 ## Environment Variables:
 
+### Core Variables:
 • DATABASE_URL: PostgreSQL connection string
 • PORT: Server port (default: 8080)
+
+### Email Service Variables (Required for Daily Digest):
+• AWS_ACCESS_KEY_ID: AWS access key for SES
+• AWS_SECRET_ACCESS_KEY: AWS secret key for SES
+• AWS_REGION: AWS region for SES
+• SES_FROM_EMAIL: Sender email address
+• SES_FROM_NAME: Sender name (optional, defaults to "BriefBot")
+• SES_REPLY_TO_EMAIL: Reply-to email address (optional, defaults to SES_FROM_EMAIL)
+
+### Daily Digest Variables (Optional):
+• DAILY_DIGEST_SUBJECT: Email subject template (optional, defaults to "Your Daily BriefBot Digest - %s")
 
 ## API Endpoints Created:
 
@@ -48,6 +61,11 @@ An AI-enabled platform for managing links and extracting knowledge faster.
 - PUT /items/:id - Update item
 - PATCH /items/:id/read - Mark item as read
 - DELETE /items/:id - Delete item
+
+### Daily Digest Endpoints:
+
+- POST /daily-digest/trigger - Send daily digest to all users with unread items from yesterday
+- POST /daily-digest/trigger/user/:userID - Send daily digest to specific user with unread items from yesterday
 
 ## Quick Test Sequence:
 
@@ -82,3 +100,44 @@ curl -X GET http://localhost:8080/items/user/1
 ```
 curl -X PATCH http://localhost:8080/items/1/read
 ```
+
+# 6. Test daily digest (requires email service configuration)
+
+```
+# Send daily digest to all users
+curl -X POST http://localhost:8080/daily-digest/trigger
+
+# Send daily digest to specific user (user ID 1)
+curl -X POST http://localhost:8080/daily-digest/trigger/user/1
+```
+
+## Daily Digest Feature
+
+The daily digest automatically compiles unread items from the previous day and sends them via email to users.
+
+### Daily Digest Curl Examples:
+
+# Send daily digest to all users (requires email service to be configured)
+
+```
+curl -X POST http://localhost:8080/daily-digest/trigger
+```
+
+# Send daily digest to specific user (e.g., user ID 1)
+
+```
+curl -X POST http://localhost:8080/daily-digest/trigger/user/1
+```
+
+### Daily Digest Configuration:
+
+- `DAILY_DIGEST_SUBJECT`: Email subject template (optional, defaults to "Your Daily BriefBot Digest - %s")
+
+### Daily Digest Behavior:
+
+- Only sends to users with valid email addresses
+- Only includes unread items from the previous day (24-48 hours ago)
+- Only includes items with `processing_status = 'completed'`
+- Sends individual emails to each user with their specific unread items
+- Gracefully skips users with no unread items from the previous day
+- Continues processing other users if one user fails
