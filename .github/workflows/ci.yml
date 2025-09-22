@@ -149,9 +149,9 @@ jobs:
       - name: Build all packages
         run: go build -v ./...
 
-  # Security scanning
-  security:
-    name: Security Scan
+  # Static analysis
+  staticcheck:
+    name: Static Analysis
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -164,16 +164,13 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
 
-      - name: Run Gosec Security Scanner
-        uses: securecodewarrior/github-action-gosec@master
-        with:
-          args: "-no-fail -fmt sarif -out results.sarif ./..."
-        continue-on-error: true
+      - name: Install dependencies
+        run: go mod download
 
-      - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: results.sarif
+      - name: Run staticcheck
+        run: |
+          go install honnef.co/go/tools/cmd/staticcheck@latest
+          staticcheck ./...
         continue-on-error: true
 
   # Integration test (if you have them)
