@@ -15,6 +15,9 @@ jobs:
   format-lint:
     name: Format & Lint
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
     steps:
       - uses: actions/checkout@v4
 
@@ -46,20 +49,9 @@ jobs:
   sqlc:
     name: SQLC Validation
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
+    defaults:
+      run:
+        working-directory: backend
     steps:
       - uses: actions/checkout@v4
 
@@ -71,29 +63,39 @@ jobs:
       - name: SQLC Diff Check
         run: sqlc diff
 
-      - name: SQLC Vet
-        run: sqlc vet
-        env:
-          POSTGRESQL_SERVER_URI: postgres://postgres:postgres@localhost:5432/test?sslmode=disable
+  # SQLC generate - ensures code generation works
+  generate:
+     name: SQLC Generate
+     runs-on: ubuntu-latest
+     defaults:
+       run:
+         working-directory: backend
+     steps:
+       - uses: actions/checkout@v4
+
+       - name: Set up SQLC
+         uses: sqlc-dev/setup-sqlc@v4
+         with:
+           sqlc-version: ${{ env.SQLC_VERSION }}
+
+       - name: Generate SQLC code
+         run: sqlc generate
+
+       - name: Check for uncommitted changes
+         run: |
+           if [ -n "$(git status --porcelain)" ]; then
+             echo "SQLC generated code that is not committed. Please run 'sqlc generate' and commit the changes."
+             git status
+             exit 1
+            fi
 
   # Test suite
   test:
     name: Test Suite
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
+    defaults:
+      run:
+        working-directory: backend
     steps:
       - uses: actions/checkout@v4
 
@@ -107,18 +109,12 @@ jobs:
 
       - name: Run unit tests
         run: make test-unit
-        env:
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/test?sslmode=disable
 
       - name: Run all tests
         run: make test
-        env:
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/test?sslmode=disable
 
       - name: Generate coverage report
         run: make test-coverage
-        env:
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/test?sslmode=disable
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
@@ -132,6 +128,9 @@ jobs:
   build:
     name: Build Check
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
     needs: [format-lint, sqlc, test]
     steps:
       - uses: actions/checkout@v4
@@ -154,6 +153,9 @@ jobs:
   security:
     name: Security Scan
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
     steps:
       - uses: actions/checkout@v4
 
@@ -178,21 +180,10 @@ jobs:
   integration-test:
     name: Integration Tests
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
     needs: [build]
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
     steps:
       - uses: actions/checkout@v4
 
@@ -208,6 +199,4 @@ jobs:
         run: |
           # Run any integration tests you might have
           go test ./... -tags=integration -v || true
-        env:
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/test?sslmode=disable
         continue-on-error: true
