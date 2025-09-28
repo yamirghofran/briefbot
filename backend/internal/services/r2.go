@@ -74,21 +74,17 @@ func NewR2Service() (*R2Service, error) {
 // GenerateUploadURL generates a presigned URL for uploading a file
 func (r *R2Service) GenerateUploadURL(ctx context.Context, contentType string, folder string) (*UploadURLResponse, error) {
 	// Generate unique key with folder structure
-	ext := ".jpg" // Default extension
-	switch contentType {
-	case "image/png":
-		ext = ".png"
-	case "image/jpeg", "image/jpg":
-		ext = ".jpg"
-	case "image/webp":
-		ext = ".webp"
-	case "application/pdf":
-		ext = ".pdf"
-	case "audio/wav":
-		ext = ".wav"
-	case "audio/mpeg", "audio/mp3":
-		ext = ".mp3"
+	var mimeToExt = map[string]string{
+		"image/png":       ".png",
+		"image/jpeg":      ".jpg",
+		"image/jpg":       ".jpg",
+		"image/webp":      ".webp",
+		"application/pdf": ".pdf",
+		"audio/wav":       ".wav",
+		"audio/mpeg":      ".mp3",
+		"audio/mp3":       ".mp3",
 	}
+	ext := mimeToExt[contentType] // This will be an empty string for unknown types
 
 	key := fmt.Sprintf("%s/%s%s", folder, uuid.New().String(), ext)
 
