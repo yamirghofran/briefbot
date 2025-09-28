@@ -41,7 +41,7 @@ func NewR2Service() (*R2Service, error) {
 	}
 
 	// Create configuration
-	cfg, err := config.LoadDefaultConfig(context.TODO(),
+	cfg, err := config.LoadDefaultConfig(context.Background(),
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
 			accessKeyId,
 			secretAccessKey,
