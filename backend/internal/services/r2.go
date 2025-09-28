@@ -3,11 +3,10 @@ package services
 import (
 	"context"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
+	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
@@ -28,30 +27,31 @@ type UploadURLResponse struct {
 	PublicURL string `json:"public_url"`
 }
 
-func NewR2Service() (*R2Service, error) {
-	// Load from environment variables
-	accessKeyId := os.Getenv("R2_ACCESS_KEY_ID")
-	secretAccessKey := os.Getenv("R2_SECRET_ACCESS_KEY")
-	accountId := os.Getenv("R2_ACCOUNT_ID")
-	bucket := os.Getenv("R2_BUCKET_NAME")
-	publicHost := os.Getenv("R2_PUBLIC_HOST") // Custom domain or R2 public URL
+type R2Config struct {
+	AccessKeyID     string
+	SecretAccessKey string
+	AccountID       string
+	BucketName      string
+	PublicHost      string
+}
 
-	if accessKeyId == "" || secretAccessKey == "" || accountId == "" || bucket == "" {
-		return nil, fmt.Errorf("missing required R2 environment variables")
+func NewR2Service(cfg R2Config) (*R2Service, error) {
+	if cfg.AccessKeyID == "" || cfg.SecretAccessKey == "" || cfg.AccountID == "" || cfg.BucketName == "" {
+		return nil, fmt.Errorf("missing required R2 configuration fields")
 	}
 
-	// Create configuration
-	cfg, err := config.LoadDefaultConfig(context.Background(),
-		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
-			accessKeyId,
-			secretAccessKey,
+	// Create AWS configuration
+	awsCfg, err := awsconfig.LoadDefaultConfig(context.Background(),
+		awsconfig.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
+			cfg.AccessKeyID,
+			cfg.SecretAccessKey,
 			"",
 		)),
-		config.WithRegion("auto"),
-		config.WithEndpointResolverWithOptions(aws.EndpointResolverWithOptionsFunc(
+		awsconfig.WithRegion("auto"),
+		awsconfig.WithEndpointResolverWithOptions(aws.EndpointResolverWithOptionsFunc(
 			func(service, region string, options ...interface{}) (aws.Endpoint, error) {
 				return aws.Endpoint{
-					URL: fmt.Sprintf("https://%s.r2.cloudflarestorage.com", accountId),
+					URL: fmt.Sprintf("https://%s.r2.cloudflarestorage.com", cfg.AccountID),
 				}, nil
 			})),
 	)
@@ -59,15 +59,17 @@ func NewR2Service() (*R2Service, error) {
 		return nil, fmt.Errorf("failed to load config: %w", err)
 	}
 
-	// Create S3 client
-	client := s3.NewFromConfig(cfg)
+	// Create S3 client with path-style addressing for R2 compatibility
+	client := s3.NewFromConfig(awsCfg, func(o *s3.Options) {
+		o.UsePathStyle = true
+	})
 
 	return &R2Service{
 		client:     client,
 		presigner:  s3.NewPresignClient(client),
-		bucket:     bucket,
-		accountId:  accountId,
-		publicHost: publicHost,
+		bucket:     cfg.BucketName,
+		accountId:  cfg.AccountID,
+		publicHost: cfg.PublicHost,
 	}, nil
 }
 
@@ -154,14 +156,17 @@ func (r *R2Service) DeleteFiles(ctx context.Context, keys []string) error {
 
 // ExtractKeyFromURL extracts the key from a public URL
 func (r *R2Service) ExtractKeyFromURL(url string) string {
-	// Handle both custom domain and R2 public URLs
-	if r.publicHost != "" && len(url) > len(r.publicHost) {
-		return url[len(r.publicHost)+1:] // +1 for the slash
+	// Handle custom domain URLs
+	if r.publicHost != "" {
+		prefix := r.publicHost + "/"
+		if len(url) >= len(prefix) && url[:len(prefix)] == prefix {
+			return url[len(prefix):]
+		}
 	}
 
 	// Handle R2 public URL format
 	prefix := fmt.Sprintf("https://pub-%s.r2.dev/", r.accountId)
-	if len(url) > len(prefix) {
+	if len(url) >= len(prefix) && url[:len(prefix)] == prefix {
 		return url[len(prefix):]
 	}
 
