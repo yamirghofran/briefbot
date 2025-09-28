@@ -53,6 +53,28 @@ func main() {
 		option.WithAPIKey(os.Getenv("GROQ_API_KEY")),
 	)
 
+	// Initialize R2 service configuration
+	r2Config := services.R2Config{
+		AccessKeyID:     os.Getenv("R2_ACCESS_KEY_ID"),
+		SecretAccessKey: os.Getenv("R2_SECRET_ACCESS_KEY"),
+		AccountID:       os.Getenv("R2_ACCOUNT_ID"),
+		BucketName:      os.Getenv("R2_BUCKET_NAME"),
+		PublicHost:      os.Getenv("R2_PUBLIC_HOST"),
+	}
+
+	// Create R2 service if configuration is complete
+	// TODO: Store the R2 service instance and pass it to handlers/services that need file upload functionality
+	if r2Config.AccessKeyID != "" && r2Config.SecretAccessKey != "" && r2Config.AccountID != "" && r2Config.BucketName != "" {
+		_, err := services.NewR2Service(r2Config)
+		if err != nil {
+			log.Printf("Warning: R2 service not initialized: %v", err)
+		} else {
+			log.Println("R2 service initialized successfully")
+		}
+	} else {
+		log.Printf("Warning: R2 service not configured - missing environment variables")
+	}
+
 	// Initialize services
 	aiService, err := services.NewAIService(&oaiClient)
 	if err != nil {
