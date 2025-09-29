@@ -5,14 +5,25 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 )
 
+// DialogueInfo contains information about the dialogue being processed
+type DialogueInfo struct {
+	Index     int    // Dialogue index (1-based)
+	Total     int    // Total number of dialogues
+	Speaker   string // Speaker name (heart/adam)
+	Content   string // Full dialogue content
+	RequestID string // FAL API request ID (filled during processing)
+}
+
 type SpeechService interface {
-	TextToSpeech(prompt string, voice VoiceEnum, speed float64) (*File, error)
+	TextToSpeech(prompt string, voice VoiceEnum, speed float64, dialogueInfo *DialogueInfo) (*File, error)
 	DownloadAudio(url string) ([]byte, error)
 	SaveAudio(data []byte, filename string) error
 }
@@ -32,12 +43,26 @@ func NewSpeechService(falClient *FalClient, maxAttempts int, interval time.Durat
 }
 
 // TextToSpeech converts text to speech using the fal.ai API
-func (s *speechService) TextToSpeech(prompt string, voice VoiceEnum, speed float64) (*File, error) {
+func (s *speechService) TextToSpeech(prompt string, voice VoiceEnum, speed float64, dialogueInfo *DialogueInfo) (*File, error) {
+	if s.client == nil {
+		return nil, fmt.Errorf("speech service not configured: FAL_API_KEY not set")
+	}
+
 	if voice == "" {
 		voice = VoiceAfHeart
 	}
 	if speed == 0 {
 		speed = 1.0
+	}
+
+	// Log dialogue processing start
+	if dialogueInfo != nil {
+		contentPreview := dialogueInfo.Content
+		if len(contentPreview) > 50 {
+			contentPreview = contentPreview[:50] + "..."
+		}
+		log.Printf("Processing dialogue %d/%d: \"%s\" [speaker: %s]",
+			dialogueInfo.Index, dialogueInfo.Total, contentPreview, dialogueInfo.Speaker)
 	}
 
 	req := EnglishRequest{
@@ -46,7 +71,7 @@ func (s *speechService) TextToSpeech(prompt string, voice VoiceEnum, speed float
 		Speed:  speed,
 	}
 
-	result, err := s.client.submitAndWait(req, s.maxAttempts, s.interval)
+	result, err := s.client.submitAndWait(req, s.maxAttempts, s.interval, dialogueInfo)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate speech: %w", err)
 	}
@@ -56,6 +81,9 @@ func (s *speechService) TextToSpeech(prompt string, voice VoiceEnum, speed float
 
 // DownloadAudio downloads audio data from a URL
 func (s *speechService) DownloadAudio(url string) ([]byte, error) {
+	if s.client == nil {
+		return nil, fmt.Errorf("speech service not configured: FAL_API_KEY not set")
+	}
 	return s.client.downloadAudioFile(url)
 }
 
@@ -243,44 +271,68 @@ func (c *FalClient) getRequestResult(requestID string) (*ResultResponse, error) 
 	return &result, nil
 }
 
-// waitForResult waits for a request to complete and returns the result
-func (c *FalClient) waitForResult(requestID string, maxAttempts int, interval time.Duration) (*ResultResponse, error) {
-	for i := 0; i < maxAttempts; i++ {
+// waitForResult waits for a request to complete and returns the result (polls indefinitely until COMPLETED or FAILED)
+func (c *FalClient) waitForResult(requestID string, interval time.Duration, dialogueInfo *DialogueInfo) (*ResultResponse, error) {
+	startTime := time.Now()
+	attempt := 0
+
+	for {
+		attempt++
 		status, err := c.getRequestStatus(requestID)
 		if err != nil {
 			return nil, err
 		}
 
-		fmt.Printf("Status check %d: %s", i+1, status.Status)
-		if status.Progress > 0 {
-			fmt.Printf(" (%d%%)", status.Progress)
+		// Build enhanced status message with dialogue context
+		var statusMsg strings.Builder
+		if dialogueInfo != nil {
+			statusMsg.WriteString(fmt.Sprintf("Dialogue %d/%d [req:%s] - ",
+				dialogueInfo.Index, dialogueInfo.Total, requestID[:8]))
 		}
-		fmt.Println()
+		statusMsg.WriteString(fmt.Sprintf("Status check %d: %s", attempt, status.Status))
+
+		if status.Progress > 0 {
+			statusMsg.WriteString(fmt.Sprintf(" (%d%%)", status.Progress))
+		}
+
+		// Log status for concurrent processing visibility
+		log.Print(statusMsg.String())
 
 		switch status.Status {
 		case "COMPLETED":
+			duration := time.Since(startTime)
+			if dialogueInfo != nil {
+				log.Printf("Dialogue %d/%d completed after %d attempts (%.1fs)",
+					dialogueInfo.Index, dialogueInfo.Total, attempt, duration.Seconds())
+			}
 			return c.getRequestResult(requestID)
 		case "FAILED":
 			return nil, fmt.Errorf("request failed: %s", status.Message)
 		case "IN_PROGRESS", "QUEUED", "IN_QUEUE":
+			log.Printf("Dialogue %d/%d still processing, will continue polling...",
+				dialogueInfo.Index, dialogueInfo.Total)
 			time.Sleep(interval)
 			continue
 		default:
 			return nil, fmt.Errorf("unknown status: %s", status.Status)
 		}
 	}
-
-	return nil, fmt.Errorf("request did not complete within %d attempts", maxAttempts)
 }
 
 // submitAndWait submits a request and waits for it to complete
-func (c *FalClient) submitAndWait(req EnglishRequest, maxAttempts int, interval time.Duration) (*ResultResponse, error) {
+func (c *FalClient) submitAndWait(req EnglishRequest, maxAttempts int, interval time.Duration, dialogueInfo *DialogueInfo) (*ResultResponse, error) {
 	submitResp, err := c.submitEnglishRequest(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to submit request: %w", err)
 	}
 
-	return c.waitForResult(submitResp.RequestID, maxAttempts, interval)
+	// Store the request ID in dialogue info for logging
+	if dialogueInfo != nil {
+		dialogueInfo.RequestID = submitResp.RequestID
+	}
+
+	// Note: maxAttempts is now ignored - we'll poll indefinitely until COMPLETED or FAILED
+	return c.waitForResult(submitResp.RequestID, interval, dialogueInfo)
 }
 
 // WithRetry adds retry logic to any operation
@@ -340,6 +392,9 @@ func StitchAudioFiles(inputFiles []string, outputFile string) error {
 		return fmt.Errorf("no input files provided")
 	}
 
+	// Log the files being stitched for debugging
+	log.Printf("Stitching %d audio files (converting WAV to MP3): %v", len(inputFiles), inputFiles)
+
 	// Create a temporary file list for ffmpeg
 	listFile, err := os.CreateTemp("", "audio_list_*.txt")
 	if err != nil {
@@ -350,13 +405,26 @@ func StitchAudioFiles(inputFiles []string, outputFile string) error {
 
 	// Write file list in ffmpeg format
 	for _, file := range inputFiles {
+		// Verify file exists before adding to list
+		if _, err := os.Stat(file); err != nil {
+			return fmt.Errorf("audio file does not exist: %s - %w", file, err)
+		}
 		if _, err := listFile.WriteString(fmt.Sprintf("file '%s'\n", file)); err != nil {
 			return fmt.Errorf("failed to write to list file: %w", err)
 		}
 	}
 
-	// Build ffmpeg command
-	cmd := exec.Command("ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", listFile.Name(), "-c", "copy", outputFile)
+	// Ensure the list file is properly written
+	if err := listFile.Sync(); err != nil {
+		return fmt.Errorf("failed to sync list file: %w", err)
+	}
+
+	// Build ffmpeg command - re-encode to MP3 since FAL returns WAV format
+	// Using libmp3lame codec with 192k bitrate for good quality
+	// Key changes from original:
+	// - Changed "-c copy" to "-c:a libmp3lame -b:a 192k" to re-encode WAV to MP3
+	// - This resolves the format mismatch issue
+	cmd := exec.Command("ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", listFile.Name(), "-c:a", "libmp3lame", "-b:a", "192k", outputFile)
 
 	// Run the command
 	output, err := cmd.CombinedOutput()
@@ -364,5 +432,11 @@ func StitchAudioFiles(inputFiles []string, outputFile string) error {
 		return fmt.Errorf("ffmpeg command failed: %w\nOutput: %s", err, string(output))
 	}
 
+	// Verify output file was created
+	if _, err := os.Stat(outputFile); err != nil {
+		return fmt.Errorf("output file was not created: %w", err)
+	}
+
+	log.Printf("Successfully stitched %d audio files into %s (WAV to MP3 conversion)", len(inputFiles), outputFile)
 	return nil
 }
