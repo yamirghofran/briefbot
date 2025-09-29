@@ -11,7 +11,11 @@ SELECT * FROM podcasts WHERE status = $1 ORDER BY created_at DESC;
 SELECT * FROM podcasts WHERE user_id = $1 AND status = $2 ORDER BY created_at DESC;
 
 -- name: GetPendingPodcasts :many
-SELECT * FROM podcasts WHERE status = 'pending' ORDER BY created_at ASC LIMIT $1;
+SELECT * FROM podcasts 
+WHERE status = 'pending' 
+ORDER BY created_at ASC 
+LIMIT $1
+FOR UPDATE SKIP LOCKED;
 
 -- name: GetProcessingPodcasts :many
 SELECT * FROM podcasts WHERE status = 'processing' ORDER BY created_at ASC LIMIT $1;
@@ -33,6 +37,9 @@ UPDATE podcasts SET title = $2, description = $3, updated_at = CURRENT_TIMESTAMP
 
 -- name: UpdatePodcastStatus :exec
 UPDATE podcasts SET status = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1;
+
+-- name: UpdatePodcastsStatus :exec
+UPDATE podcasts SET status = $2, updated_at = CURRENT_TIMESTAMP WHERE id = ANY($1::int[]);
 
 -- name: UpdatePodcastStatusWithAudio :exec
 UPDATE podcasts SET status = $2, audio_url = $3, duration_seconds = $4, completed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = $1;
