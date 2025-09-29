@@ -115,10 +115,13 @@ func main() {
 		emailService = nil
 	}
 
-	// Initialize daily digest service
-	var dailyDigestService services.DailyDigestService
+	// Initialize unified digest service (replaces separate daily and integrated digest services)
+	var digestService services.DigestService
 	if emailService != nil {
-		dailyDigestService = services.NewDailyDigestService(querier, emailService)
+		digestService = services.NewDigestService(querier, emailService, podcastService)
+		log.Println("Unified digest service initialized successfully")
+	} else {
+		log.Printf("Warning: Digest service not initialized - email service not available")
 	}
 
 	// Initialize speech service for podcast audio generation
@@ -184,7 +187,7 @@ func main() {
 	})
 
 	// Setup routes
-	handlers.SetupRoutes(router, userService, itemService, dailyDigestService, podcastService)
+	handlers.SetupRoutes(router, userService, itemService, digestService, podcastService)
 
 	// Get port from environment or use default
 	port := os.Getenv("PORT")

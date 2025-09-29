@@ -244,3 +244,150 @@ func generateDailyDigestText(items []db.Item, date time.Time) string {
 
 	return text.String()
 }
+
+// GenerateIntegratedDigestEmail generates HTML and text content for an integrated digest email with podcast link
+func GenerateIntegratedDigestEmail(items []db.Item, podcastURL *string, durationSeconds *int32, date time.Time) (string, string) {
+	// Generate HTML content with podcast link at top
+	htmlContent := generateIntegratedDigestHTML(items, podcastURL, durationSeconds, date)
+
+	// Generate text content with podcast link at top
+	textContent := generateIntegratedDigestText(items, podcastURL, durationSeconds, date)
+
+	return htmlContent, textContent
+}
+
+func generateIntegratedDigestHTML(items []db.Item, podcastURL *string, durationSeconds *int32, date time.Time) string {
+	var html strings.Builder
+
+	html.WriteString(fmt.Sprintf(`
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Digest - %s</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .header h1 { color: #2c3e50; margin: 0; }
+        .podcast-section { background-color: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2196f3; }
+        .podcast-title { font-size: 16px; font-weight: bold; color: #1976d2; margin-bottom: 5px; }
+        .podcast-link { color: #1976d2; text-decoration: none; font-weight: bold; }
+        .podcast-link:hover { text-decoration: underline; }
+        .item { background-color: #ffffff; border: 1px solid #e9ecef; border-radius: 8px; padding: 20px; margin-bottom: 15px; }
+        .item-title { font-size: 18px; font-weight: bold; color: #2c3e50; margin-bottom: 8px; }
+        .item-meta { color: #6c757d; font-size: 14px; margin-bottom: 10px; }
+        .item-summary { color: #495057; line-height: 1.5; }
+        .item-link { color: #007bff; text-decoration: none; }
+        .item-link:hover { text-decoration: underline; }
+        .footer { text-align: center; color: #6c757d; font-size: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e9ecef; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Daily Digest - %s</h1>
+        <p>Your unread items from yesterday</p>
+    </div>
+`, date.Format("January 2, 2006"), date.Format("January 2, 2006")))
+
+	// Add podcast section if URL exists
+	if podcastURL != nil && *podcastURL != "" {
+		duration := ""
+		if durationSeconds != nil && *durationSeconds > 0 {
+			mins := *durationSeconds / 60
+			secs := *durationSeconds % 60
+			duration = fmt.Sprintf(" (%d:%02d)", mins, secs)
+		}
+
+		html.WriteString(fmt.Sprintf(`
+    <div class="podcast-section">
+        <div class="podcast-title">🎧 Listen to Today's Digest%s</div>
+        <div><a href="%s" class="podcast-link">Download MP3 Audio</a></div>
+    </div>
+`, duration, *podcastURL))
+	}
+
+	html.WriteString(`
+    <div class="items">
+`)
+
+	for _, item := range items {
+		html.WriteString(fmt.Sprintf(`
+        <div class="item">
+            <div class="item-title"><a href="%s" class="item-link">%s</a></div>
+            <div class="item-meta">`,
+			*item.Url, item.Title))
+
+		if item.Platform != nil && *item.Platform != "" {
+			html.WriteString(fmt.Sprintf("%s | ", *item.Platform))
+		}
+		if item.Type != nil && *item.Type != "" {
+			html.WriteString(fmt.Sprintf("%s", *item.Type))
+		}
+		html.WriteString("</div>")
+
+		if item.Summary != nil && *item.Summary != "" {
+			html.WriteString(fmt.Sprintf(`
+            <div class="item-summary">%s</div>`, *item.Summary))
+		}
+
+		html.WriteString("\n        </div>")
+	}
+
+	html.WriteString(`
+    </div>
+    <div class="footer">
+        <p>Sent by BriefBot - Your personal content curator</p>
+    </div>
+</body>
+</html>`)
+
+	return html.String()
+}
+
+func generateIntegratedDigestText(items []db.Item, podcastURL *string, durationSeconds *int32, date time.Time) string {
+	var text strings.Builder
+
+	text.WriteString(fmt.Sprintf("Daily Digest - %s\n", date.Format("January 2, 2006")))
+	text.WriteString("Your unread items from yesterday\n")
+
+	// Add podcast section if URL exists
+	if podcastURL != nil && *podcastURL != "" {
+		duration := ""
+		if durationSeconds != nil && *durationSeconds > 0 {
+			mins := *durationSeconds / 60
+			secs := *durationSeconds % 60
+			duration = fmt.Sprintf(" (%d:%02d)", mins, secs)
+		}
+		text.WriteString(fmt.Sprintf("\n🎧 Listen to Today's Digest%s\n", duration))
+		text.WriteString(fmt.Sprintf("Audio: %s\n", *podcastURL))
+		text.WriteString(strings.Repeat("-", 50) + "\n")
+	} else {
+		text.WriteString(strings.Repeat("=", 50) + "\n")
+	}
+
+	for i, item := range items {
+		text.WriteString(fmt.Sprintf("\n%d. %s\n", i+1, item.Title))
+		text.WriteString(fmt.Sprintf("   Link: %s\n", *item.Url))
+
+		var meta []string
+		if item.Platform != nil && *item.Platform != "" {
+			meta = append(meta, fmt.Sprintf("Platform: %s", *item.Platform))
+		}
+		if item.Type != nil && *item.Type != "" {
+			meta = append(meta, fmt.Sprintf("Type: %s", *item.Type))
+		}
+		meta = append(meta, fmt.Sprintf("Added: %s", item.CreatedAt.Format("Jan 2, 3:04 PM")))
+
+		text.WriteString(fmt.Sprintf("   %s\n", strings.Join(meta, " | ")))
+
+		if item.Summary != nil && *item.Summary != "" {
+			text.WriteString(fmt.Sprintf("   Summary: %s\n", *item.Summary))
+		}
+	}
+
+	text.WriteString("\n" + strings.Repeat("-", 50) + "\n")
+	text.WriteString("Sent by BriefBot - Your personal content curator\n")
+
+	return text.String()
+}
