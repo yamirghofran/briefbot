@@ -6,18 +6,18 @@ import (
 )
 
 type Handler struct {
-	userService        services.UserService
-	itemService        services.ItemService
-	dailyDigestService services.DailyDigestService
-	podcastService     services.PodcastService
+	userService    services.UserService
+	itemService    services.ItemService
+	digestService  services.DigestService
+	podcastService services.PodcastService
 }
 
-func NewHandler(userService services.UserService, itemService services.ItemService, dailyDigestService services.DailyDigestService, podcastService services.PodcastService) *Handler {
+func NewHandler(userService services.UserService, itemService services.ItemService, digestService services.DigestService, podcastService services.PodcastService) *Handler {
 	return &Handler{
-		userService:        userService,
-		itemService:        itemService,
-		dailyDigestService: dailyDigestService,
-		podcastService:     podcastService,
+		userService:    userService,
+		itemService:    itemService,
+		digestService:  digestService,
+		podcastService: podcastService,
 	}
 }
 
@@ -75,10 +75,12 @@ func (h *Handler) SetupRoutes(router *gin.Engine) {
 		podcastGroup.DELETE("/:id", podcastHandler.DeletePodcast)
 	}
 
-	// Daily digest routes
-	digestGroup := router.Group("/daily-digest")
+	// Digest routes (unified - handles both regular and integrated digests)
+	digestGroup := router.Group("/digest")
 	{
 		digestGroup.POST("/trigger", h.TriggerDailyDigest)
 		digestGroup.POST("/trigger/user/:userID", h.TriggerDailyDigestForUser)
+		digestGroup.POST("/trigger/integrated", h.TriggerIntegratedDigest)
+		digestGroup.POST("/trigger/integrated/user/:userID", h.TriggerIntegratedDigestForUser)
 	}
 }
