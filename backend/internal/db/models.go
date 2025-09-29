@@ -6,6 +6,8 @@ package db
 
 import (
 	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Item struct {
@@ -24,6 +26,28 @@ type Item struct {
 	Title            string     `json:"title"`
 	ProcessingStatus *string    `json:"processing_status"`
 	ProcessingError  *string    `json:"processing_error"`
+}
+
+type Podcast struct {
+	ID              int32            `json:"id"`
+	UserID          *int32           `json:"user_id"`
+	Title           string           `json:"title"`
+	Description     *string          `json:"description"`
+	Status          string           `json:"status"`
+	AudioUrl        *string          `json:"audio_url"`
+	Dialogues       []byte           `json:"dialogues"`
+	DurationSeconds *int32           `json:"duration_seconds"`
+	CreatedAt       pgtype.Timestamp `json:"created_at"`
+	UpdatedAt       pgtype.Timestamp `json:"updated_at"`
+	CompletedAt     pgtype.Timestamp `json:"completed_at"`
+}
+
+type PodcastItem struct {
+	ID        int32            `json:"id"`
+	PodcastID *int32           `json:"podcast_id"`
+	ItemID    *int32           `json:"item_id"`
+	ItemOrder int32            `json:"item_order"`
+	CreatedAt pgtype.Timestamp `json:"created_at"`
 }
 
 type User struct {
