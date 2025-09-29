@@ -7,11 +7,12 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/openai/openai-go"
 	"github.com/openai/openai-go/option"
@@ -31,22 +32,38 @@ func main() {
 		databaseURL = "postgres://postgres:postgres@localhost:5432/briefbot?sslmode=disable"
 	}
 
-	// Connect to database
-	conn, err := pgx.Connect(context.Background(), databaseURL)
+	// Create connection pool configuration
+	poolConfig, err := pgxpool.ParseConfig(databaseURL)
 	if err != nil {
-		log.Fatalf("Unable to connect to database: %v", err)
+		log.Fatalf("Unable to parse database URL: %v", err)
 	}
-	defer conn.Close(context.Background())
+
+	// Configure connection pool for better concurrency handling
+	poolConfig.MaxConns = 25                      // Maximum number of connections (increased for workers)
+	poolConfig.MinConns = 5                       // Minimum number of connections to maintain
+	poolConfig.MaxConnLifetime = time.Hour        // Maximum lifetime of a connection
+	poolConfig.MaxConnIdleTime = 30 * time.Minute // Maximum idle time
+	poolConfig.HealthCheckPeriod = time.Minute    // How often to check connection health
+
+	// Additional settings to prevent connection issues
+	poolConfig.ConnConfig.ConnectTimeout = 30 * time.Second // Connection timeout
+
+	// Create connection pool
+	pool, err := pgxpool.NewWithConfig(context.Background(), poolConfig)
+	if err != nil {
+		log.Fatalf("Unable to create connection pool: %v", err)
+	}
+	defer pool.Close()
 
 	// Test the connection
-	if err := conn.Ping(context.Background()); err != nil {
+	if err := pool.Ping(context.Background()); err != nil {
 		log.Fatalf("Unable to ping database: %v", err)
 	}
 
-	fmt.Println("Successfully connected to database")
+	fmt.Println("Successfully connected to database with connection pool")
 
 	// Initialize querier
-	querier := db.New(conn)
+	querier := db.New(pool)
 
 	oaiClient := openai.NewClient(
 		option.WithBaseURL("https://api.groq.com/openai/v1"),
@@ -63,16 +80,18 @@ func main() {
 	}
 
 	// Create R2 service if configuration is complete
-	// TODO: Store the R2 service instance and pass it to handlers/services that need file upload functionality
+	var r2Service *services.R2Service
 	if r2Config.AccessKeyID != "" && r2Config.SecretAccessKey != "" && r2Config.AccountID != "" && r2Config.BucketName != "" {
-		_, err := services.NewR2Service(r2Config)
+		r2Service, err = services.NewR2Service(r2Config)
 		if err != nil {
 			log.Printf("Warning: R2 service not initialized: %v", err)
+			r2Service = nil
 		} else {
 			log.Println("R2 service initialized successfully")
 		}
 	} else {
 		log.Printf("Warning: R2 service not configured - missing environment variables")
+		r2Service = nil
 	}
 
 	// Initialize services
@@ -84,6 +103,10 @@ func main() {
 	userService := services.NewUserService(querier)
 	jobQueueService := services.NewJobQueueService(querier)
 	itemService := services.NewItemService(querier, aiService, scrapingService, jobQueueService)
+
+	// Initialize podcast service
+	podcastConfig := services.DefaultPodcastConfig()
+	podcastService := services.NewPodcastService(querier, aiService, nil, r2Service, podcastConfig)
 
 	// Initialize email service
 	emailService, err := services.NewEmailService()
@@ -98,14 +121,43 @@ func main() {
 		dailyDigestService = services.NewDailyDigestService(querier, emailService)
 	}
 
+	// Initialize speech service for podcast audio generation
+	var speechService services.SpeechService
+	falAPIKey := os.Getenv("FAL_API_KEY")
+	if falAPIKey != "" {
+		falClient := services.NewFalClient(falAPIKey)
+		// Configure for indefinite polling with concurrent processing
+		// maxAttempts is now ignored - we'll poll until COMPLETED or FAILED
+		// 3 second interval provides good balance between responsiveness and API load
+		speechService = services.NewSpeechService(falClient, 0, 3*time.Second) // 0 = unlimited attempts
+		log.Println("Speech service initialized with Fal client (unlimited attempts, 3s interval, max 5 concurrent)")
+	} else {
+		log.Printf("Warning: Speech service not configured - FAL_API_KEY environment variable not set")
+		speechService = services.NewSpeechService(nil, 0, 3*time.Second)
+	}
+
+	// Get max concurrent requests from environment (optional)
+	maxConcurrent := 5 // Default
+	if maxConcurrentStr := os.Getenv("MAX_CONCURRENT_AUDIO_REQUESTS"); maxConcurrentStr != "" {
+		if val, err := strconv.Atoi(maxConcurrentStr); err == nil && val > 0 {
+			maxConcurrent = val
+			log.Printf("Max concurrent audio requests set to %d from environment", maxConcurrent)
+		}
+	}
+
+	// Update podcast service with speech service and max concurrent setting
+	podcastConfig.MaxConcurrentAudio = int32(maxConcurrent)
+	podcastService = services.NewPodcastService(querier, aiService, speechService, r2Service, podcastConfig)
+
 	// Initialize worker service
 	workerConfig := services.WorkerConfig{
-		WorkerCount:  2,               // Number of concurrent workers
-		PollInterval: 5 * time.Second, // How often to check for new jobs
-		MaxRetries:   3,               // Max retries for failed jobs
-		BatchSize:    10,              // Number of items to process per batch
+		WorkerCount:    2,               // Number of concurrent workers
+		PollInterval:   5 * time.Second, // How often to check for new jobs
+		MaxRetries:     3,               // Max retries for failed jobs
+		BatchSize:      10,              // Number of items to process per batch
+		EnablePodcasts: true,            // Enable podcast processing
 	}
-	workerService := services.NewWorkerService(jobQueueService, aiService, scrapingService, workerConfig)
+	workerService := services.NewWorkerService(jobQueueService, aiService, scrapingService, podcastService, workerConfig)
 
 	// Start worker service in background
 	go func() {
@@ -132,7 +184,7 @@ func main() {
 	})
 
 	// Setup routes
-	handlers.SetupRoutes(router, userService, itemService, dailyDigestService)
+	handlers.SetupRoutes(router, userService, itemService, dailyDigestService, podcastService)
 
 	// Get port from environment or use default
 	port := os.Getenv("PORT")

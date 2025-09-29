@@ -9,26 +9,53 @@ import (
 )
 
 type Querier interface {
+	AddItemToPodcast(ctx context.Context, arg AddItemToPodcastParams) (PodcastItem, error)
+	ClearPodcastItems(ctx context.Context, podcastID *int32) error
+	CountPodcastItems(ctx context.Context, podcastID *int32) (int64, error)
 	CreateItem(ctx context.Context, arg CreateItemParams) (Item, error)
 	CreatePendingItem(ctx context.Context, arg CreatePendingItemParams) (Item, error)
+	CreatePodcast(ctx context.Context, arg CreatePodcastParams) (Podcast, error)
+	CreatePodcastWithDialogues(ctx context.Context, arg CreatePodcastWithDialoguesParams) (Podcast, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteItem(ctx context.Context, id int32) error
+	DeletePodcast(ctx context.Context, id int32) error
 	DeleteUser(ctx context.Context, id int32) error
+	GetCompletedPodcasts(ctx context.Context, limit int32) ([]Podcast, error)
 	GetFailedItemsForRetry(ctx context.Context, limit int32) ([]Item, error)
 	GetItem(ctx context.Context, id int32) (Item, error)
 	GetItemsByProcessingStatus(ctx context.Context, processingStatus *string) ([]Item, error)
 	GetItemsByUser(ctx context.Context, userID *int32) ([]Item, error)
 	GetPendingItems(ctx context.Context, limit int32) ([]Item, error)
+	GetPendingPodcasts(ctx context.Context, limit int32) ([]Podcast, error)
+	GetPodcast(ctx context.Context, id int32) (Podcast, error)
+	GetPodcastByUser(ctx context.Context, userID *int32) ([]Podcast, error)
+	GetPodcastItemIDs(ctx context.Context, podcastID *int32) ([]*int32, error)
+	GetPodcastItems(ctx context.Context, podcastID *int32) ([]GetPodcastItemsRow, error)
+	GetPodcastWithItems(ctx context.Context, id int32) (GetPodcastWithItemsRow, error)
+	GetPodcastsByStatus(ctx context.Context, status string) ([]Podcast, error)
+	GetPodcastsByUserAndStatus(ctx context.Context, arg GetPodcastsByUserAndStatusParams) ([]Podcast, error)
+	GetPodcastsForItem(ctx context.Context, itemID *int32) ([]Podcast, error)
+	GetProcessingPodcasts(ctx context.Context, limit int32) ([]Podcast, error)
+	GetRecentPodcasts(ctx context.Context, limit int32) ([]Podcast, error)
 	GetUnreadItemsByUser(ctx context.Context, userID *int32) ([]Item, error)
 	GetUnreadItemsFromPreviousDay(ctx context.Context) ([]Item, error)
 	GetUnreadItemsFromPreviousDayByUser(ctx context.Context, userID *int32) ([]Item, error)
 	GetUser(ctx context.Context, id int32) (User, error)
 	GetUserByEmail(ctx context.Context, email *string) (User, error)
+	GetUserPodcastStats(ctx context.Context, userID *int32) (GetUserPodcastStatsRow, error)
 	ListUsers(ctx context.Context) ([]User, error)
 	MarkItemAsRead(ctx context.Context, id int32) error
+	RemoveItemFromPodcast(ctx context.Context, arg RemoveItemFromPodcastParams) error
 	UpdateItem(ctx context.Context, arg UpdateItemParams) error
 	UpdateItemAsProcessing(ctx context.Context, id int32) error
 	UpdateItemProcessingStatus(ctx context.Context, arg UpdateItemProcessingStatusParams) error
+	UpdatePodcast(ctx context.Context, arg UpdatePodcastParams) error
+	UpdatePodcastAudio(ctx context.Context, arg UpdatePodcastAudioParams) error
+	UpdatePodcastDialogues(ctx context.Context, arg UpdatePodcastDialoguesParams) error
+	UpdatePodcastItemOrder(ctx context.Context, arg UpdatePodcastItemOrderParams) error
+	UpdatePodcastStatus(ctx context.Context, arg UpdatePodcastStatusParams) error
+	UpdatePodcastStatusWithAudio(ctx context.Context, arg UpdatePodcastStatusWithAudioParams) error
+	UpdatePodcastsStatus(ctx context.Context, arg UpdatePodcastsStatusParams) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) error
 }
 

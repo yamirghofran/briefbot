@@ -9,13 +9,15 @@ type Handler struct {
 	userService        services.UserService
 	itemService        services.ItemService
 	dailyDigestService services.DailyDigestService
+	podcastService     services.PodcastService
 }
 
-func NewHandler(userService services.UserService, itemService services.ItemService, dailyDigestService services.DailyDigestService) *Handler {
+func NewHandler(userService services.UserService, itemService services.ItemService, dailyDigestService services.DailyDigestService, podcastService services.PodcastService) *Handler {
 	return &Handler{
 		userService:        userService,
 		itemService:        itemService,
 		dailyDigestService: dailyDigestService,
+		podcastService:     podcastService,
 	}
 }
 
@@ -43,6 +45,34 @@ func (h *Handler) SetupRoutes(router *gin.Engine) {
 		itemGroup.PUT("/:id", h.UpdateItem)
 		itemGroup.PATCH("/:id/read", h.MarkItemAsRead)
 		itemGroup.DELETE("/:id", h.DeleteItem)
+	}
+
+	// Podcast routes
+	podcastHandler := NewPodcastHandler(h.podcastService)
+	podcastGroup := router.Group("/podcasts")
+	{
+		// Podcast creation
+		podcastGroup.POST("", podcastHandler.CreatePodcast)
+		podcastGroup.POST("/from-item", podcastHandler.CreatePodcastFromSingleItem)
+
+		// Podcast retrieval
+		podcastGroup.GET("/:id", podcastHandler.GetPodcast)
+		podcastGroup.GET("/user/:userID", podcastHandler.GetPodcastsByUser)
+		podcastGroup.GET("/status/:status", podcastHandler.GetPodcastsByStatus)
+		podcastGroup.GET("/pending", podcastHandler.GetPendingPodcasts)
+
+		// Podcast items management
+		podcastGroup.GET("/:id/items", podcastHandler.GetPodcastItems)
+		podcastGroup.POST("/:id/items", podcastHandler.AddItemToPodcast)
+		podcastGroup.DELETE("/:id/items/:itemID", podcastHandler.RemoveItemFromPodcast)
+
+		// Podcast audio
+		podcastGroup.GET("/:id/audio", podcastHandler.GetPodcastAudio)
+		podcastGroup.GET("/:id/upload-url", podcastHandler.GeneratePodcastUploadURL)
+
+		// Podcast management
+		podcastGroup.PUT("/:id", podcastHandler.UpdatePodcast)
+		podcastGroup.DELETE("/:id", podcastHandler.DeletePodcast)
 	}
 
 	// Daily digest routes

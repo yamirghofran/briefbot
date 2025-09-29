@@ -20,12 +20,14 @@ type workerService struct {
 	jobQueueService JobQueueService
 	aiService       AIService
 	scrapingService ScrapingService
+	podcastService  PodcastService
 
 	// Configuration
-	workerCount  int
-	pollInterval time.Duration
-	maxRetries   int
-	batchSize    int32
+	workerCount    int
+	pollInterval   time.Duration
+	maxRetries     int
+	batchSize      int32
+	enablePodcasts bool
 
 	// Runtime state
 	wg        sync.WaitGroup
@@ -36,16 +38,18 @@ type workerService struct {
 }
 
 type WorkerConfig struct {
-	WorkerCount  int
-	PollInterval time.Duration
-	MaxRetries   int
-	BatchSize    int32
+	WorkerCount    int
+	PollInterval   time.Duration
+	MaxRetries     int
+	BatchSize      int32
+	EnablePodcasts bool
 }
 
 func NewWorkerService(
 	jobQueueService JobQueueService,
 	aiService AIService,
 	scrapingService ScrapingService,
+	podcastService PodcastService,
 	config WorkerConfig,
 ) WorkerService {
 	if config.WorkerCount <= 0 {
@@ -65,10 +69,12 @@ func NewWorkerService(
 		jobQueueService: jobQueueService,
 		aiService:       aiService,
 		scrapingService: scrapingService,
+		podcastService:  podcastService,
 		workerCount:     config.WorkerCount,
 		pollInterval:    config.PollInterval,
 		maxRetries:      config.MaxRetries,
 		batchSize:       config.BatchSize,
+		enablePodcasts:  config.EnablePodcasts,
 	}
 }
 
@@ -150,6 +156,22 @@ func (s *workerService) worker(id int) {
 }
 
 func (s *workerService) processBatch() error {
+	// Process items first
+	if err := s.processItemBatch(); err != nil {
+		return fmt.Errorf("failed to process item batch: %w", err)
+	}
+
+	// Process podcasts if enabled
+	if s.enablePodcasts && s.podcastService != nil {
+		if err := s.processPodcastBatch(); err != nil {
+			return fmt.Errorf("failed to process podcast batch: %w", err)
+		}
+	}
+
+	return nil
+}
+
+func (s *workerService) processItemBatch() error {
 	// Get pending items
 	items, err := s.jobQueueService.DequeuePendingItems(s.ctx, s.batchSize)
 	if err != nil {
@@ -251,4 +273,69 @@ func (s *workerService) processURL(ctx context.Context, url string) (string, Ite
 	concatenatedSummary := ConcatenateSummary(summary)
 
 	return content, extraction, concatenatedSummary, nil
+}
+
+func (s *workerService) processPodcastBatch() error {
+	// Get pending podcasts with atomic acquisition to prevent multiple workers from processing the same podcast
+	pendingPodcasts, err := s.podcastService.AcquirePendingPodcasts(s.ctx, s.batchSize)
+	if err != nil {
+		return fmt.Errorf("failed to acquire pending podcasts: %w", err)
+	}
+
+	if len(pendingPodcasts) == 0 {
+		// No podcasts to process, sleep longer
+		time.Sleep(s.pollInterval)
+		return nil
+	}
+
+	log.Printf("Processing batch of %d podcasts", len(pendingPodcasts))
+
+	// Process each podcast
+	for _, podcast := range pendingPodcasts {
+		if err := s.processPodcast(s.ctx, podcast); err != nil {
+			log.Printf("Failed to process podcast %d: %v", podcast.ID, err)
+			// Continue with next podcast even if one fails
+		}
+	}
+
+	return nil
+}
+
+func (s *workerService) processPodcast(ctx context.Context, podcast db.Podcast) error {
+	log.Printf("Processing podcast %d: %s", podcast.ID, podcast.Title)
+
+	// Process the podcast with retry logic
+	var err error
+
+	// Retry processing up to maxRetries times
+	for attempt := 1; attempt <= s.maxRetries; attempt++ {
+		err = s.podcastService.ProcessPodcast(ctx, podcast.ID)
+		if err == nil {
+			break // Success!
+		}
+
+		log.Printf("Attempt %d failed for podcast %d: %v", attempt, podcast.ID, err)
+
+		if attempt < s.maxRetries {
+			// Wait before retry with exponential backoff
+			backoffDuration := time.Duration(attempt) * time.Second
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case <-time.After(backoffDuration):
+				// Continue to next attempt
+			}
+		}
+	}
+
+	if err != nil {
+		// All retries failed, mark as failed
+		if failErr := s.podcastService.UpdatePodcastStatus(ctx, podcast.ID, PodcastStatusFailed); failErr != nil {
+			log.Printf("Failed to mark podcast %d as failed: %v", podcast.ID, failErr)
+		}
+		return fmt.Errorf("failed to process podcast after %d attempts: %w", s.maxRetries, err)
+	}
+
+	log.Printf("Successfully processed podcast %d", podcast.ID)
+	return nil
 }

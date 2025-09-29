@@ -1,6 +1,7 @@
 package services
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"time"
@@ -173,4 +174,69 @@ func (r *R2Service) ExtractKeyFromURL(url string) string {
 	// If it doesn't match either format, return the original URL
 	// This might be a key already
 	return url
+}
+
+// GenerateUploadURLForKey generates a presigned URL for a specific key
+func (r *R2Service) GenerateUploadURLForKey(ctx context.Context, key string, contentType string) (*UploadURLResponse, error) {
+	request := &s3.PutObjectInput{
+		Bucket:      aws.String(r.bucket),
+		Key:         aws.String(key),
+		ContentType: aws.String(contentType),
+	}
+
+	// Create presigned URL valid for 15 minutes
+	presignResult, err := r.presigner.PresignPutObject(ctx, request,
+		func(opts *s3.PresignOptions) {
+			opts.Expires = time.Duration(15 * time.Minute)
+		})
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to create presigned URL: %w", err)
+	}
+
+	return &UploadURLResponse{
+		UploadURL: presignResult.URL,
+		Key:       key,
+		PublicURL: r.GetPublicURL(key),
+	}, nil
+}
+
+// UploadFile uploads a file directly to R2
+func (r *R2Service) UploadFile(ctx context.Context, key string, data []byte, contentType string) (string, error) {
+	request := &s3.PutObjectInput{
+		Bucket:      aws.String(r.bucket),
+		Key:         aws.String(key),
+		Body:        bytes.NewReader(data),
+		ContentType: aws.String(contentType),
+	}
+
+	_, err := r.client.PutObject(ctx, request)
+	if err != nil {
+		return "", fmt.Errorf("failed to upload file: %w", err)
+	}
+
+	return r.GetPublicURL(key), nil
+}
+
+// UploadFileWithMetadata uploads a file with custom metadata
+func (r *R2Service) UploadFileWithMetadata(ctx context.Context, key string, data []byte, contentType string, metadata map[string]string) (string, error) {
+	metadataAWS := make(map[string]string)
+	for k, v := range metadata {
+		metadataAWS[k] = v
+	}
+
+	request := &s3.PutObjectInput{
+		Bucket:      aws.String(r.bucket),
+		Key:         aws.String(key),
+		Body:        bytes.NewReader(data),
+		ContentType: aws.String(contentType),
+		Metadata:    metadataAWS,
+	}
+
+	_, err := r.client.PutObject(ctx, request)
+	if err != nil {
+		return "", fmt.Errorf("failed to upload file with metadata: %w", err)
+	}
+
+	return r.GetPublicURL(key), nil
 }
