@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BriefBot</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo-section">
+                <div class="logo-icon">BB</div>
+                <div class="logo-text">
+                    <h1 class="title">BriefBot</h1>
+                    <p class="subtitle">Add to reading list</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content">
+            <!-- User Configuration -->
+            <div class="section user-section">
+                <label class="label" for="userId">User ID</label>
+                <div class="input-group">
+                    <input 
+                        type="number" 
+                        id="userId" 
+                        class="input" 
+                        placeholder="Enter your user ID"
+                        min="1"
+                    />
+                    <button id="saveUserId" class="button button-secondary button-sm">
+                        Save
+                    </button>
+                </div>
+            </div>
+
+            <!-- Current Page Info -->
+            <div class="section page-section">
+                <div class="info-card">
+                    <div class="info-header">
+                        <span class="info-icon">📄</span>
+                        <span class="info-title">Current Page</span>
+                    </div>
+                    <div class="info-content">
+                        <div class="info-item">
+                            <label class="info-label">Title</label>
+                            <div id="pageTitle" class="info-value">Loading...</div>
+                        </div>
+                        <div class="info-item">
+                            <label class="info-label">URL</label>
+                            <div id="pageUrl" class="info-value info-url">Loading...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Action -->
+            <div class="section action-section">
+                <button id="submitBtn" class="button button-primary button-lg">
+                    <span class="button-text">Add to BriefBot</span>
+                    <span class="button-icon">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7L12 12L22 7L12 2Z"/>
+                            <path d="M2 17L12 22L22 17"/>
+                            <path d="M2 12L12 17L22 12"/>
+                        </svg>
+                    </span>
+                    <span class="loading-spinner" style="display: none;">
+                        <svg class="spinner" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+                        </svg>
+                    </span>
+                </button>
+            </div>
+
+            <!-- Status Message -->
+            <div id="statusMessage" class="status-message" style="display: none;">
+                <div class="status-icon"></div>
+                <div class="status-content">
+                    <div id="statusText" class="status-text"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="backend-status">
+                <span class="status-indicator" id="backendIndicator"></span>
+                <span class="status-text">Backend: <span id="backendStatus">Checking...</span></span>
+            </div>
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>
