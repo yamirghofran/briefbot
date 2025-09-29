@@ -243,9 +243,10 @@ func (s *digestService) SendIntegratedDigestForUser(ctx context.Context, userID 
 			// Don't fail the entire digest if podcast generation fails
 		} else {
 			// Wait for podcast to complete (with timeout)
-			podcast, err = s.waitForPodcastCompletion(ctx, podcast.ID)
+			originalPodcastID := podcast.ID // Store the original ID before the call
+			podcast, err = s.waitForPodcastCompletion(ctx, originalPodcastID)
 			if err != nil {
-				log.Printf("Podcast generation failed for user %d, podcast %d: %v", userID, podcast.ID, err)
+				log.Printf("Podcast generation failed for user %d, podcast %d: %v", userID, originalPodcastID, err)
 			} else if podcast.AudioUrl != nil && *podcast.AudioUrl != "" {
 				podcastURL = podcast.AudioUrl
 				durationSeconds = podcast.DurationSeconds

@@ -12,8 +12,9 @@ import { createServerRootRoute } from '@tanstack/react-start/server'
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UsersRouteImport } from './routes/users'
-import { Route as ItemsRouteImport } from './routes/items'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ItemsIndexRouteImport } from './routes/items.index'
+import { Route as ItemsIdRouteImport } from './routes/items.$id'
 import { Route as DemoTanstackQueryRouteImport } from './routes/demo.tanstack-query'
 import { Route as DemoTableStyledRouteImport } from './routes/demo.table-styled'
 import { Route as DemoTableRouteImport } from './routes/demo.table'
@@ -33,14 +34,19 @@ const UsersRoute = UsersRouteImport.update({
   path: '/users',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ItemsRoute = ItemsRouteImport.update({
-  id: '/items',
-  path: '/items',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ItemsIndexRoute = ItemsIndexRouteImport.update({
+  id: '/items/',
+  path: '/items/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ItemsIdRoute = ItemsIdRouteImport.update({
+  id: '/items/$id',
+  path: '/items/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoTanstackQueryRoute = DemoTanstackQueryRouteImport.update({
@@ -101,12 +107,13 @@ const ApiDemoNamesServerRoute = ApiDemoNamesServerRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/items': typeof ItemsRoute
   '/users': typeof UsersRoute
   '/demo/db-chat': typeof DemoDbChatRoute
   '/demo/table': typeof DemoTableRoute
   '/demo/table-styled': typeof DemoTableStyledRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/items/$id': typeof ItemsIdRoute
+  '/items': typeof ItemsIndexRoute
   '/demo/form/address': typeof DemoFormAddressRoute
   '/demo/form/simple': typeof DemoFormSimpleRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
@@ -114,12 +121,13 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/items': typeof ItemsRoute
   '/users': typeof UsersRoute
   '/demo/db-chat': typeof DemoDbChatRoute
   '/demo/table': typeof DemoTableRoute
   '/demo/table-styled': typeof DemoTableStyledRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/items/$id': typeof ItemsIdRoute
+  '/items': typeof ItemsIndexRoute
   '/demo/form/address': typeof DemoFormAddressRoute
   '/demo/form/simple': typeof DemoFormSimpleRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
@@ -128,12 +136,13 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/items': typeof ItemsRoute
   '/users': typeof UsersRoute
   '/demo/db-chat': typeof DemoDbChatRoute
   '/demo/table': typeof DemoTableRoute
   '/demo/table-styled': typeof DemoTableStyledRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/items/$id': typeof ItemsIdRoute
+  '/items/': typeof ItemsIndexRoute
   '/demo/form/address': typeof DemoFormAddressRoute
   '/demo/form/simple': typeof DemoFormSimpleRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
@@ -143,12 +152,13 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/items'
     | '/users'
     | '/demo/db-chat'
     | '/demo/table'
     | '/demo/table-styled'
     | '/demo/tanstack-query'
+    | '/items/$id'
+    | '/items'
     | '/demo/form/address'
     | '/demo/form/simple'
     | '/demo/start/api-request'
@@ -156,12 +166,13 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/items'
     | '/users'
     | '/demo/db-chat'
     | '/demo/table'
     | '/demo/table-styled'
     | '/demo/tanstack-query'
+    | '/items/$id'
+    | '/items'
     | '/demo/form/address'
     | '/demo/form/simple'
     | '/demo/start/api-request'
@@ -169,12 +180,13 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/items'
     | '/users'
     | '/demo/db-chat'
     | '/demo/table'
     | '/demo/table-styled'
     | '/demo/tanstack-query'
+    | '/items/$id'
+    | '/items/'
     | '/demo/form/address'
     | '/demo/form/simple'
     | '/demo/start/api-request'
@@ -183,12 +195,13 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ItemsRoute: typeof ItemsRoute
   UsersRoute: typeof UsersRoute
   DemoDbChatRoute: typeof DemoDbChatRoute
   DemoTableRoute: typeof DemoTableRoute
   DemoTableStyledRoute: typeof DemoTableStyledRoute
   DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
+  ItemsIdRoute: typeof ItemsIdRoute
+  ItemsIndexRoute: typeof ItemsIndexRoute
   DemoFormAddressRoute: typeof DemoFormAddressRoute
   DemoFormSimpleRoute: typeof DemoFormSimpleRoute
   DemoStartApiRequestRoute: typeof DemoStartApiRequestRoute
@@ -237,18 +250,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UsersRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/items': {
-      id: '/items'
-      path: '/items'
-      fullPath: '/items'
-      preLoaderRoute: typeof ItemsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/items/': {
+      id: '/items/'
+      path: '/items'
+      fullPath: '/items'
+      preLoaderRoute: typeof ItemsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/items/$id': {
+      id: '/items/$id'
+      path: '/items/$id'
+      fullPath: '/items/$id'
+      preLoaderRoute: typeof ItemsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo/tanstack-query': {
@@ -337,12 +357,13 @@ declare module '@tanstack/react-start/server' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ItemsRoute: ItemsRoute,
   UsersRoute: UsersRoute,
   DemoDbChatRoute: DemoDbChatRoute,
   DemoTableRoute: DemoTableRoute,
   DemoTableStyledRoute: DemoTableStyledRoute,
   DemoTanstackQueryRoute: DemoTanstackQueryRoute,
+  ItemsIdRoute: ItemsIdRoute,
+  ItemsIndexRoute: ItemsIndexRoute,
   DemoFormAddressRoute: DemoFormAddressRoute,
   DemoFormSimpleRoute: DemoFormSimpleRoute,
   DemoStartApiRequestRoute: DemoStartApiRequestRoute,

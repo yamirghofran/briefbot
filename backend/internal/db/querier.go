@@ -46,6 +46,7 @@ type Querier interface {
 	ListUsers(ctx context.Context) ([]User, error)
 	MarkItemAsRead(ctx context.Context, id int32) error
 	RemoveItemFromPodcast(ctx context.Context, arg RemoveItemFromPodcastParams) error
+	ToggleItemReadStatus(ctx context.Context, id int32) (Item, error)
 	UpdateItem(ctx context.Context, arg UpdateItemParams) error
 	UpdateItemAsProcessing(ctx context.Context, id int32) error
 	UpdateItemProcessingStatus(ctx context.Context, arg UpdateItemProcessingStatusParams) error

@@ -22,6 +22,9 @@ UPDATE items SET processing_status = $2, processing_error = $3, modified_at = CU
 -- name: MarkItemAsRead :exec
 UPDATE items SET is_read = TRUE, modified_at = CURRENT_TIMESTAMP WHERE id = $1;
 
+-- name: ToggleItemReadStatus :one
+UPDATE items SET is_read = NOT is_read, modified_at = CURRENT_TIMESTAMP WHERE id = $1 RETURNING *;
+
 -- name: DeleteItem :exec
 DELETE FROM items WHERE id = $1;
 

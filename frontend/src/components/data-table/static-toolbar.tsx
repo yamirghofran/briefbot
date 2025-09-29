@@ -1,13 +1,41 @@
 import * as React from "react"
-import { Search, Filter } from "lucide-react"
+import { Search, Filter, Zap } from "lucide-react"
+import { useMutation } from "@tanstack/react-query"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { UrlSubmissionDialog } from "@/components/url-submission-dialog"
+import { digestApi } from "@/services/api"
 
-interface StaticToolbarProps extends React.HTMLAttributes<HTMLDivElement> {}
+interface StaticToolbarProps extends React.HTMLAttributes<HTMLDivElement> {
+  userId?: number
+}
 
-export function StaticToolbar({ className, ...props }: StaticToolbarProps) {
+export function StaticToolbar({ className, userId, ...props }: StaticToolbarProps) {
   const [searchValue, setSearchValue] = React.useState("")
+
+  // Mutation for triggering integrated digest
+  const triggerDigestMutation = useMutation({
+    mutationFn: () => {
+      if (userId) {
+        return digestApi.triggerIntegratedDigestForUser(userId)
+      } else {
+        return digestApi.triggerIntegratedDigest()
+      }
+    },
+    onSuccess: () => {
+      toast.success('Integrated digest triggered successfully!')
+    },
+    onError: (error) => {
+      toast.error('Failed to trigger integrated digest')
+      console.error('Digest trigger error:', error)
+    },
+  })
+
+  const handleTriggerDigest = () => {
+    triggerDigestMutation.mutate()
+  }
 
   return (
     <div
@@ -28,14 +56,25 @@ export function StaticToolbar({ className, ...props }: StaticToolbarProps) {
           <Filter className="mr-2 h-4 w-4" />
           Filter
         </Button>
+        {userId && <UrlSubmissionDialog userId={userId} />}
       </div>
       
-      <div className="flex items-center space-x-2">
+       <div className="flex items-center space-x-2">
         <Button variant="outline" size="sm">
           Columns
         </Button>
         <Button variant="outline" size="sm">
           Export
+        </Button>
+        <Button 
+          onClick={handleTriggerDigest}
+          disabled={triggerDigestMutation.isPending}
+          variant="default" 
+          size="sm"
+          className="bg-black hover:bg-gray-800 text-white"
+        >
+          <Zap className="mr-2 h-4 w-4" />
+          {triggerDigestMutation.isPending ? 'Triggering...' : 'Trigger Digest'}
         </Button>
       </div>
     </div>

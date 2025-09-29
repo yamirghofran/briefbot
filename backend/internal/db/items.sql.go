@@ -431,6 +431,33 @@ func (q *Queries) MarkItemAsRead(ctx context.Context, id int32) error {
 	return err
 }
 
+const toggleItemReadStatus = `-- name: ToggleItemReadStatus :one
+UPDATE items SET is_read = NOT is_read, modified_at = CURRENT_TIMESTAMP WHERE id = $1 RETURNING id, user_id, url, is_read, text_content, summary, type, tags, platform, authors, created_at, modified_at, title, processing_status, processing_error
+`
+
+func (q *Queries) ToggleItemReadStatus(ctx context.Context, id int32) (Item, error) {
+	row := q.db.QueryRow(ctx, toggleItemReadStatus, id)
+	var i Item
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Url,
+		&i.IsRead,
+		&i.TextContent,
+		&i.Summary,
+		&i.Type,
+		&i.Tags,
+		&i.Platform,
+		&i.Authors,
+		&i.CreatedAt,
+		&i.ModifiedAt,
+		&i.Title,
+		&i.ProcessingStatus,
+		&i.ProcessingError,
+	)
+	return i, err
+}
+
 const updateItem = `-- name: UpdateItem :exec
 UPDATE items SET title = $2, url = $3, is_read = $4, text_content = $5, summary = $6, type = $7, tags = $8, platform = $9, authors = $10, modified_at = CURRENT_TIMESTAMP WHERE id = $1
 `

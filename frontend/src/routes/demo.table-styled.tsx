@@ -19,7 +19,7 @@ function DemoTableStyled() {
       </div>
 
       <div className="space-y-4">
-        <StaticToolbar />
+        <StaticToolbar userId={undefined} />
 
         <StaticDataTable
           columns={staticColumns}

@@ -13,6 +13,7 @@ export interface Item {
   id: number
   user_id?: number | null
   url?: string | null
+  title?: string | null
   is_read?: boolean | null
   text_content?: string | null
   summary?: string | null
@@ -61,4 +62,9 @@ export interface UpdateItemRequest {
   tags?: string[]
   authors?: string[]
   is_read?: boolean
+}
+
+export interface SubmitUrlRequest {
+  user_id: number
+  url: string
 }
