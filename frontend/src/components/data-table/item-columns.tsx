@@ -1,10 +1,11 @@
 import type { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
-import { Checkbox } from "@/components/ui/checkbox"
 import { StaticColumnHeader } from "@/components/data-table/static-column-header"
+import { ReadStatusCell } from "@/components/read-status-cell"
 import { Link } from "lucide-react"
-import { format, isToday, isYesterday } from "date-fns"
-import type { Item } from "@/components/data-table/static-data"
+import { format, isToday, isYesterday, differenceInDays } from "date-fns"
+import { useNavigate } from "@tanstack/react-router"
+import type { Item } from "@/types"
 
 // Helper function to format dates as "today", "yesterday", or "September 5th"
 function formatRelativeDate(date: Date): string {
@@ -37,59 +38,50 @@ function formatRelativeDate(date: Date): string {
   }
 }
 
-export const staticColumns: ColumnDef<Item>[] = [
+// Title Cell Component with navigation
+function TitleCell({ title, url, id }: { title: string | null, url: string | null, id: number }) {
+  const navigate = useNavigate()
+  
+  const handleTitleClick = () => {
+    navigate({ to: `/items/${id}` })
+  }
+  
+  return (
+    <div className="max-w-[300px] truncate font-medium flex items-center gap-2">
+      {url && (
+        <a 
+          href={url} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="text-blue-600 hover:text-blue-800 flex-shrink-0"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Link className="h-4 w-4" />
+        </a>
+      )}
+      <button
+        onClick={handleTitleClick}
+        className="text-left hover:text-blue-600 hover:underline cursor-pointer truncate flex-1"
+      >
+        {title || <span className="text-gray-400">Untitled</span>}
+      </button>
+    </div>
+  )
+}
+
+export const itemColumns: ColumnDef<Item>[] = [
   {
     accessorKey: "title",
     header: ({ column }) => (
       <StaticColumnHeader column={column} title="Title" />
     ),
     cell: ({ row }) => {
-      const item = row.original
+      const title = row.getValue("title") as string
+      const url = row.original.url
+      const id = row.original.id
       
-      return (
-        <div className="max-w-[300px] truncate font-medium flex items-center gap-2">
-          {item.url && (
-            <a 
-              href={item.url} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-blue-600 hover:text-blue-800 flex-shrink-0"
-            >
-              <Link className="h-4 w-4" />
-            </a>
-          )}
-          <span className="truncate">
-            {row.getValue("title")}
-          </span>
-        </div>
-      )
+      return <TitleCell title={title} url={url} id={id} />
     },
-  },
-  {
-    accessorKey: "type",
-    header: ({ column }) => (
-      <StaticColumnHeader column={column} title="Type" />
-    ),
-    cell: ({ row }) => {
-      const type = row.getValue("type") as string
-      
-      return (
-        <Badge variant="outline">
-          {type}
-        </Badge>
-      )
-    },
-  },
-  {
-    accessorKey: "platform",
-    header: ({ column }) => (
-      <StaticColumnHeader column={column} title="Platform" />
-    ),
-    cell: ({ row }) => (
-      <div className="w-[100px]">
-        {row.getValue("platform")}
-      </div>
-    ),
   },
   {
     accessorKey: "tags",
@@ -124,12 +116,63 @@ export const staticColumns: ColumnDef<Item>[] = [
     },
   },
   {
+    id: "status",
+    header: ({ column }) => (
+      <StaticColumnHeader column={column} title="Status" />
+    ),
+    cell: ({ row }) => {
+      const item = row.original
+      const hasContent = item.text_content && item.summary
+      
+      return (
+        <Badge variant={hasContent ? "default" : "secondary"}>
+          {hasContent ? "Completed" : "Processing"}
+        </Badge>
+      )
+    },
+  },
+  {
+    accessorKey: "type",
+    header: ({ column }) => (
+      <StaticColumnHeader column={column} title="Type" />
+    ),
+    cell: ({ row }) => {
+      const type = row.getValue("type") as string
+      
+      return type ? (
+        <Badge variant="outline">
+          {type}
+        </Badge>
+      ) : (
+        <span className="text-gray-400">—</span>
+      )
+    },
+  },
+  {
+    accessorKey: "platform",
+    header: ({ column }) => (
+      <StaticColumnHeader column={column} title="Platform" />
+    ),
+    cell: ({ row }) => {
+      const platform = row.getValue("platform") as string
+      return (
+        <div className="w-[100px]">
+          {platform || <span className="text-gray-400">—</span>}
+        </div>
+      )
+    },
+  },
+  {
     accessorKey: "authors",
     header: ({ column }) => (
       <StaticColumnHeader column={column} title="Authors" />
     ),
     cell: ({ row }) => {
       const authors = row.getValue("authors") as string[]
+      
+      if (!authors || authors.length === 0) {
+        return <span className="text-gray-400">—</span>
+      }
       
       return (
         <div className="flex items-center gap-1 flex-wrap">
@@ -153,20 +196,8 @@ export const staticColumns: ColumnDef<Item>[] = [
       </div>
     ),
     cell: ({ row }) => {
-      const isRead = row.getValue("is_read") as boolean
-      
-      return (
-        <div className="flex justify-center items-center h-full">
-          <Checkbox
-            checked={isRead}
-            className="data-[state=checked]:bg-black data-[state=checked]:border-black border-gray-400"
-            onCheckedChange={(checked) => {
-              // Visual only - no state change in static table
-              console.log(`Item ${row.original.id} read status would be:`, checked)
-            }}
-          />
-        </div>
-      )
+      // This will be handled by the parent component that provides userId
+      return null // Will be replaced by a custom cell renderer
     },
   },
   {
@@ -175,11 +206,12 @@ export const staticColumns: ColumnDef<Item>[] = [
       <StaticColumnHeader column={column} title="Created" />
     ),
     cell: ({ row }) => {
-      const date = row.getValue("created_at") as Date
+      const dateStr = row.getValue("created_at") as string
+      const date = dateStr ? new Date(dateStr) : null
       
       return (
         <div className="w-[120px] text-sm">
-          {formatRelativeDate(date)}
+          {date ? formatRelativeDate(date) : <span className="text-gray-400">—</span>}
         </div>
       )
     },

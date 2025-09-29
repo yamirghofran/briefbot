@@ -134,7 +134,31 @@ func (h *Handler) MarkItemAsRead(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Item marked as read"})
+	// Return the updated item
+	item, err := h.itemService.GetItem(c.Request.Context(), int32(id))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, item)
+}
+
+func (h *Handler) ToggleItemReadStatus(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.ParseInt(idStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid item ID"})
+		return
+	}
+
+	item, err := h.itemService.ToggleItemReadStatus(c.Request.Context(), int32(id))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, item)
 }
 
 func (h *Handler) DeleteItem(c *gin.Context) {

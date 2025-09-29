@@ -1,4 +1,5 @@
 import { Link, Outlet } from '@tanstack/react-router'
+import { Toaster } from 'sonner'
 
 export function Layout() {
   return (
@@ -37,6 +38,7 @@ export function Layout() {
       <main>
         <Outlet />
       </main>
+      <Toaster />
     </div>
   )
 }

@@ -6,6 +6,7 @@ import type {
   UpdateUserRequest,
   CreateItemRequest,
   UpdateItemRequest,
+  SubmitUrlRequest,
 } from '@/types'
 
 const API_BASE_URL = 'http://localhost:8080'
@@ -56,8 +57,23 @@ export const itemApi = {
     return response.data
   },
 
+  submitUrl: async (data: SubmitUrlRequest): Promise<Item> => {
+    const requestData: CreateItemRequest = {
+      user_id: data.user_id,
+      url: data.url,
+      text_content: '', // Will be populated by backend scraping
+    }
+    const response = await api.post<Item>('/items', requestData)
+    return response.data
+  },
+
   getItem: async (id: number): Promise<Item> => {
     const response = await api.get<Item>(`/items/${id}`)
+    return response.data
+  },
+
+  getItemById: async (id: number, userId: number): Promise<Item> => {
+    const response = await api.get<Item>(`/items/${id}?user_id=${userId}`)
     return response.data
   },
 
@@ -80,7 +96,31 @@ export const itemApi = {
     return response.data
   },
 
+  toggleItemReadStatus: async (id: number): Promise<Item> => {
+    const response = await api.patch<Item>(`/items/${id}/toggle-read`)
+    return response.data
+  },
+
   deleteItem: async (id: number): Promise<void> => {
     await api.delete(`/items/${id}`)
+  },
+}
+
+// Digest API functions
+export const digestApi = {
+  triggerIntegratedDigest: async (): Promise<void> => {
+    await api.post('/digest/trigger/integrated')
+  },
+
+  triggerIntegratedDigestForUser: async (userId: number): Promise<void> => {
+    await api.post(`/digest/trigger/integrated/user/${userId}`)
+  },
+
+  triggerDailyDigest: async (): Promise<void> => {
+    await api.post('/digest/trigger')
+  },
+
+  triggerDailyDigestForUser: async (userId: number): Promise<void> => {
+    await api.post(`/digest/trigger/user/${userId}`)
   },
 }

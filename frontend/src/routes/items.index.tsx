@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { useState } from 'react'
 import type { CreateItemRequest } from '@/types'
 
-export const Route = createFileRoute('/items')({
+export const Route = createFileRoute('/items/')({
   component: ItemsPage,
 })
 

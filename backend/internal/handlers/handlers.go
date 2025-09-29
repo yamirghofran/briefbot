@@ -44,6 +44,7 @@ func (h *Handler) SetupRoutes(router *gin.Engine) {
 		itemGroup.GET("/user/:userID/unread", h.GetUnreadItemsByUser)
 		itemGroup.PUT("/:id", h.UpdateItem)
 		itemGroup.PATCH("/:id/read", h.MarkItemAsRead)
+		itemGroup.PATCH("/:id/toggle-read", h.ToggleItemReadStatus)
 		itemGroup.DELETE("/:id", h.DeleteItem)
 	}
 

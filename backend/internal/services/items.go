@@ -21,6 +21,7 @@ type ItemService interface {
 	GetUnreadItemsFromPreviousDay(ctx context.Context) ([]db.Item, error)
 	UpdateItem(ctx context.Context, id int32, title string, url *string, textContent *string, summary *string, itemType *string, platform *string, tags []string, authors []string, isRead *bool) error
 	MarkItemAsRead(ctx context.Context, id int32) error
+	ToggleItemReadStatus(ctx context.Context, id int32) (*db.Item, error)
 	DeleteItem(ctx context.Context, id int32) error
 	GetItemProcessingStatus(ctx context.Context, itemID int32) (*ItemStatus, error)
 	GetItemsByProcessingStatus(ctx context.Context, status *string) ([]db.Item, error)
@@ -140,6 +141,14 @@ func (s *itemService) UpdateItem(ctx context.Context, id int32, title string, ur
 
 func (s *itemService) MarkItemAsRead(ctx context.Context, id int32) error {
 	return s.querier.MarkItemAsRead(ctx, id)
+}
+
+func (s *itemService) ToggleItemReadStatus(ctx context.Context, id int32) (*db.Item, error) {
+	item, err := s.querier.ToggleItemReadStatus(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return &item, nil
 }
 
 func (s *itemService) DeleteItem(ctx context.Context, id int32) error {
