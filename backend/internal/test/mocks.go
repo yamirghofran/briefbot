@@ -247,3 +247,8 @@ func (m *MockQuerier) UpdatePodcastStatusWithAudio(ctx context.Context, arg db.U
 	args := m.Called(ctx, arg)
 	return args.Error(0)
 }
+
+func (m *MockQuerier) UpdatePodcastsStatus(ctx context.Context, arg db.UpdatePodcastsStatusParams) error {
+	args := m.Called(ctx, arg)
+	return args.Error(0)
+}
