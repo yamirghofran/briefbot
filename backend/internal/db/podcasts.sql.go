@@ -173,7 +173,11 @@ func (q *Queries) GetCompletedPodcasts(ctx context.Context, limit int32) ([]Podc
 }
 
 const getPendingPodcasts = `-- name: GetPendingPodcasts :many
-SELECT id, user_id, title, description, status, audio_url, dialogues, duration_seconds, created_at, updated_at, completed_at FROM podcasts WHERE status = 'pending' ORDER BY created_at ASC LIMIT $1
+SELECT id, user_id, title, description, status, audio_url, dialogues, duration_seconds, created_at, updated_at, completed_at FROM podcasts 
+WHERE status = 'pending' 
+ORDER BY created_at ASC 
+LIMIT $1
+FOR UPDATE SKIP LOCKED
 `
 
 func (q *Queries) GetPendingPodcasts(ctx context.Context, limit int32) ([]Podcast, error) {
@@ -738,5 +742,19 @@ func (q *Queries) UpdatePodcastStatusWithAudio(ctx context.Context, arg UpdatePo
 		arg.AudioUrl,
 		arg.DurationSeconds,
 	)
+	return err
+}
+
+const updatePodcastsStatus = `-- name: UpdatePodcastsStatus :exec
+UPDATE podcasts SET status = $2, updated_at = CURRENT_TIMESTAMP WHERE id = ANY($1::int[])
+`
+
+type UpdatePodcastsStatusParams struct {
+	Column1 []int32 `json:"column_1"`
+	Status  string  `json:"status"`
+}
+
+func (q *Queries) UpdatePodcastsStatus(ctx context.Context, arg UpdatePodcastsStatusParams) error {
+	_, err := q.db.Exec(ctx, updatePodcastsStatus, arg.Column1, arg.Status)
 	return err
 }

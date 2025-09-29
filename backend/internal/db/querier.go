@@ -55,6 +55,7 @@ type Querier interface {
 	UpdatePodcastItemOrder(ctx context.Context, arg UpdatePodcastItemOrderParams) error
 	UpdatePodcastStatus(ctx context.Context, arg UpdatePodcastStatusParams) error
 	UpdatePodcastStatusWithAudio(ctx context.Context, arg UpdatePodcastStatusWithAudioParams) error
+	UpdatePodcastsStatus(ctx context.Context, arg UpdatePodcastsStatusParams) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) error
 }
 
