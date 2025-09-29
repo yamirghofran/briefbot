@@ -14,7 +14,7 @@ import (
 type AIService interface {
 	ExtractContent(ctx context.Context, content string) (ItemExtraction, error)
 	SummarizeContent(ctx context.Context, content string) (ItemSummary, error)
-	WritePodcast(content string, schemaParam *openai.ResponseFormatJSONSchemaJSONSchemaParam) (Podcast, error)
+	WritePodcast(content string) (Podcast, error)
 }
 
 type aiService struct {
@@ -47,6 +47,11 @@ type ItemSummary struct {
 
 type Podcast struct {
 	Dialogues []Dialogue `json:"dialogues" jsonschema:"required" jsonschema_description:"The dialogues that make up the podcast"`
+}
+
+// PodcastSection represents a single section of a podcast (introduction, body, or conclusion)
+type PodcastSection struct {
+	Dialogues []Dialogue `json:"dialogues" jsonschema:"required" jsonschema_description:"The dialogues that make up this podcast section"`
 }
 
 type Dialogue struct {
@@ -83,6 +88,7 @@ func GenerateSchema[T any]() any {
 var ItemExtractionSchema = GenerateSchema[ItemExtraction]()
 var ItemSummarySchema = GenerateSchema[ItemSummary]()
 var PodcastSchema = GenerateSchema[Podcast]()
+var PodcastSectionSchema = GenerateSchema[PodcastSection]()
 
 type Choice struct {
 	Text         string `json:"text"`
@@ -102,8 +108,8 @@ type UsageAccounting struct {
 func (s *aiService) ExtractContent(ctx context.Context, content string) (ItemExtraction, error) {
 	chatCompletion, err := s.textClient.Chat.Completions.New(context.TODO(), openai.ChatCompletionNewParams{
 		Messages: []openai.ChatCompletionMessageParamUnion{
-			openai.SystemMessage("You are an accountant and your job is to analyze invoices and summarize them into the key metrics and facts."),
-			openai.UserMessage("Summarize this invoice"),
+			openai.SystemMessage("You are an expert content analyzer. Your job is to extract structured information from the provided content and output it in the exact JSON schema format specified. You must return ONLY the JSON object with the required fields: title, authors, tags, platform, and type. Do not include any additional text or explanation."),
+			openai.UserMessage("Extract the following information from this content in the exact JSON schema format: title, authors, tags, platform (must be one of: Youtube, Github, Arxiv, WSJ, Blog, Medium, Substack), and type (must be one of: article, github-repo, research-paper, podcast, video)."),
 			openai.UserMessage(content),
 		},
 		ResponseFormat: openai.ChatCompletionNewParamsResponseFormatUnion{
@@ -132,8 +138,8 @@ func (s *aiService) ExtractContent(ctx context.Context, content string) (ItemExt
 func (s *aiService) SummarizeContent(ctx context.Context, content string) (ItemSummary, error) {
 	chatCompletion, err := s.textClient.Chat.Completions.New(context.TODO(), openai.ChatCompletionNewParams{
 		Messages: []openai.ChatCompletionMessageParamUnion{
-			openai.SystemMessage("You are an expert summarizer that has to summarize the provided material."),
-			openai.UserMessage("Summarize this content."),
+			openai.SystemMessage("You are an expert content summarizer. Your job is to create a structured summary of the provided material in the exact JSON schema format specified. You must return ONLY the JSON object with the required fields: overview (a brief overview) and key_points (a list of key points). Do not include any additional text or explanation."),
+			openai.UserMessage("Summarize this content in the exact JSON schema format with overview and key_points fields."),
 			openai.UserMessage(content),
 		},
 		ResponseFormat: openai.ChatCompletionNewParamsResponseFormatUnion{
@@ -160,26 +166,31 @@ func (s *aiService) SummarizeContent(ctx context.Context, content string) (ItemS
 }
 
 // WritePodcastSection generates a specific section of the podcast concurrently
-func (s *aiService) WritePodcastSection(content string, section string, schemaParam *openai.ResponseFormatJSONSchemaJSONSchemaParam, resultChan chan<- PodcastSectionResult, wg *sync.WaitGroup) {
+func (s *aiService) WritePodcastSection(content string, section string, resultChan chan<- PodcastSectionResult, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	// Create section-specific prompts
 	sectionPrompts := map[string]string{
-		"introduction": "Write an engaging introduction for a podcast discussing the given content. The introduction should introduce the topic, set the context, and get listeners interested. Use 2 co-hosts named 'heart' and 'adam'.",
-		"body":         "Write the main body discussion for a podcast about the given content. This should be the core content where the hosts discuss the key points, provide insights, and have a natural conversation. Use 2 co-hosts named 'heart' and 'adam'.",
-		"conclusion":   "Write a conclusion for a podcast discussing the given content. This should summarize key points, provide final thoughts, and give listeners a sense of closure. Use 2 co-hosts named 'heart' and 'adam'.",
+		"introduction": "You are a podcast script writer. Write an engaging introduction for a podcast discussing the given content. The introduction should introduce the topic, set the context, and get listeners interested. Use exactly 2 co-hosts named 'heart' and 'adam'. You must output the dialogues in the exact JSON schema format specified with speaker and content fields. Return ONLY the JSON object with the dialogues array.",
+		"body":         "You are a podcast script writer. Write the main body discussion for a podcast about the given content. This should be the core content where the hosts discuss the key points, provide insights, and have a natural conversation. Use exactly 2 co-hosts named 'heart' and 'adam'. You must output the dialogues in the exact JSON schema format specified with speaker and content fields. Return ONLY the JSON object with the dialogues array.",
+		"conclusion":   "You are a podcast script writer. Write a conclusion for a podcast discussing the given content. This should summarize key points, provide final thoughts, and give listeners a sense of closure. Use exactly 2 co-hosts named 'heart' and 'adam'. You must output the dialogues in the exact JSON schema format specified with speaker and content fields. Return ONLY the JSON object with the dialogues array.",
 	}
 
-	// Generate section-specific dialogue
+	// Generate section-specific dialogue with JSON schema validation
 	chatCompletion, err := s.textClient.Chat.Completions.New(context.TODO(), openai.ChatCompletionNewParams{
 		Messages: []openai.ChatCompletionMessageParamUnion{
-			openai.SystemMessage(sectionPrompts[section] + " CRITICAL: You MUST return valid JSON with exactly this structure: {\"dialogues\": [{\"speaker\":\"heart\",\"content\":\"dialogue text\"},{\"speaker\":\"adam\",\"content\":\"dialogue text\"}]}. Each dialogue MUST have both 'speaker' and 'content' fields. The speaker MUST be either 'heart' or 'adam'. Never use null values. Always use lowercase field names."),
-			openai.UserMessage("Create " + section + " dialogue between 2 cohosts (heart and adam) discussing this content:"),
+			openai.SystemMessage(sectionPrompts[section]),
+			openai.UserMessage("Create " + section + " dialogue between 2 cohosts (heart and adam) discussing this content. Output must be in exact JSON schema format with dialogues array containing speaker and content fields:"),
 			openai.UserMessage(content),
 		},
 		ResponseFormat: openai.ChatCompletionNewParamsResponseFormatUnion{
 			OfJSONSchema: &openai.ResponseFormatJSONSchemaParam{
-				JSONSchema: *schemaParam,
+				JSONSchema: openai.ResponseFormatJSONSchemaJSONSchemaParam{
+					Name:        "podcast_section_" + section,
+					Description: openai.String("Podcast " + section + " section with dialogues"),
+					Schema:      PodcastSectionSchema,
+					Strict:      openai.Bool(true),
+				},
 			},
 		},
 		Model: "moonshotai/kimi-k2-instruct-0905",
@@ -190,7 +201,7 @@ func (s *aiService) WritePodcastSection(content string, section string, schemaPa
 		return
 	}
 
-	var sectionPodcast Podcast
+	var sectionPodcast PodcastSection
 	if err = json.Unmarshal([]byte(chatCompletion.Choices[0].Message.Content), &sectionPodcast); err != nil {
 		resultChan <- PodcastSectionResult{Section: section, Error: fmt.Errorf("failed to unmarshal section JSON: %w", err)}
 		return
@@ -204,7 +215,7 @@ func (s *aiService) WritePodcastSection(content string, section string, schemaPa
 }
 
 // WritePodcast generates the complete podcast by writing introduction, body, and conclusion concurrently
-func (s *aiService) WritePodcast(content string, schemaParam *openai.ResponseFormatJSONSchemaJSONSchemaParam) (Podcast, error) {
+func (s *aiService) WritePodcast(content string) (Podcast, error) {
 	var wg sync.WaitGroup
 	resultChan := make(chan PodcastSectionResult, 3) // Buffer for 3 sections
 
@@ -213,14 +224,12 @@ func (s *aiService) WritePodcast(content string, schemaParam *openai.ResponseFor
 	// Launch concurrent section generation
 	for _, section := range sections {
 		wg.Add(1)
-		go s.WritePodcastSection(content, section, schemaParam, resultChan, &wg)
+		go s.WritePodcastSection(content, section, resultChan, &wg)
 	}
 
-	// Wait for all goroutines in separate goroutine
-	go func() {
-		wg.Wait()
-		close(resultChan)
-	}()
+	// Wait for ALL section generations to complete before processing results
+	wg.Wait()
+	close(resultChan)
 
 	// Collect results and maintain order
 	sectionResults := make(map[string][]Dialogue)
