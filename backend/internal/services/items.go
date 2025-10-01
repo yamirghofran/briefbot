@@ -33,6 +33,7 @@ type itemService struct {
 	aiService       AIService
 	scrapingService ScrapingService
 	jobQueueService JobQueueService
+	sseManager      *SSEManager
 }
 
 func NewItemService(querier db.Querier, aiService AIService, scrapingService ScrapingService, jobQueueService JobQueueService) ItemService {
@@ -41,7 +42,13 @@ func NewItemService(querier db.Querier, aiService AIService, scrapingService Scr
 		aiService:       aiService,
 		scrapingService: scrapingService,
 		jobQueueService: jobQueueService,
+		sseManager:      nil, // Will be set later via SetSSEManager
 	}
+}
+
+// SetSSEManager sets the SSE manager for the item service
+func (s *itemService) SetSSEManager(sseManager *SSEManager) {
+	s.sseManager = sseManager
 }
 
 // CreateItemAsync creates an item asynchronously - just saves the URL and returns immediately
