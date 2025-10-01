@@ -91,6 +91,11 @@ export const itemApi = {
     await api.put(`/items/${id}`, data)
   },
 
+  patchItem: async (id: number, data: Partial<{ title: string; summary: string; tags: string[]; authors: string[] }>): Promise<Item> => {
+    const response = await api.patch<Item>(`/items/${id}`, data)
+    return response.data
+  },
+
   markItemAsRead: async (id: number): Promise<Item> => {
     const response = await api.patch<Item>(`/items/${id}/read`)
     return response.data
