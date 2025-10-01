@@ -1,74 +1,179 @@
 package services
 
 import (
+	"context"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"github.com/yamirghofran/briefbot/internal/db"
+	"github.com/yamirghofran/briefbot/internal/test"
 )
 
-func TestDigestService_UnifiedFunctionality(t *testing.T) {
-	// Create a mock querier and services
-	// This is a basic test - in a real scenario you'd use proper mocks
+type MockEmailService struct {
+	mock.Mock
+}
 
-	// Test that the unified service implements both interfaces
-	var _ DigestService = (*digestService)(nil)
+func (m *MockEmailService) SendEmail(ctx context.Context, request EmailRequest) error {
+	args := m.Called(ctx, request)
+	return args.Error(0)
+}
 
-	// Test configuration methods
-	service := &digestService{
-		podcastEnabled: false,
+type MockPodcastService struct {
+	mock.Mock
+}
+
+func (m *MockPodcastService) CreatePodcastFromItems(ctx context.Context, userID int32, title string, description string, itemIDs []int32) (*db.Podcast, error) {
+	args := m.Called(ctx, userID, title, description, itemIDs)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
 	}
+	return args.Get(0).(*db.Podcast), args.Error(1)
+}
 
-	// Test SetPodcastGenerationEnabled and IsPodcastGenerationEnabled
+func (m *MockPodcastService) CreatePodcastFromSingleItem(ctx context.Context, userID int32, itemID int32) (*db.Podcast, error) {
+	args := m.Called(ctx, userID, itemID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*db.Podcast), args.Error(1)
+}
+
+func (m *MockPodcastService) GeneratePodcastScript(ctx context.Context, podcastID int32) error {
+	args := m.Called(ctx, podcastID)
+	return args.Error(0)
+}
+
+func (m *MockPodcastService) GeneratePodcastAudio(ctx context.Context, podcastID int32) error {
+	args := m.Called(ctx, podcastID)
+	return args.Error(0)
+}
+
+func (m *MockPodcastService) ProcessPodcast(ctx context.Context, podcastID int32) error {
+	args := m.Called(ctx, podcastID)
+	return args.Error(0)
+}
+
+func (m *MockPodcastService) GetPodcast(ctx context.Context, id int32) (*db.Podcast, error) {
+	args := m.Called(ctx, id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*db.Podcast), args.Error(1)
+}
+
+func (m *MockPodcastService) GetPodcastsByUser(ctx context.Context, userID int32) ([]db.Podcast, error) {
+	args := m.Called(ctx, userID)
+	return args.Get(0).([]db.Podcast), args.Error(1)
+}
+
+func (m *MockPodcastService) GetPodcastsByStatus(ctx context.Context, status PodcastStatus) ([]db.Podcast, error) {
+	args := m.Called(ctx, status)
+	return args.Get(0).([]db.Podcast), args.Error(1)
+}
+
+func (m *MockPodcastService) UpdatePodcast(ctx context.Context, podcastID int32, title string, description string) error {
+	args := m.Called(ctx, podcastID, title, description)
+	return args.Error(0)
+}
+
+func (m *MockPodcastService) DeletePodcast(ctx context.Context, id int32) error {
+	args := m.Called(ctx, id)
+	return args.Error(0)
+}
+
+func (m *MockPodcastService) AddItemToPodcast(ctx context.Context, podcastID int32, itemID int32, order int) error {
+	args := m.Called(ctx, podcastID, itemID, order)
+	return args.Error(0)
+}
+
+func (m *MockPodcastService) RemoveItemFromPodcast(ctx context.Context, podcastID int32, itemID int32) error {
+	args := m.Called(ctx, podcastID, itemID)
+	return args.Error(0)
+}
+
+func (m *MockPodcastService) GetPodcastItems(ctx context.Context, podcastID int32) ([]db.GetPodcastItemsRow, error) {
+	args := m.Called(ctx, podcastID)
+	return args.Get(0).([]db.GetPodcastItemsRow), args.Error(1)
+}
+
+func (m *MockPodcastService) GetPendingPodcasts(ctx context.Context, limit int32) ([]db.Podcast, error) {
+	args := m.Called(ctx, limit)
+	return args.Get(0).([]db.Podcast), args.Error(1)
+}
+
+func (m *MockPodcastService) AcquirePendingPodcasts(ctx context.Context, limit int32) ([]db.Podcast, error) {
+	args := m.Called(ctx, limit)
+	return args.Get(0).([]db.Podcast), args.Error(1)
+}
+
+func (m *MockPodcastService) GetProcessingPodcasts(ctx context.Context, limit int32) ([]db.Podcast, error) {
+	args := m.Called(ctx, limit)
+	return args.Get(0).([]db.Podcast), args.Error(1)
+}
+
+func (m *MockPodcastService) GeneratePodcastUploadURL(ctx context.Context, podcastID int32) (*UploadURLResponse, error) {
+	args := m.Called(ctx, podcastID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*UploadURLResponse), args.Error(1)
+}
+
+func (m *MockPodcastService) GetPodcastAudio(ctx context.Context, podcastID int32) ([]byte, error) {
+	args := m.Called(ctx, podcastID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]byte), args.Error(1)
+}
+
+func (m *MockPodcastService) HasPodcastAudio(ctx context.Context, podcastID int32) (bool, error) {
+	args := m.Called(ctx, podcastID)
+	return args.Bool(0), args.Error(1)
+}
+
+func (m *MockPodcastService) UpdatePodcastStatus(ctx context.Context, podcastID int32, status PodcastStatus) error {
+	args := m.Called(ctx, podcastID, status)
+	return args.Error(0)
+}
+
+
+func TestSetPodcastGenerationEnabled(t *testing.T) {
+	mockQuerier := new(test.MockQuerier)
+	mockEmail := new(MockEmailService)
+	mockPodcast := new(MockPodcastService)
+
+	service := NewDigestService(mockQuerier, mockEmail, mockPodcast)
+
+	// Initially should be false (unless env var is set)
 	service.SetPodcastGenerationEnabled(true)
-	if !service.IsPodcastGenerationEnabled() {
-		t.Error("Podcast generation should be enabled after setting to true")
-	}
+	assert.True(t, service.IsPodcastGenerationEnabled())
 
 	service.SetPodcastGenerationEnabled(false)
-	if service.IsPodcastGenerationEnabled() {
-		t.Error("Podcast generation should be disabled after setting to false")
-	}
+	assert.False(t, service.IsPodcastGenerationEnabled())
 }
 
-func TestDigestResult_Structure(t *testing.T) {
-	// Test DigestResult structure
-	result := &DigestResult{
-		EmailSent:  true,
-		PodcastURL: stringPtr("https://example.com/podcast.mp3"),
-		ItemsCount: 5,
-		Error:      nil,
-		DigestType: "integrated",
+func TestGetDailyDigestItemsForUser(t *testing.T) {
+	mockQuerier := new(test.MockQuerier)
+	mockEmail := new(MockEmailService)
+	mockPodcast := new(MockPodcastService)
+
+	service := NewDigestService(mockQuerier, mockEmail, mockPodcast)
+
+	ctx := context.Background()
+	userID := int32(1)
+
+	expectedItems := []db.Item{
+		{ID: 1, Title: "Item 1"},
+		{ID: 2, Title: "Item 2"},
 	}
 
-	if result.DigestType != "integrated" {
-		t.Errorf("Expected digest type 'integrated', got '%s'", result.DigestType)
-	}
+	mockQuerier.On("GetUnreadItemsFromPreviousDayByUser", ctx, &userID).Return(expectedItems, nil)
 
-	if !result.EmailSent {
-		t.Error("Expected EmailSent to be true")
-	}
+	items, err := service.GetDailyDigestItemsForUser(ctx, userID)
 
-	if result.ItemsCount != 5 {
-		t.Errorf("Expected ItemsCount to be 5, got %d", result.ItemsCount)
-	}
-
-	if result.PodcastURL == nil || *result.PodcastURL != "https://example.com/podcast.mp3" {
-		t.Error("Expected PodcastURL to be set correctly")
-	}
-}
-
-func TestDigestConfig_DefaultValues(t *testing.T) {
-	// Test that default configuration is set correctly
-	service := &digestService{
-		config: DigestConfig{
-			Subject:        "Your Daily BriefBot Digest - %s",
-			PodcastEnabled: false,
-		},
-	}
-
-	if service.config.Subject != "Your Daily BriefBot Digest - %s" {
-		t.Errorf("Expected default subject, got '%s'", service.config.Subject)
-	}
-
-	if service.config.PodcastEnabled {
-		t.Error("Expected podcast to be disabled by default")
-	}
+	assert.NoError(t, err)
+	assert.Len(t, items, 2)
+	mockQuerier.AssertExpectations(t)
 }
