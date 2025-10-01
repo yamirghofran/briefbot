@@ -65,7 +65,7 @@ func setupTestRouter() *gin.Engine {
 
 func TestCreateUser(t *testing.T) {
 	mockUserService := new(MockUserService)
-	handler := NewHandler(mockUserService, nil, nil, nil)
+	handler := NewHandler(mockUserService, nil, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.POST("/users", handler.CreateUser)
@@ -99,7 +99,7 @@ func TestCreateUser(t *testing.T) {
 
 func TestCreateUser_Error(t *testing.T) {
 	mockUserService := new(MockUserService)
-	handler := NewHandler(mockUserService, nil, nil, nil)
+	handler := NewHandler(mockUserService, nil, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.POST("/users", handler.CreateUser)
@@ -124,7 +124,7 @@ func TestCreateUser_Error(t *testing.T) {
 
 func TestGetUser(t *testing.T) {
 	mockUserService := new(MockUserService)
-	handler := NewHandler(mockUserService, nil, nil, nil)
+	handler := NewHandler(mockUserService, nil, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.GET("/users/:id", handler.GetUser)
@@ -148,7 +148,7 @@ func TestGetUser(t *testing.T) {
 
 func TestGetUser_InvalidID(t *testing.T) {
 	mockUserService := new(MockUserService)
-	handler := NewHandler(mockUserService, nil, nil, nil)
+	handler := NewHandler(mockUserService, nil, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.GET("/users/:id", handler.GetUser)
@@ -163,7 +163,7 @@ func TestGetUser_InvalidID(t *testing.T) {
 
 func TestGetUserByEmail(t *testing.T) {
 	mockUserService := new(MockUserService)
-	handler := NewHandler(mockUserService, nil, nil, nil)
+	handler := NewHandler(mockUserService, nil, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.GET("/users/email/:email", handler.GetUserByEmail)
@@ -187,7 +187,7 @@ func TestGetUserByEmail(t *testing.T) {
 
 func TestListUsers(t *testing.T) {
 	mockUserService := new(MockUserService)
-	handler := NewHandler(mockUserService, nil, nil, nil)
+	handler := NewHandler(mockUserService, nil, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.GET("/users", handler.ListUsers)
@@ -212,7 +212,7 @@ func TestListUsers(t *testing.T) {
 
 func TestUpdateUser(t *testing.T) {
 	mockUserService := new(MockUserService)
-	handler := NewHandler(mockUserService, nil, nil, nil)
+	handler := NewHandler(mockUserService, nil, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.PUT("/users/:id", handler.UpdateUser)
@@ -238,7 +238,7 @@ func TestUpdateUser(t *testing.T) {
 
 func TestDeleteUser(t *testing.T) {
 	mockUserService := new(MockUserService)
-	handler := NewHandler(mockUserService, nil, nil, nil)
+	handler := NewHandler(mockUserService, nil, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.DELETE("/users/:id", handler.DeleteUser)
@@ -256,7 +256,7 @@ func TestDeleteUser(t *testing.T) {
 
 func TestGetUser_ServiceError(t *testing.T) {
 	mockUserService := new(MockUserService)
-	handler := NewHandler(mockUserService, nil, nil, nil)
+	handler := NewHandler(mockUserService, nil, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.GET("/users/:id", handler.GetUser)
@@ -274,7 +274,7 @@ func TestGetUser_ServiceError(t *testing.T) {
 
 func TestGetUserByEmail_ServiceError(t *testing.T) {
 	mockUserService := new(MockUserService)
-	handler := NewHandler(mockUserService, nil, nil, nil)
+	handler := NewHandler(mockUserService, nil, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.GET("/users/email/:email", handler.GetUserByEmail)
@@ -293,7 +293,7 @@ func TestGetUserByEmail_ServiceError(t *testing.T) {
 
 func TestListUsers_ServiceError(t *testing.T) {
 	mockUserService := new(MockUserService)
-	handler := NewHandler(mockUserService, nil, nil, nil)
+	handler := NewHandler(mockUserService, nil, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.GET("/users", handler.ListUsers)
@@ -311,7 +311,7 @@ func TestListUsers_ServiceError(t *testing.T) {
 
 func TestUpdateUser_InvalidID(t *testing.T) {
 	mockUserService := new(MockUserService)
-	handler := NewHandler(mockUserService, nil, nil, nil)
+	handler := NewHandler(mockUserService, nil, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.PUT("/users/:id", handler.UpdateUser)
@@ -333,7 +333,7 @@ func TestUpdateUser_InvalidID(t *testing.T) {
 
 func TestUpdateUser_ServiceError(t *testing.T) {
 	mockUserService := new(MockUserService)
-	handler := NewHandler(mockUserService, nil, nil, nil)
+	handler := NewHandler(mockUserService, nil, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.PUT("/users/:id", handler.UpdateUser)
@@ -358,7 +358,7 @@ func TestUpdateUser_ServiceError(t *testing.T) {
 
 func TestDeleteUser_InvalidID(t *testing.T) {
 	mockUserService := new(MockUserService)
-	handler := NewHandler(mockUserService, nil, nil, nil)
+	handler := NewHandler(mockUserService, nil, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.DELETE("/users/:id", handler.DeleteUser)
@@ -373,7 +373,7 @@ func TestDeleteUser_InvalidID(t *testing.T) {
 
 func TestDeleteUser_ServiceError(t *testing.T) {
 	mockUserService := new(MockUserService)
-	handler := NewHandler(mockUserService, nil, nil, nil)
+	handler := NewHandler(mockUserService, nil, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.DELETE("/users/:id", handler.DeleteUser)
