@@ -5,7 +5,7 @@ import (
 	"github.com/yamirghofran/briefbot/internal/services"
 )
 
-func SetupRoutes(router *gin.Engine, userService services.UserService, itemService services.ItemService, digestService services.DigestService, podcastService services.PodcastService) {
-	handler := NewHandler(userService, itemService, digestService, podcastService)
+func SetupRoutes(router *gin.Engine, userService services.UserService, itemService services.ItemService, digestService services.DigestService, podcastService services.PodcastService, sseManager *services.SSEManager) {
+	handler := NewHandler(userService, itemService, digestService, podcastService, sseManager)
 	handler.SetupRoutes(router)
 }
