@@ -49,12 +49,23 @@ WHERE created_at >= DATE_TRUNC('day', NOW() - INTERVAL '1 day')
 ORDER BY created_at DESC;
 
 -- name: GetUnreadItemsFromPreviousDayByUser :many
-SELECT * FROM items 
+SELECT * FROM items
 WHERE user_id = $1
-  AND created_at >= DATE_TRUNC('day', NOW() - INTERVAL '1 day') 
+  AND created_at >= DATE_TRUNC('day', NOW() - INTERVAL '1 day')
   AND created_at < DATE_TRUNC('day', NOW())
   AND is_read = FALSE
   AND processing_status = 'completed'
 ORDER BY created_at DESC;
+
+-- name: PatchItem :one
+UPDATE items
+SET
+  title = COALESCE(NULLIF(sqlc.narg('title'), ''), title),
+  summary = CASE WHEN sqlc.narg('summary')::text IS NULL THEN summary ELSE sqlc.narg('summary') END,
+  tags = CASE WHEN sqlc.narg('tags')::text[] IS NULL THEN tags ELSE sqlc.narg('tags') END,
+  authors = CASE WHEN sqlc.narg('authors')::text[] IS NULL THEN authors ELSE sqlc.narg('authors') END,
+  modified_at = CURRENT_TIMESTAMP
+WHERE id = sqlc.arg('id')
+RETURNING *;
 
 
