@@ -375,6 +375,23 @@ func TestCompleteItemErrorHandling(t *testing.T) {
 	})
 }
 
+// TestGetFailedItemsForRetry tests getting failed items eligible for retry
+func TestGetFailedItemsForRetry(t *testing.T) {
+	mockQuerier := &test.MockQuerier{}
+	jobQueueService := NewJobQueueService(mockQuerier)
+	ctx := context.Background()
+
+	limit := int32(5)
+
+	// NOTE: Current implementation just returns empty slice
+	// This is a placeholder for future implementation
+	items, err := jobQueueService.GetFailedItemsForRetry(ctx, limit)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, items)
+	assert.Len(t, items, 0) // Current implementation returns empty
+}
+
 // Helper functions (these would normally be in a test utilities file)
 func strPtr(s string) *string { return &s }
 func boolPtr(b bool) *bool    { return &b }

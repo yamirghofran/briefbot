@@ -11,99 +11,6 @@ import (
 	"github.com/yamirghofran/briefbot/internal/test"
 )
 
-type MockAIService struct {
-	mock.Mock
-}
-
-func (m *MockAIService) GenerateSchema(ctx context.Context, prompt string, schemaType string) (string, error) {
-	args := m.Called(ctx, prompt, schemaType)
-	return args.String(0), args.Error(1)
-}
-
-func (m *MockAIService) ExtractContent(ctx context.Context, content string) (ItemExtraction, error) {
-	args := m.Called(ctx, content)
-	return args.Get(0).(ItemExtraction), args.Error(1)
-}
-
-func (m *MockAIService) SummarizeContent(ctx context.Context, content string) (ItemSummary, error) {
-	args := m.Called(ctx, content)
-	return args.Get(0).(ItemSummary), args.Error(1)
-}
-
-func (m *MockAIService) WritePodcastSection(ctx context.Context, content string, sectionType string) (string, error) {
-	args := m.Called(ctx, content, sectionType)
-	return args.String(0), args.Error(1)
-}
-
-func (m *MockAIService) WritePodcast(content string) (Podcast, error) {
-	args := m.Called(content)
-	return args.Get(0).(Podcast), args.Error(1)
-}
-
-type MockScrapingService struct {
-	mock.Mock
-}
-
-func (m *MockScrapingService) Scrape(url string) (string, error) {
-	args := m.Called(url)
-	return args.String(0), args.Error(1)
-}
-
-type MockJobQueueService struct {
-	mock.Mock
-}
-
-func (m *MockJobQueueService) EnqueueItem(ctx context.Context, userID int32, url string, title string) (*db.Item, error) {
-	args := m.Called(ctx, userID, url, title)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*db.Item), args.Error(1)
-}
-
-func (m *MockJobQueueService) DequeuePendingItems(ctx context.Context, limit int32) ([]db.Item, error) {
-	args := m.Called(ctx, limit)
-	return args.Get(0).([]db.Item), args.Error(1)
-}
-
-func (m *MockJobQueueService) MarkItemAsProcessing(ctx context.Context, itemID int32) error {
-	args := m.Called(ctx, itemID)
-	return args.Error(0)
-}
-
-func (m *MockJobQueueService) CompleteItem(ctx context.Context, itemID int32, title, textContent, summary, itemType, platform string, tags, authors []string) error {
-	args := m.Called(ctx, itemID, title, textContent, summary, itemType, platform, tags, authors)
-	return args.Error(0)
-}
-
-func (m *MockJobQueueService) FailItem(ctx context.Context, itemID int32, errorMsg string) error {
-	args := m.Called(ctx, itemID, errorMsg)
-	return args.Error(0)
-}
-
-func (m *MockJobQueueService) GetItemStatus(ctx context.Context, itemID int32) (*ItemStatus, error) {
-	args := m.Called(ctx, itemID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*ItemStatus), args.Error(1)
-}
-
-func (m *MockJobQueueService) GetItemsByStatus(ctx context.Context, status string) ([]db.Item, error) {
-	args := m.Called(ctx, status)
-	return args.Get(0).([]db.Item), args.Error(1)
-}
-
-func (m *MockJobQueueService) GetFailedItemsForRetry(ctx context.Context, limit int32) ([]db.Item, error) {
-	args := m.Called(ctx, limit)
-	return args.Get(0).([]db.Item), args.Error(1)
-}
-
-func (m *MockJobQueueService) RetryItem(ctx context.Context, itemID int32) error {
-	args := m.Called(ctx, itemID)
-	return args.Error(0)
-}
-
 func TestCreateItem(t *testing.T) {
 	mockQuerier := new(test.MockQuerier)
 	mockAI := new(MockAIService)
@@ -469,4 +376,30 @@ func TestConcatenateSummary(t *testing.T) {
 
 	expected := "This is an overview. Point 1 Point 2 Point 3"
 	assert.Equal(t, expected, result)
+}
+
+func TestGetItemsByProcessingStatus(t *testing.T) {
+	mockQuerier := new(test.MockQuerier)
+	mockAI := new(MockAIService)
+	mockScraper := new(MockScrapingService)
+	mockJobQueue := new(MockJobQueueService)
+
+	service := NewItemService(mockQuerier, mockAI, mockScraper, mockJobQueue)
+
+	ctx := context.Background()
+	status := "completed"
+
+	expectedItems := []db.Item{
+		{ID: 1, Title: "Item 1", ProcessingStatus: &status},
+		{ID: 2, Title: "Item 2", ProcessingStatus: &status},
+	}
+
+	// The service calls jobQueueService.GetItemsByStatus with dereferenced status
+	mockJobQueue.On("GetItemsByStatus", ctx, status).Return(expectedItems, nil)
+
+	items, err := service.GetItemsByProcessingStatus(ctx, &status)
+
+	assert.NoError(t, err)
+	assert.Len(t, items, 2)
+	mockJobQueue.AssertExpectations(t)
 }
