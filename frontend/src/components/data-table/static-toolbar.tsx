@@ -1,77 +1,60 @@
-import * as React from "react"
-import { Search, Filter, Zap, Check, Loader2 } from "lucide-react"
-import { useMutation } from "@tanstack/react-query"
-import { toast } from "sonner"
+import * as React from "react";
+import { Search, Filter, Zap, Check, Loader2 } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { UrlSubmissionDialog } from "@/components/url-submission-dialog"
-import { digestApi } from "@/services/api"
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { UrlSubmissionDialog } from "@/components/url-submission-dialog";
+import { digestApi } from "@/services/api";
 
 interface StaticToolbarProps extends React.HTMLAttributes<HTMLDivElement> {
-  userId?: number
+  userId?: number;
 }
 
-export function StaticToolbar({ className, userId, ...props }: StaticToolbarProps) {
-  const [searchValue, setSearchValue] = React.useState("")
-  const [showSuccess, setShowSuccess] = React.useState(false)
+export function StaticToolbar({
+  className,
+  userId,
+  ...props
+}: StaticToolbarProps) {
+  const [searchValue, setSearchValue] = React.useState("");
+  const [showSuccess, setShowSuccess] = React.useState(false);
 
   // Mutation for triggering integrated digest
   const triggerDigestMutation = useMutation({
     mutationFn: () => {
       if (userId) {
-        return digestApi.triggerIntegratedDigestForUser(userId)
+        return digestApi.triggerIntegratedDigestForUser(userId);
       } else {
-        return digestApi.triggerIntegratedDigest()
+        return digestApi.triggerIntegratedDigest();
       }
     },
     onSuccess: () => {
-      toast.success('Digest processing started! You\'ll receive an email when ready.')
-      setShowSuccess(true)
+      toast.success(
+        "Digest processing started! You'll receive an email when ready.",
+      );
+      setShowSuccess(true);
       // Reset success state after 3 seconds
       setTimeout(() => {
-        setShowSuccess(false)
-      }, 3000)
+        setShowSuccess(false);
+      }, 3000);
     },
     onError: (error) => {
-      toast.error('Failed to trigger integrated digest')
-      console.error('Digest trigger error:', error)
+      toast.error("Failed to trigger integrated digest");
+      console.error("Digest trigger error:", error);
     },
-  })
+  });
 
   const handleTriggerDigest = () => {
-    triggerDigestMutation.mutate()
-  }
+    triggerDigestMutation.mutate();
+  };
 
   return (
-    <div
-      className="flex items-center justify-between"
-      {...props}
-    >
-      <div className="flex flex-1 items-center space-x-2">
-        <div className="relative">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search..."
-            value={searchValue}
-            onChange={(event) => setSearchValue(event.target.value)}
-            className="pl-8 w-[150px] lg:w-[250px]"
-          />
-        </div>
-        <Button variant="outline" size="sm">
-          <Filter className="mr-2 h-4 w-4" />
-          Filter
-        </Button>
+    <div className="flex items-center justify-between" {...props}>
+      <div className="flex flex-1 items-center space-x-2"></div>
+
+      <div className="flex items-center space-x-2">
         {userId && <UrlSubmissionDialog userId={userId} />}
-      </div>
-      
-       <div className="flex items-center space-x-2">
-        <Button variant="outline" size="sm">
-          Columns
-        </Button>
-        <Button variant="outline" size="sm">
-          Export
-        </Button>
         <Button
           onClick={handleTriggerDigest}
           disabled={triggerDigestMutation.isPending || showSuccess}
@@ -79,8 +62,8 @@ export function StaticToolbar({ className, userId, ...props }: StaticToolbarProp
           size="sm"
           className={`transition-all duration-300 ${
             showSuccess
-              ? 'bg-green-600 hover:bg-green-600'
-              : 'bg-black hover:bg-gray-800'
+              ? "bg-green-600 hover:bg-green-600"
+              : "bg-black hover:bg-gray-800"
           } text-white`}
         >
           {triggerDigestMutation.isPending ? (
@@ -102,5 +85,5 @@ export function StaticToolbar({ className, userId, ...props }: StaticToolbarProp
         </Button>
       </div>
     </div>
-  )
+  );
 }

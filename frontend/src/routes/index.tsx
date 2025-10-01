@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { StaticToolbar } from "@/components/data-table/static-toolbar";
 import { ItemDataTable } from "@/components/item-data-table";
 import { itemApi } from "@/services/api";
 import { Button } from "@/components/ui/button";
@@ -38,8 +37,6 @@ function App() {
 
       {/* Data Table Section */}
       <div className="space-y-4">
-        <StaticToolbar userId={userId} />
-
         {isLoading ? (
           <div className="flex items-center justify-center h-64">
             <div className="text-center">

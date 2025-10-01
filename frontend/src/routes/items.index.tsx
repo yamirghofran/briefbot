@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { ItemDataTable } from '@/components/item-data-table'
 import { useState } from 'react'
 import type { CreateItemRequest } from '@/types'
 
@@ -49,19 +50,6 @@ function ItemsPage() {
     },
   })
 
-  const markAsReadMutation = useMutation({
-    mutationFn: itemApi.markItemAsRead,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['items', selectedUserId] })
-    },
-  })
-
-  const deleteItemMutation = useMutation({
-    mutationFn: itemApi.deleteItem,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['items', selectedUserId] })
-    },
-  })
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -213,94 +201,20 @@ function ItemsPage() {
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow-md">
-        <div className="p-6">
-          <h2 className="text-lg font-semibold mb-4">
-            {filter === 'unread' ? 'Unread Items' : 'All Items'} ({items.length})
-          </h2>
-          {items.length === 0 ? (
-            <p className="text-gray-500">
-              {filter === 'unread' ? 'No unread items found.' : 'No items found. Create an item to get started.'}
-            </p>
-          ) : (
-            <div className="space-y-4">
-              {items.map((item) => (
-                <div key={item.id} className="border rounded p-4 hover:bg-gray-50">
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="flex-1">
-                      <h3 className="font-medium text-blue-600 hover:underline">
-                        <a href={item.url || '#'} target="_blank" rel="noopener noreferrer">
-                          {item.url}
-                        </a>
-                      </h3>
-                      <p className="text-sm text-gray-600 mt-1">
-                        User ID: {item.user_id} | Status: {item.is_read ? 'Read' : 'Unread'}
-                      </p>
-                    </div>
-                    <div className="space-x-2">
-                      {!item.is_read && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleMarkAsRead(item.id)}
-                          disabled={markAsReadMutation.isPending}
-                        >
-                          Mark as Read
-                        </Button>
-                      )}
-                      <Button variant="outline" size="sm">
-                        View
-                      </Button>
-                      <Button variant="outline" size="sm" className="text-red-600">
-                        Edit
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-red-600"
-                        onClick={() => handleDeleteItem(item.id)}
-                        disabled={deleteItemMutation.isPending}
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  </div>
-                  {item.text_content && (
-                    <div className="mt-3">
-                      <p className="text-sm text-gray-700 line-clamp-3">{item.text_content}</p>
-                    </div>
-                  )}
-                   {item.summary && (
-                     <div className="mt-3 p-3 bg-gray-50 rounded">
-                       <h4 className="text-sm font-medium text-gray-900 mb-1">Summary:</h4>
-                       <p className="text-sm text-gray-700">{item.summary}</p>
-                     </div>
-                   )}
-                   {item.type && (
-                     <div className="mt-2">
-                       <span className="text-xs text-gray-500">Type: {item.type}</span>
-                     </div>
-                   )}
-                   {item.platform && (
-                     <div className="mt-2">
-                       <span className="text-xs text-gray-500">Platform: {item.platform}</span>
-                     </div>
-                   )}
-                   {item.tags && item.tags.length > 0 && (
-                     <div className="mt-2">
-                       <span className="text-xs text-gray-500">Tags: {item.tags.join(', ')}</span>
-                     </div>
-                   )}
-                   {item.authors && item.authors.length > 0 && (
-                     <div className="mt-2">
-                       <span className="text-xs text-gray-500">Authors: {item.authors.join(', ')}</span>
-                     </div>
-                   )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h2 className="text-lg font-semibold mb-4">
+          {filter === 'unread' ? 'Unread Items' : 'All Items'} ({items.length})
+        </h2>
+        {items.length === 0 ? (
+          <p className="text-gray-500">
+            {filter === 'unread' ? 'No unread items found.' : 'No items found. Create an item to get started.'}
+          </p>
+        ) : (
+          <ItemDataTable
+            data={items}
+            userId={selectedUserId}
+          />
+        )}
       </div>
     </div>
   )

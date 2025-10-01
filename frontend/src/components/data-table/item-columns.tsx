@@ -142,9 +142,10 @@ export const itemColumns: ColumnDef<Item>[] = [
       const title = row.getValue("title") as string
       const url = row.original.url
       const id = row.original.id
-      
+
       return <TitleCell title={title} url={url} id={id} />
     },
+    enableGlobalFilter: true,
   },
   {
     accessorKey: "tags",
@@ -153,15 +154,15 @@ export const itemColumns: ColumnDef<Item>[] = [
     ),
     cell: ({ row }) => {
       const tags = row.getValue("tags") as string[]
-      
+
       if (!tags || tags.length === 0) {
         return <span className="text-gray-400">—</span>
       }
-      
+
       // Show up to 2 tags, then show +x for the rest
       const displayTags = tags.slice(0, 2)
       const remainingCount = Math.max(0, tags.length - 2)
-      
+
       return (
         <div className="flex items-center gap-1 flex-wrap">
           {displayTags.map((tag, index) => (
@@ -177,6 +178,13 @@ export const itemColumns: ColumnDef<Item>[] = [
         </div>
       )
     },
+    filterFn: (row, id, filterValue) => {
+      const tags = row.getValue(id) as string[]
+      if (!tags || tags.length === 0) return false
+      if (!filterValue || filterValue.length === 0) return true
+      return filterValue.some((filter: string) => tags.includes(filter))
+    },
+    enableGlobalFilter: true,
   },
   {
     id: "status",
@@ -201,7 +209,7 @@ export const itemColumns: ColumnDef<Item>[] = [
     ),
     cell: ({ row }) => {
       const type = row.getValue("type") as string
-      
+
       return type ? (
         <Badge variant="outline">
           {type}
@@ -210,6 +218,13 @@ export const itemColumns: ColumnDef<Item>[] = [
         <span className="text-gray-400">—</span>
       )
     },
+    filterFn: (row, id, filterValue) => {
+      const type = row.getValue(id) as string
+      if (!type) return false
+      if (!filterValue || filterValue.length === 0) return true
+      return filterValue.includes(type)
+    },
+    enableGlobalFilter: true,
   },
   {
     accessorKey: "platform",
@@ -224,6 +239,13 @@ export const itemColumns: ColumnDef<Item>[] = [
         </div>
       )
     },
+    filterFn: (row, id, filterValue) => {
+      const platform = row.getValue(id) as string
+      if (!platform) return false
+      if (!filterValue || filterValue.length === 0) return true
+      return filterValue.includes(platform)
+    },
+    enableGlobalFilter: true,
   },
   {
     accessorKey: "authors",
@@ -232,11 +254,11 @@ export const itemColumns: ColumnDef<Item>[] = [
     ),
     cell: ({ row }) => {
       const authors = row.getValue("authors") as string[]
-      
+
       if (!authors || authors.length === 0) {
         return <span className="text-gray-400">—</span>
       }
-      
+
       return (
         <div className="flex items-center gap-1 flex-wrap">
           <Badge variant="secondary" className="text-xs">
@@ -250,6 +272,13 @@ export const itemColumns: ColumnDef<Item>[] = [
         </div>
       )
     },
+    filterFn: (row, id, filterValue) => {
+      const authors = row.getValue(id) as string[]
+      if (!authors || authors.length === 0) return false
+      if (!filterValue || filterValue.length === 0) return true
+      return filterValue.some((filter: string) => authors.includes(filter))
+    },
+    enableGlobalFilter: true,
   },
   {
     accessorKey: "is_read",
