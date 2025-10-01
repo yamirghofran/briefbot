@@ -71,6 +71,14 @@ func (m *MockItemService) UpdateItem(ctx context.Context, id int32, title string
 	return args.Error(0)
 }
 
+func (m *MockItemService) PatchItem(ctx context.Context, id int32, title *string, summary *string, tags []string, authors []string) (*db.Item, error) {
+	args := m.Called(ctx, id, title, summary, tags, authors)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*db.Item), args.Error(1)
+}
+
 func (m *MockItemService) MarkItemAsRead(ctx context.Context, id int32) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
@@ -229,6 +237,144 @@ func TestUpdateItem(t *testing.T) {
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
+	mockItemService.AssertExpectations(t)
+}
+
+func TestPatchItem(t *testing.T) {
+	mockItemService := new(MockItemService)
+	handler := NewHandler(nil, mockItemService, nil, nil)
+
+	router := setupTestRouter()
+	router.PATCH("/items/:id", handler.PatchItem)
+
+	newTitle := "Updated Title"
+	newSummary := "Updated Summary"
+	newTags := []string{"tag1", "tag2"}
+	newAuthors := []string{"author1"}
+
+	expectedItem := &db.Item{
+		ID:      1,
+		Title:   newTitle,
+		Summary: &newSummary,
+		Tags:    newTags,
+		Authors: newAuthors,
+	}
+
+	mockItemService.On("PatchItem", mock.Anything, int32(1), &newTitle, &newSummary, newTags, newAuthors).Return(expectedItem, nil)
+
+	reqBody := map[string]interface{}{
+		"title":   newTitle,
+		"summary": newSummary,
+		"tags":    newTags,
+		"authors": newAuthors,
+	}
+	jsonBody, _ := json.Marshal(reqBody)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/items/1", bytes.NewBuffer(jsonBody))
+	req.Header.Set("Content-Type", "application/json")
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	var responseItem db.Item
+	json.Unmarshal(w.Body.Bytes(), &responseItem)
+	assert.Equal(t, newTitle, responseItem.Title)
+	assert.Equal(t, newSummary, *responseItem.Summary)
+	mockItemService.AssertExpectations(t)
+}
+
+func TestPatchItem_PartialUpdate(t *testing.T) {
+	mockItemService := new(MockItemService)
+	handler := NewHandler(nil, mockItemService, nil, nil)
+
+	router := setupTestRouter()
+	router.PATCH("/items/:id", handler.PatchItem)
+
+	newTitle := "Updated Title Only"
+
+	expectedItem := &db.Item{
+		ID:    1,
+		Title: newTitle,
+	}
+
+	mockItemService.On("PatchItem", mock.Anything, int32(1), &newTitle, (*string)(nil), []string(nil), []string(nil)).Return(expectedItem, nil)
+
+	reqBody := map[string]interface{}{
+		"title": newTitle,
+	}
+	jsonBody, _ := json.Marshal(reqBody)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/items/1", bytes.NewBuffer(jsonBody))
+	req.Header.Set("Content-Type", "application/json")
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	mockItemService.AssertExpectations(t)
+}
+
+func TestPatchItem_InvalidID(t *testing.T) {
+	mockItemService := new(MockItemService)
+	handler := NewHandler(nil, mockItemService, nil, nil)
+
+	router := setupTestRouter()
+	router.PATCH("/items/:id", handler.PatchItem)
+
+	reqBody := map[string]interface{}{
+		"title": "Updated Title",
+	}
+	jsonBody, _ := json.Marshal(reqBody)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/items/invalid", bytes.NewBuffer(jsonBody))
+	req.Header.Set("Content-Type", "application/json")
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestPatchItem_InvalidJSON(t *testing.T) {
+	mockItemService := new(MockItemService)
+	handler := NewHandler(nil, mockItemService, nil, nil)
+
+	router := setupTestRouter()
+	router.PATCH("/items/:id", handler.PatchItem)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/items/1", bytes.NewBuffer([]byte("invalid json")))
+	req.Header.Set("Content-Type", "application/json")
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestPatchItem_ServiceError(t *testing.T) {
+	mockItemService := new(MockItemService)
+	handler := NewHandler(nil, mockItemService, nil, nil)
+
+	router := setupTestRouter()
+	router.PATCH("/items/:id", handler.PatchItem)
+
+	newTitle := "Updated Title"
+	mockItemService.On("PatchItem", mock.Anything, int32(1), &newTitle, (*string)(nil), []string(nil), []string(nil)).Return(nil, errors.New("service error"))
+
+	reqBody := map[string]interface{}{
+		"title": newTitle,
+	}
+	jsonBody, _ := json.Marshal(reqBody)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/items/1", bytes.NewBuffer(jsonBody))
+	req.Header.Set("Content-Type", "application/json")
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
 	mockItemService.AssertExpectations(t)
 }
 

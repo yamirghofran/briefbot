@@ -148,6 +148,103 @@ func TestUpdateItem(t *testing.T) {
 	mockQuerier.AssertExpectations(t)
 }
 
+func TestPatchItem(t *testing.T) {
+	mockQuerier := new(test.MockQuerier)
+	mockAI := new(MockAIService)
+	mockScraper := new(MockScrapingService)
+	mockJobQueue := new(MockJobQueueService)
+
+	service := NewItemService(mockQuerier, mockAI, mockScraper, mockJobQueue)
+
+	ctx := context.Background()
+	itemID := int32(1)
+	newTitle := "Updated Title"
+	newSummary := "Updated Summary"
+	newTags := []string{"tag1", "tag2"}
+	newAuthors := []string{"author1"}
+
+	expectedItem := db.Item{
+		ID:      itemID,
+		Title:   newTitle,
+		Summary: &newSummary,
+		Tags:    newTags,
+		Authors: newAuthors,
+	}
+
+	mockQuerier.On("PatchItem", ctx, mock.MatchedBy(func(params db.PatchItemParams) bool {
+		return params.ID == itemID &&
+			params.Title == &newTitle &&
+			*params.Summary == newSummary &&
+			len(params.Tags) == 2 &&
+			len(params.Authors) == 1
+	})).Return(expectedItem, nil)
+
+	item, err := service.PatchItem(ctx, itemID, &newTitle, &newSummary, newTags, newAuthors)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, item)
+	assert.Equal(t, newTitle, item.Title)
+	assert.Equal(t, newSummary, *item.Summary)
+	assert.Equal(t, newTags, item.Tags)
+	assert.Equal(t, newAuthors, item.Authors)
+	mockQuerier.AssertExpectations(t)
+}
+
+func TestPatchItem_PartialUpdate(t *testing.T) {
+	mockQuerier := new(test.MockQuerier)
+	mockAI := new(MockAIService)
+	mockScraper := new(MockScrapingService)
+	mockJobQueue := new(MockJobQueueService)
+
+	service := NewItemService(mockQuerier, mockAI, mockScraper, mockJobQueue)
+
+	ctx := context.Background()
+	itemID := int32(1)
+	newTitle := "Updated Title Only"
+
+	expectedItem := db.Item{
+		ID:    itemID,
+		Title: newTitle,
+	}
+
+	mockQuerier.On("PatchItem", ctx, mock.MatchedBy(func(params db.PatchItemParams) bool {
+		return params.ID == itemID &&
+			params.Title == &newTitle &&
+			params.Summary == nil &&
+			params.Tags == nil &&
+			params.Authors == nil
+	})).Return(expectedItem, nil)
+
+	item, err := service.PatchItem(ctx, itemID, &newTitle, nil, nil, nil)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, item)
+	assert.Equal(t, newTitle, item.Title)
+	mockQuerier.AssertExpectations(t)
+}
+
+func TestPatchItem_Error(t *testing.T) {
+	mockQuerier := new(test.MockQuerier)
+	mockAI := new(MockAIService)
+	mockScraper := new(MockScrapingService)
+	mockJobQueue := new(MockJobQueueService)
+
+	service := NewItemService(mockQuerier, mockAI, mockScraper, mockJobQueue)
+
+	ctx := context.Background()
+	itemID := int32(1)
+	newTitle := "Updated Title"
+
+	mockQuerier.On("PatchItem", ctx, mock.Anything).Return(db.Item{}, errors.New("database error"))
+
+	item, err := service.PatchItem(ctx, itemID, &newTitle, nil, nil, nil)
+
+	assert.Error(t, err)
+	assert.Nil(t, item)
+	assert.Equal(t, "database error", err.Error())
+	mockQuerier.AssertExpectations(t)
+}
+
 func TestMarkItemAsRead(t *testing.T) {
 	mockQuerier := new(test.MockQuerier)
 	mockAI := new(MockAIService)
