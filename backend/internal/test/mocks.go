@@ -87,6 +87,11 @@ func (m *MockQuerier) MarkItemAsRead(ctx context.Context, id int32) error {
 	return args.Error(0)
 }
 
+func (m *MockQuerier) ToggleItemReadStatus(ctx context.Context, id int32) (db.Item, error) {
+	args := m.Called(ctx, id)
+	return args.Get(0).(db.Item), args.Error(1)
+}
+
 func (m *MockQuerier) UpdateItem(ctx context.Context, arg db.UpdateItemParams) error {
 	args := m.Called(ctx, arg)
 	return args.Error(0)
