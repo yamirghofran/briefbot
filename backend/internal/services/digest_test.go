@@ -17,7 +17,6 @@ func timeNow() *time.Time {
 	return &t
 }
 
-
 func TestSetPodcastGenerationEnabled(t *testing.T) {
 	mockQuerier := new(test.MockQuerier)
 	mockEmail := new(MockEmailService)
@@ -379,4 +378,3 @@ func TestSendIntegratedDigestForUser_PodcastCreationFails(t *testing.T) {
 	mockEmail.AssertExpectations(t)
 	mockPodcast.AssertExpectations(t)
 }
-
