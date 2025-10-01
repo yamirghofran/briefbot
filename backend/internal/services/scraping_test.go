@@ -58,6 +58,18 @@ func TestScrapingServiceScrape(t *testing.T) {
 	}
 }
 
+// TestScrapeBlogPost tests scraping a real blog post
+func TestScrapeBlogPost(t *testing.T) {
+	scraper := NewScraper()
+
+	content, err := scraper.Scrape("https://amirghofran.com/blog/how-i-study/")
+
+	require.NoError(t, err)
+	assert.NotEmpty(t, content)
+	assert.True(t, strings.Contains(content, "study") || strings.Contains(content, "Study"),
+		"Content should contain 'study'")
+}
+
 // TestScrapingServiceErrorHandling tests error scenarios
 func TestScrapingServiceErrorHandling(t *testing.T) {
 	t.Skip("Skipping error handling test - requires network access")
