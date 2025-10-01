@@ -163,6 +163,87 @@ func TestTriggerDailyDigestForUser_InvalidID(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
-// Note: TriggerIntegratedDigest and TriggerIntegratedDigestForUser tests are skipped
-// because they spawn goroutines that make them difficult to test with mocks.
-// These would be better tested with integration tests.
+func TestTriggerIntegratedDigest(t *testing.T) {
+	mockDigestService := new(MockDigestService)
+	handler := NewHandler(nil, nil, mockDigestService, nil)
+
+	router := setupTestRouter()
+	router.POST("/digest/trigger/integrated", handler.TriggerIntegratedDigest)
+
+	// The method spawns a goroutine, but we still test that the endpoint responds correctly
+	mockDigestService.On("SendIntegratedDigest", mock.Anything).Return(nil)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/digest/trigger/integrated", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusAccepted, w.Code)
+
+	// Note: The mock won't be called immediately due to the goroutine,
+	// but we're testing the handler's response behavior
+}
+
+func TestTriggerIntegratedDigest_ServiceUnavailable(t *testing.T) {
+	handler := NewHandler(nil, nil, nil, nil) // No digest service
+
+	router := setupTestRouter()
+	router.POST("/digest/trigger/integrated", handler.TriggerIntegratedDigest)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/digest/trigger/integrated", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusServiceUnavailable, w.Code)
+}
+
+func TestTriggerIntegratedDigestForUser(t *testing.T) {
+	mockDigestService := new(MockDigestService)
+	handler := NewHandler(nil, nil, mockDigestService, nil)
+
+	router := setupTestRouter()
+	router.POST("/digest/trigger/integrated/user/:userID", handler.TriggerIntegratedDigestForUser)
+
+	// The method spawns a goroutine, but we still test that the endpoint responds correctly
+	mockDigestService.On("SendIntegratedDigestForUser", mock.Anything, int32(1)).Return(&services.DigestResult{
+		ItemsCount: 5,
+		EmailSent:  true,
+	}, nil)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/digest/trigger/integrated/user/1", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusAccepted, w.Code)
+}
+
+func TestTriggerIntegratedDigestForUser_InvalidID(t *testing.T) {
+	mockDigestService := new(MockDigestService)
+	handler := NewHandler(nil, nil, mockDigestService, nil)
+
+	router := setupTestRouter()
+	router.POST("/digest/trigger/integrated/user/:userID", handler.TriggerIntegratedDigestForUser)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/digest/trigger/integrated/user/invalid", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestTriggerIntegratedDigestForUser_ServiceUnavailable(t *testing.T) {
+	handler := NewHandler(nil, nil, nil, nil) // No digest service
+
+	router := setupTestRouter()
+	router.POST("/digest/trigger/integrated/user/:userID", handler.TriggerIntegratedDigestForUser)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/digest/trigger/integrated/user/1", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusServiceUnavailable, w.Code)
+}

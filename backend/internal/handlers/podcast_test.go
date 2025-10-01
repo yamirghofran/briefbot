@@ -268,3 +268,302 @@ func TestCreatePodcast_ServiceError(t *testing.T) {
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
 	mockPodcastService.AssertExpectations(t)
 }
+
+func TestGetPodcastsByUser(t *testing.T) {
+	mockPodcastService := new(MockPodcastService)
+	handler := NewPodcastHandler(mockPodcastService)
+
+	router := setupTestRouter()
+	router.GET("/podcasts/user/:userID", handler.GetPodcastsByUser)
+
+	expectedPodcasts := []db.Podcast{
+		{ID: 1, Title: "Podcast 1"},
+		{ID: 2, Title: "Podcast 2"},
+	}
+
+	mockPodcastService.On("GetPodcastsByUser", mock.Anything, int32(1)).Return(expectedPodcasts, nil)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/podcasts/user/1", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	mockPodcastService.AssertExpectations(t)
+}
+
+func TestGetPodcastsByUser_InvalidID(t *testing.T) {
+	mockPodcastService := new(MockPodcastService)
+	handler := NewPodcastHandler(mockPodcastService)
+
+	router := setupTestRouter()
+	router.GET("/podcasts/user/:userID", handler.GetPodcastsByUser)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/podcasts/user/invalid", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestGetPodcastsByStatus(t *testing.T) {
+	mockPodcastService := new(MockPodcastService)
+	handler := NewPodcastHandler(mockPodcastService)
+
+	router := setupTestRouter()
+	router.GET("/podcasts/status/:status", handler.GetPodcastsByStatus)
+
+	expectedPodcasts := []db.Podcast{
+		{ID: 1, Status: "pending"},
+	}
+
+	mockPodcastService.On("GetPodcastsByStatus", mock.Anything, services.PodcastStatus("pending")).Return(expectedPodcasts, nil)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/podcasts/status/pending", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	mockPodcastService.AssertExpectations(t)
+}
+
+func TestGetPodcastsByStatus_InvalidStatus(t *testing.T) {
+	mockPodcastService := new(MockPodcastService)
+	handler := NewPodcastHandler(mockPodcastService)
+
+	router := setupTestRouter()
+	router.GET("/podcasts/status/:status", handler.GetPodcastsByStatus)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/podcasts/status/invalid", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestGetPendingPodcasts(t *testing.T) {
+	mockPodcastService := new(MockPodcastService)
+	handler := NewPodcastHandler(mockPodcastService)
+
+	router := setupTestRouter()
+	router.GET("/podcasts/pending", handler.GetPendingPodcasts)
+
+	expectedPodcasts := []db.Podcast{
+		{ID: 1, Status: "pending"},
+		{ID: 2, Status: "pending"},
+	}
+
+	mockPodcastService.On("GetPendingPodcasts", mock.Anything, int32(10)).Return(expectedPodcasts, nil)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/podcasts/pending", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	mockPodcastService.AssertExpectations(t)
+}
+
+func TestGetPendingPodcasts_WithLimit(t *testing.T) {
+	mockPodcastService := new(MockPodcastService)
+	handler := NewPodcastHandler(mockPodcastService)
+
+	router := setupTestRouter()
+	router.GET("/podcasts/pending", handler.GetPendingPodcasts)
+
+	expectedPodcasts := []db.Podcast{
+		{ID: 1, Status: "pending"},
+	}
+
+	mockPodcastService.On("GetPendingPodcasts", mock.Anything, int32(5)).Return(expectedPodcasts, nil)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/podcasts/pending?limit=5", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	mockPodcastService.AssertExpectations(t)
+}
+
+func TestGetPodcastItems(t *testing.T) {
+	mockPodcastService := new(MockPodcastService)
+	handler := NewPodcastHandler(mockPodcastService)
+
+	router := setupTestRouter()
+	router.GET("/podcasts/:id/items", handler.GetPodcastItems)
+
+	title1 := "Item 1"
+	title2 := "Item 2"
+	expectedItems := []db.GetPodcastItemsRow{
+		{ID: 1, Title: title1},
+		{ID: 2, Title: title2},
+	}
+
+	mockPodcastService.On("GetPodcastItems", mock.Anything, int32(1)).Return(expectedItems, nil)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/podcasts/1/items", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	mockPodcastService.AssertExpectations(t)
+}
+
+func TestGetPodcastAudio(t *testing.T) {
+	mockPodcastService := new(MockPodcastService)
+	handler := NewPodcastHandler(mockPodcastService)
+
+	router := setupTestRouter()
+	router.GET("/podcasts/:id/audio", handler.GetPodcastAudio)
+
+	audioURL := "https://example.com/audio.mp3"
+	duration := int32(300)
+	expectedPodcast := &db.Podcast{
+		ID:              1,
+		AudioUrl:        &audioURL,
+		DurationSeconds: &duration,
+	}
+
+	mockPodcastService.On("HasPodcastAudio", mock.Anything, int32(1)).Return(true, nil)
+	mockPodcastService.On("GetPodcast", mock.Anything, int32(1)).Return(expectedPodcast, nil)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/podcasts/1/audio", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	mockPodcastService.AssertExpectations(t)
+}
+
+func TestGetPodcastAudio_NotAvailable(t *testing.T) {
+	mockPodcastService := new(MockPodcastService)
+	handler := NewPodcastHandler(mockPodcastService)
+
+	router := setupTestRouter()
+	router.GET("/podcasts/:id/audio", handler.GetPodcastAudio)
+
+	mockPodcastService.On("HasPodcastAudio", mock.Anything, int32(1)).Return(false, nil)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/podcasts/1/audio", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusNotFound, w.Code)
+	mockPodcastService.AssertExpectations(t)
+}
+
+func TestGeneratePodcastUploadURL(t *testing.T) {
+	mockPodcastService := new(MockPodcastService)
+	handler := NewPodcastHandler(mockPodcastService)
+
+	router := setupTestRouter()
+	router.GET("/podcasts/:id/upload-url", handler.GeneratePodcastUploadURL)
+
+	expectedResponse := &services.UploadURLResponse{
+		UploadURL: "https://example.com/upload",
+		Key:       "podcasts/1/audio.mp3",
+	}
+
+	mockPodcastService.On("GeneratePodcastUploadURL", mock.Anything, int32(1)).Return(expectedResponse, nil)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/podcasts/1/upload-url", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	mockPodcastService.AssertExpectations(t)
+}
+
+func TestAddItemToPodcast(t *testing.T) {
+	mockPodcastService := new(MockPodcastService)
+	handler := NewPodcastHandler(mockPodcastService)
+
+	router := setupTestRouter()
+	router.POST("/podcasts/:id/items", handler.AddItemToPodcast)
+
+	mockPodcastService.On("AddItemToPodcast", mock.Anything, int32(1), int32(5), 0).Return(nil)
+
+	reqBody := map[string]interface{}{
+		"item_id": 5,
+		"order":   0,
+	}
+	jsonBody, _ := json.Marshal(reqBody)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/podcasts/1/items", bytes.NewBuffer(jsonBody))
+	req.Header.Set("Content-Type", "application/json")
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	mockPodcastService.AssertExpectations(t)
+}
+
+func TestRemoveItemFromPodcast(t *testing.T) {
+	mockPodcastService := new(MockPodcastService)
+	handler := NewPodcastHandler(mockPodcastService)
+
+	router := setupTestRouter()
+	router.DELETE("/podcasts/:id/items/:itemID", handler.RemoveItemFromPodcast)
+
+	mockPodcastService.On("RemoveItemFromPodcast", mock.Anything, int32(1), int32(5)).Return(nil)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("DELETE", "/podcasts/1/items/5", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	mockPodcastService.AssertExpectations(t)
+}
+
+func TestUpdatePodcast(t *testing.T) {
+	mockPodcastService := new(MockPodcastService)
+	handler := NewPodcastHandler(mockPodcastService)
+
+	router := setupTestRouter()
+	router.PUT("/podcasts/:id", handler.UpdatePodcast)
+
+	mockPodcastService.On("UpdatePodcast", mock.Anything, int32(1), "Updated Title", "Updated Description").Return(nil)
+
+	reqBody := map[string]interface{}{
+		"title":       "Updated Title",
+		"description": "Updated Description",
+	}
+	jsonBody, _ := json.Marshal(reqBody)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PUT", "/podcasts/1", bytes.NewBuffer(jsonBody))
+	req.Header.Set("Content-Type", "application/json")
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	mockPodcastService.AssertExpectations(t)
+}
+
+func TestDeletePodcast(t *testing.T) {
+	mockPodcastService := new(MockPodcastService)
+	handler := NewPodcastHandler(mockPodcastService)
+
+	router := setupTestRouter()
+	router.DELETE("/podcasts/:id", handler.DeletePodcast)
+
+	mockPodcastService.On("DeletePodcast", mock.Anything, int32(1)).Return(nil)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("DELETE", "/podcasts/1", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	mockPodcastService.AssertExpectations(t)
+}
