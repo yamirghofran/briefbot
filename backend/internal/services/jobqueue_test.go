@@ -74,6 +74,13 @@ func TestMarkItemAsProcessing(t *testing.T) {
 	ctx := context.Background()
 
 	itemID := int32(1)
+	userID := int32(1)
+
+	// Mock GetItem to return an item with user ID (needed for SSE notification)
+	testItem := test.NewTestDataBuilder().BuildPendingItem()
+	testItem.ID = itemID
+	testItem.UserID = &userID
+	mockQuerier.On("GetItem", ctx, itemID).Return(*testItem, nil)
 
 	mockQuerier.On("UpdateItemAsProcessing", ctx, itemID).Return(nil)
 
@@ -90,7 +97,14 @@ func TestFailItem(t *testing.T) {
 	ctx := context.Background()
 
 	itemID := int32(1)
+	userID := int32(1)
 	errorMsg := "Test error message"
+
+	// Mock GetItem to return an item with user ID (needed for SSE notification)
+	testItem := test.NewTestDataBuilder().BuildPendingItem()
+	testItem.ID = itemID
+	testItem.UserID = &userID
+	mockQuerier.On("GetItem", ctx, itemID).Return(*testItem, nil)
 
 	mockQuerier.On("UpdateItemProcessingStatus", ctx, mock.MatchedBy(func(params db.UpdateItemProcessingStatusParams) bool {
 		return params.ID == itemID &&

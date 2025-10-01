@@ -10,14 +10,16 @@ type Handler struct {
 	itemService    services.ItemService
 	digestService  services.DigestService
 	podcastService services.PodcastService
+	sseManager     *services.SSEManager
 }
 
-func NewHandler(userService services.UserService, itemService services.ItemService, digestService services.DigestService, podcastService services.PodcastService) *Handler {
+func NewHandler(userService services.UserService, itemService services.ItemService, digestService services.DigestService, podcastService services.PodcastService, sseManager *services.SSEManager) *Handler {
 	return &Handler{
 		userService:    userService,
 		itemService:    itemService,
 		digestService:  digestService,
 		podcastService: podcastService,
+		sseManager:     sseManager,
 	}
 }
 
@@ -42,6 +44,7 @@ func (h *Handler) SetupRoutes(router *gin.Engine) {
 		itemGroup.GET("/status", h.GetItemsByProcessingStatus)
 		itemGroup.GET("/user/:userID", h.GetItemsByUser)
 		itemGroup.GET("/user/:userID/unread", h.GetUnreadItemsByUser)
+		itemGroup.GET("/user/:userID/stream", h.StreamItemUpdates) // SSE endpoint
 		itemGroup.PUT("/:id", h.UpdateItem)
 		itemGroup.PATCH("/:id", h.PatchItem)
 		itemGroup.PATCH("/:id/read", h.MarkItemAsRead)

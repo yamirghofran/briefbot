@@ -70,3 +70,7 @@ func (m *MockJobQueueService) RetryItem(ctx context.Context, itemID int32) error
 	args := m.Called(ctx, itemID)
 	return args.Error(0)
 }
+
+func (m *MockJobQueueService) SetSSEManager(sseManager *SSEManager) {
+	m.Called(sseManager)
+}

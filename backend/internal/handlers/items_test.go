@@ -112,7 +112,7 @@ func (m *MockItemService) GetItemsByProcessingStatus(ctx context.Context, status
 
 func TestCreateItem(t *testing.T) {
 	mockItemService := new(MockItemService)
-	handler := NewHandler(nil, mockItemService, nil, nil)
+	handler := NewHandler(nil, mockItemService, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.POST("/items", handler.CreateItem)
@@ -148,7 +148,7 @@ func TestCreateItem(t *testing.T) {
 
 func TestGetItem(t *testing.T) {
 	mockItemService := new(MockItemService)
-	handler := NewHandler(nil, mockItemService, nil, nil)
+	handler := NewHandler(nil, mockItemService, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.GET("/items/:id", handler.GetItem)
@@ -171,7 +171,7 @@ func TestGetItem(t *testing.T) {
 
 func TestGetItemsByUser(t *testing.T) {
 	mockItemService := new(MockItemService)
-	handler := NewHandler(nil, mockItemService, nil, nil)
+	handler := NewHandler(nil, mockItemService, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.GET("/items/user/:userID", handler.GetItemsByUser)
@@ -195,7 +195,7 @@ func TestGetItemsByUser(t *testing.T) {
 
 func TestGetUnreadItemsByUser(t *testing.T) {
 	mockItemService := new(MockItemService)
-	handler := NewHandler(nil, mockItemService, nil, nil)
+	handler := NewHandler(nil, mockItemService, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.GET("/items/user/:userID/unread", handler.GetUnreadItemsByUser)
@@ -218,7 +218,7 @@ func TestGetUnreadItemsByUser(t *testing.T) {
 
 func TestUpdateItem(t *testing.T) {
 	mockItemService := new(MockItemService)
-	handler := NewHandler(nil, mockItemService, nil, nil)
+	handler := NewHandler(nil, mockItemService, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.PUT("/items/:id", handler.UpdateItem)
@@ -242,7 +242,7 @@ func TestUpdateItem(t *testing.T) {
 
 func TestPatchItem(t *testing.T) {
 	mockItemService := new(MockItemService)
-	handler := NewHandler(nil, mockItemService, nil, nil)
+	handler := NewHandler(nil, mockItemService, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.PATCH("/items/:id", handler.PatchItem)
@@ -287,7 +287,7 @@ func TestPatchItem(t *testing.T) {
 
 func TestPatchItem_PartialUpdate(t *testing.T) {
 	mockItemService := new(MockItemService)
-	handler := NewHandler(nil, mockItemService, nil, nil)
+	handler := NewHandler(nil, mockItemService, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.PATCH("/items/:id", handler.PatchItem)
@@ -318,7 +318,7 @@ func TestPatchItem_PartialUpdate(t *testing.T) {
 
 func TestPatchItem_InvalidID(t *testing.T) {
 	mockItemService := new(MockItemService)
-	handler := NewHandler(nil, mockItemService, nil, nil)
+	handler := NewHandler(nil, mockItemService, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.PATCH("/items/:id", handler.PatchItem)
@@ -339,7 +339,7 @@ func TestPatchItem_InvalidID(t *testing.T) {
 
 func TestPatchItem_InvalidJSON(t *testing.T) {
 	mockItemService := new(MockItemService)
-	handler := NewHandler(nil, mockItemService, nil, nil)
+	handler := NewHandler(nil, mockItemService, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.PATCH("/items/:id", handler.PatchItem)
@@ -355,7 +355,7 @@ func TestPatchItem_InvalidJSON(t *testing.T) {
 
 func TestPatchItem_ServiceError(t *testing.T) {
 	mockItemService := new(MockItemService)
-	handler := NewHandler(nil, mockItemService, nil, nil)
+	handler := NewHandler(nil, mockItemService, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.PATCH("/items/:id", handler.PatchItem)
@@ -380,7 +380,7 @@ func TestPatchItem_ServiceError(t *testing.T) {
 
 func TestMarkItemAsRead(t *testing.T) {
 	mockItemService := new(MockItemService)
-	handler := NewHandler(nil, mockItemService, nil, nil)
+	handler := NewHandler(nil, mockItemService, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.PATCH("/items/:id/read", handler.MarkItemAsRead)
@@ -405,7 +405,7 @@ func TestMarkItemAsRead(t *testing.T) {
 
 func TestToggleItemReadStatus(t *testing.T) {
 	mockItemService := new(MockItemService)
-	handler := NewHandler(nil, mockItemService, nil, nil)
+	handler := NewHandler(nil, mockItemService, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.PATCH("/items/:id/toggle-read", handler.ToggleItemReadStatus)
@@ -429,7 +429,7 @@ func TestToggleItemReadStatus(t *testing.T) {
 
 func TestDeleteItem(t *testing.T) {
 	mockItemService := new(MockItemService)
-	handler := NewHandler(nil, mockItemService, nil, nil)
+	handler := NewHandler(nil, mockItemService, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.DELETE("/items/:id", handler.DeleteItem)
@@ -447,7 +447,7 @@ func TestDeleteItem(t *testing.T) {
 
 func TestGetItemProcessingStatus(t *testing.T) {
 	mockItemService := new(MockItemService)
-	handler := NewHandler(nil, mockItemService, nil, nil)
+	handler := NewHandler(nil, mockItemService, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.GET("/items/:id/status", handler.GetItemProcessingStatus)
@@ -474,7 +474,7 @@ func TestGetItemProcessingStatus(t *testing.T) {
 
 func TestGetItemsByProcessingStatus(t *testing.T) {
 	mockItemService := new(MockItemService)
-	handler := NewHandler(nil, mockItemService, nil, nil)
+	handler := NewHandler(nil, mockItemService, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.GET("/items/status", handler.GetItemsByProcessingStatus)
@@ -497,7 +497,7 @@ func TestGetItemsByProcessingStatus(t *testing.T) {
 
 func TestGetItemsByProcessingStatus_InvalidStatus(t *testing.T) {
 	mockItemService := new(MockItemService)
-	handler := NewHandler(nil, mockItemService, nil, nil)
+	handler := NewHandler(nil, mockItemService, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.GET("/items/status", handler.GetItemsByProcessingStatus)
@@ -512,7 +512,7 @@ func TestGetItemsByProcessingStatus_InvalidStatus(t *testing.T) {
 
 func TestCreateItem_Error(t *testing.T) {
 	mockItemService := new(MockItemService)
-	handler := NewHandler(nil, mockItemService, nil, nil)
+	handler := NewHandler(nil, mockItemService, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.POST("/items", handler.CreateItem)
@@ -537,7 +537,7 @@ func TestCreateItem_Error(t *testing.T) {
 
 func TestCreateItem_InvalidJSON(t *testing.T) {
 	mockItemService := new(MockItemService)
-	handler := NewHandler(nil, mockItemService, nil, nil)
+	handler := NewHandler(nil, mockItemService, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.POST("/items", handler.CreateItem)
@@ -553,7 +553,7 @@ func TestCreateItem_InvalidJSON(t *testing.T) {
 
 func TestGetItem_InvalidID(t *testing.T) {
 	mockItemService := new(MockItemService)
-	handler := NewHandler(nil, mockItemService, nil, nil)
+	handler := NewHandler(nil, mockItemService, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.GET("/items/:id", handler.GetItem)
@@ -568,7 +568,7 @@ func TestGetItem_InvalidID(t *testing.T) {
 
 func TestGetItem_ServiceError(t *testing.T) {
 	mockItemService := new(MockItemService)
-	handler := NewHandler(nil, mockItemService, nil, nil)
+	handler := NewHandler(nil, mockItemService, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.GET("/items/:id", handler.GetItem)
@@ -586,7 +586,7 @@ func TestGetItem_ServiceError(t *testing.T) {
 
 func TestGetItemsByUser_InvalidID(t *testing.T) {
 	mockItemService := new(MockItemService)
-	handler := NewHandler(nil, mockItemService, nil, nil)
+	handler := NewHandler(nil, mockItemService, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.GET("/items/user/:userID", handler.GetItemsByUser)
@@ -601,7 +601,7 @@ func TestGetItemsByUser_InvalidID(t *testing.T) {
 
 func TestGetItemsByUser_ServiceError(t *testing.T) {
 	mockItemService := new(MockItemService)
-	handler := NewHandler(nil, mockItemService, nil, nil)
+	handler := NewHandler(nil, mockItemService, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.GET("/items/user/:userID", handler.GetItemsByUser)
@@ -620,7 +620,7 @@ func TestGetItemsByUser_ServiceError(t *testing.T) {
 
 func TestGetUnreadItemsByUser_InvalidID(t *testing.T) {
 	mockItemService := new(MockItemService)
-	handler := NewHandler(nil, mockItemService, nil, nil)
+	handler := NewHandler(nil, mockItemService, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.GET("/items/user/:userID/unread", handler.GetUnreadItemsByUser)
@@ -635,7 +635,7 @@ func TestGetUnreadItemsByUser_InvalidID(t *testing.T) {
 
 func TestGetUnreadItemsByUser_ServiceError(t *testing.T) {
 	mockItemService := new(MockItemService)
-	handler := NewHandler(nil, mockItemService, nil, nil)
+	handler := NewHandler(nil, mockItemService, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.GET("/items/user/:userID/unread", handler.GetUnreadItemsByUser)
@@ -654,7 +654,7 @@ func TestGetUnreadItemsByUser_ServiceError(t *testing.T) {
 
 func TestUpdateItem_InvalidID(t *testing.T) {
 	mockItemService := new(MockItemService)
-	handler := NewHandler(nil, mockItemService, nil, nil)
+	handler := NewHandler(nil, mockItemService, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.PUT("/items/:id", handler.UpdateItem)
@@ -675,7 +675,7 @@ func TestUpdateItem_InvalidID(t *testing.T) {
 
 func TestUpdateItem_ServiceError(t *testing.T) {
 	mockItemService := new(MockItemService)
-	handler := NewHandler(nil, mockItemService, nil, nil)
+	handler := NewHandler(nil, mockItemService, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.PUT("/items/:id", handler.UpdateItem)
@@ -699,7 +699,7 @@ func TestUpdateItem_ServiceError(t *testing.T) {
 
 func TestMarkItemAsRead_InvalidID(t *testing.T) {
 	mockItemService := new(MockItemService)
-	handler := NewHandler(nil, mockItemService, nil, nil)
+	handler := NewHandler(nil, mockItemService, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.PATCH("/items/:id/read", handler.MarkItemAsRead)
@@ -714,7 +714,7 @@ func TestMarkItemAsRead_InvalidID(t *testing.T) {
 
 func TestMarkItemAsRead_ServiceError(t *testing.T) {
 	mockItemService := new(MockItemService)
-	handler := NewHandler(nil, mockItemService, nil, nil)
+	handler := NewHandler(nil, mockItemService, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.PATCH("/items/:id/read", handler.MarkItemAsRead)
@@ -732,7 +732,7 @@ func TestMarkItemAsRead_ServiceError(t *testing.T) {
 
 func TestMarkItemAsRead_GetItemError(t *testing.T) {
 	mockItemService := new(MockItemService)
-	handler := NewHandler(nil, mockItemService, nil, nil)
+	handler := NewHandler(nil, mockItemService, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.PATCH("/items/:id/read", handler.MarkItemAsRead)
@@ -751,7 +751,7 @@ func TestMarkItemAsRead_GetItemError(t *testing.T) {
 
 func TestToggleItemReadStatus_InvalidID(t *testing.T) {
 	mockItemService := new(MockItemService)
-	handler := NewHandler(nil, mockItemService, nil, nil)
+	handler := NewHandler(nil, mockItemService, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.PATCH("/items/:id/toggle-read", handler.ToggleItemReadStatus)
@@ -766,7 +766,7 @@ func TestToggleItemReadStatus_InvalidID(t *testing.T) {
 
 func TestToggleItemReadStatus_ServiceError(t *testing.T) {
 	mockItemService := new(MockItemService)
-	handler := NewHandler(nil, mockItemService, nil, nil)
+	handler := NewHandler(nil, mockItemService, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.PATCH("/items/:id/toggle-read", handler.ToggleItemReadStatus)
@@ -784,7 +784,7 @@ func TestToggleItemReadStatus_ServiceError(t *testing.T) {
 
 func TestDeleteItem_InvalidID(t *testing.T) {
 	mockItemService := new(MockItemService)
-	handler := NewHandler(nil, mockItemService, nil, nil)
+	handler := NewHandler(nil, mockItemService, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.DELETE("/items/:id", handler.DeleteItem)
@@ -799,7 +799,7 @@ func TestDeleteItem_InvalidID(t *testing.T) {
 
 func TestDeleteItem_ServiceError(t *testing.T) {
 	mockItemService := new(MockItemService)
-	handler := NewHandler(nil, mockItemService, nil, nil)
+	handler := NewHandler(nil, mockItemService, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.DELETE("/items/:id", handler.DeleteItem)
@@ -817,7 +817,7 @@ func TestDeleteItem_ServiceError(t *testing.T) {
 
 func TestGetItemProcessingStatus_InvalidID(t *testing.T) {
 	mockItemService := new(MockItemService)
-	handler := NewHandler(nil, mockItemService, nil, nil)
+	handler := NewHandler(nil, mockItemService, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.GET("/items/:id/status", handler.GetItemProcessingStatus)
@@ -832,7 +832,7 @@ func TestGetItemProcessingStatus_InvalidID(t *testing.T) {
 
 func TestGetItemProcessingStatus_ServiceError(t *testing.T) {
 	mockItemService := new(MockItemService)
-	handler := NewHandler(nil, mockItemService, nil, nil)
+	handler := NewHandler(nil, mockItemService, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.GET("/items/:id/status", handler.GetItemProcessingStatus)
@@ -850,7 +850,7 @@ func TestGetItemProcessingStatus_ServiceError(t *testing.T) {
 
 func TestGetItemsByProcessingStatus_ServiceError(t *testing.T) {
 	mockItemService := new(MockItemService)
-	handler := NewHandler(nil, mockItemService, nil, nil)
+	handler := NewHandler(nil, mockItemService, nil, nil, nil)
 
 	router := setupTestRouter()
 	router.GET("/items/status", handler.GetItemsByProcessingStatus)

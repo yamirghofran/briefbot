@@ -169,6 +169,13 @@ func main() {
 		}
 	}()
 
+	// Initialize SSE manager for real-time updates
+	sseManager := services.NewSSEManager()
+	log.Println("SSE manager initialized")
+
+	// Connect SSE manager to job queue service
+	jobQueueService.SetSSEManager(sseManager)
+
 	// Initialize Gin router
 	router := gin.Default()
 
@@ -187,7 +194,7 @@ func main() {
 	})
 
 	// Setup routes
-	handlers.SetupRoutes(router, userService, itemService, digestService, podcastService)
+	handlers.SetupRoutes(router, userService, itemService, digestService, podcastService, sseManager)
 
 	// Get port from environment or use default
 	port := os.Getenv("PORT")

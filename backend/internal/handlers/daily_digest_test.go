@@ -57,7 +57,7 @@ func (m *MockDigestService) IsPodcastGenerationEnabled() bool {
 
 func TestTriggerDailyDigest(t *testing.T) {
 	mockDigestService := new(MockDigestService)
-	handler := NewHandler(nil, nil, mockDigestService, nil)
+	handler := NewHandler(nil, nil, mockDigestService, nil, nil)
 
 	router := setupTestRouter()
 	router.POST("/digest/trigger", handler.TriggerDailyDigest)
@@ -74,7 +74,7 @@ func TestTriggerDailyDigest(t *testing.T) {
 }
 
 func TestTriggerDailyDigest_ServiceUnavailable(t *testing.T) {
-	handler := NewHandler(nil, nil, nil, nil) // No digest service
+	handler := NewHandler(nil, nil, nil, nil, nil) // No digest service
 
 	router := setupTestRouter()
 	router.POST("/digest/trigger", handler.TriggerDailyDigest)
@@ -89,7 +89,7 @@ func TestTriggerDailyDigest_ServiceUnavailable(t *testing.T) {
 
 func TestTriggerDailyDigest_Error(t *testing.T) {
 	mockDigestService := new(MockDigestService)
-	handler := NewHandler(nil, nil, mockDigestService, nil)
+	handler := NewHandler(nil, nil, mockDigestService, nil, nil)
 
 	router := setupTestRouter()
 	router.POST("/digest/trigger", handler.TriggerDailyDigest)
@@ -107,7 +107,7 @@ func TestTriggerDailyDigest_Error(t *testing.T) {
 
 func TestTriggerDailyDigestForUser(t *testing.T) {
 	mockDigestService := new(MockDigestService)
-	handler := NewHandler(nil, nil, mockDigestService, nil)
+	handler := NewHandler(nil, nil, mockDigestService, nil, nil)
 
 	router := setupTestRouter()
 	router.POST("/digest/trigger/user/:userID", handler.TriggerDailyDigestForUser)
@@ -130,7 +130,7 @@ func TestTriggerDailyDigestForUser(t *testing.T) {
 
 func TestTriggerDailyDigestForUser_NoItems(t *testing.T) {
 	mockDigestService := new(MockDigestService)
-	handler := NewHandler(nil, nil, mockDigestService, nil)
+	handler := NewHandler(nil, nil, mockDigestService, nil, nil)
 
 	router := setupTestRouter()
 	router.POST("/digest/trigger/user/:userID", handler.TriggerDailyDigestForUser)
@@ -150,7 +150,7 @@ func TestTriggerDailyDigestForUser_NoItems(t *testing.T) {
 
 func TestTriggerDailyDigestForUser_InvalidID(t *testing.T) {
 	mockDigestService := new(MockDigestService)
-	handler := NewHandler(nil, nil, mockDigestService, nil)
+	handler := NewHandler(nil, nil, mockDigestService, nil, nil)
 
 	router := setupTestRouter()
 	router.POST("/digest/trigger/user/:userID", handler.TriggerDailyDigestForUser)
@@ -165,7 +165,7 @@ func TestTriggerDailyDigestForUser_InvalidID(t *testing.T) {
 
 func TestTriggerIntegratedDigest(t *testing.T) {
 	mockDigestService := new(MockDigestService)
-	handler := NewHandler(nil, nil, mockDigestService, nil)
+	handler := NewHandler(nil, nil, mockDigestService, nil, nil)
 
 	router := setupTestRouter()
 	router.POST("/digest/trigger/integrated", handler.TriggerIntegratedDigest)
@@ -185,7 +185,7 @@ func TestTriggerIntegratedDigest(t *testing.T) {
 }
 
 func TestTriggerIntegratedDigest_ServiceUnavailable(t *testing.T) {
-	handler := NewHandler(nil, nil, nil, nil) // No digest service
+	handler := NewHandler(nil, nil, nil, nil, nil) // No digest service
 
 	router := setupTestRouter()
 	router.POST("/digest/trigger/integrated", handler.TriggerIntegratedDigest)
@@ -200,7 +200,7 @@ func TestTriggerIntegratedDigest_ServiceUnavailable(t *testing.T) {
 
 func TestTriggerIntegratedDigestForUser(t *testing.T) {
 	mockDigestService := new(MockDigestService)
-	handler := NewHandler(nil, nil, mockDigestService, nil)
+	handler := NewHandler(nil, nil, mockDigestService, nil, nil)
 
 	router := setupTestRouter()
 	router.POST("/digest/trigger/integrated/user/:userID", handler.TriggerIntegratedDigestForUser)
@@ -221,7 +221,7 @@ func TestTriggerIntegratedDigestForUser(t *testing.T) {
 
 func TestTriggerIntegratedDigestForUser_InvalidID(t *testing.T) {
 	mockDigestService := new(MockDigestService)
-	handler := NewHandler(nil, nil, mockDigestService, nil)
+	handler := NewHandler(nil, nil, mockDigestService, nil, nil)
 
 	router := setupTestRouter()
 	router.POST("/digest/trigger/integrated/user/:userID", handler.TriggerIntegratedDigestForUser)
@@ -235,7 +235,7 @@ func TestTriggerIntegratedDigestForUser_InvalidID(t *testing.T) {
 }
 
 func TestTriggerIntegratedDigestForUser_ServiceUnavailable(t *testing.T) {
-	handler := NewHandler(nil, nil, nil, nil) // No digest service
+	handler := NewHandler(nil, nil, nil, nil, nil) // No digest service
 
 	router := setupTestRouter()
 	router.POST("/digest/trigger/integrated/user/:userID", handler.TriggerIntegratedDigestForUser)
@@ -250,7 +250,7 @@ func TestTriggerIntegratedDigestForUser_ServiceUnavailable(t *testing.T) {
 
 func TestTriggerDailyDigestForUser_GetItemsError(t *testing.T) {
 	mockDigestService := new(MockDigestService)
-	handler := NewHandler(nil, nil, mockDigestService, nil)
+	handler := NewHandler(nil, nil, mockDigestService, nil, nil)
 
 	router := setupTestRouter()
 	router.POST("/digest/trigger/user/:userID", handler.TriggerDailyDigestForUser)
@@ -268,7 +268,7 @@ func TestTriggerDailyDigestForUser_GetItemsError(t *testing.T) {
 
 func TestTriggerDailyDigestForUser_SendDigestError(t *testing.T) {
 	mockDigestService := new(MockDigestService)
-	handler := NewHandler(nil, nil, mockDigestService, nil)
+	handler := NewHandler(nil, nil, mockDigestService, nil, nil)
 
 	router := setupTestRouter()
 	router.POST("/digest/trigger/user/:userID", handler.TriggerDailyDigestForUser)
@@ -290,7 +290,7 @@ func TestTriggerDailyDigestForUser_SendDigestError(t *testing.T) {
 }
 
 func TestTriggerDailyDigestForUser_ServiceUnavailable(t *testing.T) {
-	handler := NewHandler(nil, nil, nil, nil) // No digest service
+	handler := NewHandler(nil, nil, nil, nil, nil) // No digest service
 
 	router := setupTestRouter()
 	router.POST("/digest/trigger/user/:userID", handler.TriggerDailyDigestForUser)

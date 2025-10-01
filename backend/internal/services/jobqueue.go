@@ -30,6 +30,9 @@ type JobQueueService interface {
 	GetItemsByStatus(ctx context.Context, status string) ([]db.Item, error)
 	GetFailedItemsForRetry(ctx context.Context, limit int32) ([]db.Item, error)
 	RetryItem(ctx context.Context, itemID int32) error
+
+	// SSE integration
+	SetSSEManager(sseManager *SSEManager)
 }
 
 type ItemStatus struct {
@@ -41,11 +44,20 @@ type ItemStatus struct {
 }
 
 type jobQueueService struct {
-	querier db.Querier
+	querier    db.Querier
+	sseManager *SSEManager
 }
 
 func NewJobQueueService(querier db.Querier) JobQueueService {
-	return &jobQueueService{querier: querier}
+	return &jobQueueService{
+		querier:    querier,
+		sseManager: nil, // Will be set later via SetSSEManager
+	}
+}
+
+// SetSSEManager sets the SSE manager for the job queue service
+func (s *jobQueueService) SetSSEManager(sseManager *SSEManager) {
+	s.sseManager = sseManager
 }
 
 func (s *jobQueueService) EnqueueItem(ctx context.Context, userID int32, title string, url string) (*db.Item, error) {
@@ -58,6 +70,11 @@ func (s *jobQueueService) EnqueueItem(ctx context.Context, userID int32, title s
 	item, err := s.querier.CreatePendingItem(ctx, params)
 	if err != nil {
 		return nil, fmt.Errorf("failed to enqueue item: %w", err)
+	}
+
+	// Notify SSE clients about new item
+	if s.sseManager != nil && item.ProcessingStatus != nil {
+		s.sseManager.NotifyItemUpdate(userID, item.ID, item.ProcessingStatus, "created")
 	}
 
 	return &item, nil
@@ -73,9 +90,21 @@ func (s *jobQueueService) DequeuePendingItems(ctx context.Context, limit int32) 
 }
 
 func (s *jobQueueService) MarkItemAsProcessing(ctx context.Context, itemID int32) error {
-	err := s.querier.UpdateItemAsProcessing(ctx, itemID)
+	// Get item to find user ID
+	item, err := s.querier.GetItem(ctx, itemID)
+	if err != nil {
+		return fmt.Errorf("failed to get item: %w", err)
+	}
+
+	err = s.querier.UpdateItemAsProcessing(ctx, itemID)
 	if err != nil {
 		return fmt.Errorf("failed to mark item as processing: %w", err)
+	}
+
+	// Notify SSE clients about processing status
+	if s.sseManager != nil && item.UserID != nil {
+		processingStatus := ProcessingStatusProcessing
+		s.sseManager.NotifyItemUpdate(*item.UserID, itemID, &processingStatus, "processing")
 	}
 
 	return nil
@@ -120,10 +149,21 @@ func (s *jobQueueService) CompleteItem(ctx context.Context, itemID int32, title,
 		return fmt.Errorf("failed to mark item as completed: %w", err)
 	}
 
+	// Notify SSE clients about completion
+	if s.sseManager != nil && item.UserID != nil {
+		s.sseManager.NotifyItemUpdate(*item.UserID, itemID, &completedStatus, "completed")
+	}
+
 	return nil
 }
 
 func (s *jobQueueService) FailItem(ctx context.Context, itemID int32, errorMsg string) error {
+	// Get item to find user ID
+	item, err := s.querier.GetItem(ctx, itemID)
+	if err != nil {
+		return fmt.Errorf("failed to get item: %w", err)
+	}
+
 	failedStatus := ProcessingStatusFailed
 	statusParams := db.UpdateItemProcessingStatusParams{
 		ID:               itemID,
@@ -131,9 +171,14 @@ func (s *jobQueueService) FailItem(ctx context.Context, itemID int32, errorMsg s
 		ProcessingError:  &errorMsg,
 	}
 
-	err := s.querier.UpdateItemProcessingStatus(ctx, statusParams)
+	err = s.querier.UpdateItemProcessingStatus(ctx, statusParams)
 	if err != nil {
 		return fmt.Errorf("failed to mark item as failed: %w", err)
+	}
+
+	// Notify SSE clients about failure
+	if s.sseManager != nil && item.UserID != nil {
+		s.sseManager.NotifyItemUpdate(*item.UserID, itemID, &failedStatus, "failed")
 	}
 
 	return nil
