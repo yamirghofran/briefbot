@@ -5,7 +5,17 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Calendar, ExternalLink, Tag, User, Edit2, X, Check } from "lucide-react";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { ArrowLeft, Calendar, ExternalLink, Tag, User, Edit2, X, Check, Trash2 } from "lucide-react";
 import { formatRelativeDate } from "@/lib/date-utils";
 import { useState } from "react";
 
@@ -18,6 +28,7 @@ function ItemDetailPage() {
 	const { id } = Route.useParams();
 	const queryClient = useQueryClient();
 	const [isEditing, setIsEditing] = useState(false);
+	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 	const [editForm, setEditForm] = useState({
 		title: "",
 		summary: "",
@@ -47,6 +58,14 @@ function ItemDetailPage() {
 		},
 	});
 
+	const deleteMutation = useMutation({
+		mutationFn: () => itemApi.deleteItem(parseInt(id)),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["items"] });
+			navigate({ to: "/" });
+		},
+	});
+
 	const handleEdit = () => {
 		setEditForm({
 			title: item?.title || "",
@@ -70,6 +89,11 @@ function ItemDetailPage() {
 		if (JSON.stringify(editForm.authors) !== JSON.stringify(item?.authors)) updates.authors = editForm.authors;
 
 		patchMutation.mutate(updates);
+	};
+
+	const handleDelete = () => {
+		deleteMutation.mutate();
+		setShowDeleteDialog(false);
 	};
 
 	if (isLoading) {
@@ -139,10 +163,16 @@ function ItemDetailPage() {
 						Back to Items
 					</Button>
 					{!isEditing ? (
-						<Button onClick={handleEdit} variant="outline" size="sm">
-							<Edit2 className="mr-2 h-4 w-4" />
-							Edit
-						</Button>
+						<div className="flex gap-2">
+							<Button onClick={handleEdit} variant="outline" size="sm">
+								<Edit2 className="mr-2 h-4 w-4" />
+								Edit
+							</Button>
+							<Button onClick={() => setShowDeleteDialog(true)} variant="destructive" size="sm">
+								<Trash2 className="mr-2 h-4 w-4" />
+								Delete
+							</Button>
+						</div>
 					) : (
 						<div className="flex gap-2">
 							<Button onClick={handleSave} variant="default" size="sm" disabled={patchMutation.isPending}>
@@ -157,6 +187,27 @@ function ItemDetailPage() {
 					)}
 				</div>
 			</div>
+
+			{/* Delete Confirmation Dialog */}
+			<AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Are you sure?</AlertDialogTitle>
+						<AlertDialogDescription>
+							This action cannot be undone. This will permanently delete the item
+							"{item?.title || 'Untitled'}" from your collection.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>Cancel</AlertDialogCancel>
+						<AlertDialogAction asChild>
+							<Button variant="destructive" onClick={handleDelete}>
+								Delete
+							</Button>
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 
 			{/* Item Details - Clean Layout */}
 			<div className="space-y-8">
