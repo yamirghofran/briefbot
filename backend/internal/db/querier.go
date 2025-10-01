@@ -45,6 +45,7 @@ type Querier interface {
 	GetUserPodcastStats(ctx context.Context, userID *int32) (GetUserPodcastStatsRow, error)
 	ListUsers(ctx context.Context) ([]User, error)
 	MarkItemAsRead(ctx context.Context, id int32) error
+	PatchItem(ctx context.Context, arg PatchItemParams) (Item, error)
 	RemoveItemFromPodcast(ctx context.Context, arg RemoveItemFromPodcastParams) error
 	ToggleItemReadStatus(ctx context.Context, id int32) (Item, error)
 	UpdateItem(ctx context.Context, arg UpdateItemParams) error

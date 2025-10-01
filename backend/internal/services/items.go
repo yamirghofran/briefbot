@@ -20,6 +20,7 @@ type ItemService interface {
 	GetUnreadItemsByUser(ctx context.Context, userID *int32) ([]db.Item, error)
 	GetUnreadItemsFromPreviousDay(ctx context.Context) ([]db.Item, error)
 	UpdateItem(ctx context.Context, id int32, title string, url *string, textContent *string, summary *string, itemType *string, platform *string, tags []string, authors []string, isRead *bool) error
+	PatchItem(ctx context.Context, id int32, title *string, summary *string, tags []string, authors []string) (*db.Item, error)
 	MarkItemAsRead(ctx context.Context, id int32) error
 	ToggleItemReadStatus(ctx context.Context, id int32) (*db.Item, error)
 	DeleteItem(ctx context.Context, id int32) error
@@ -137,6 +138,21 @@ func (s *itemService) UpdateItem(ctx context.Context, id int32, title string, ur
 		Authors:     authors,
 	}
 	return s.querier.UpdateItem(ctx, params)
+}
+
+func (s *itemService) PatchItem(ctx context.Context, id int32, title *string, summary *string, tags []string, authors []string) (*db.Item, error) {
+	params := db.PatchItemParams{
+		ID:      id,
+		Title:   title,
+		Summary: summary,
+		Tags:    tags,
+		Authors: authors,
+	}
+	item, err := s.querier.PatchItem(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+	return &item, nil
 }
 
 func (s *itemService) MarkItemAsRead(ctx context.Context, id int32) error {

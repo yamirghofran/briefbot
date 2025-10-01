@@ -1,11 +1,26 @@
 import type { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { StaticColumnHeader } from "@/components/data-table/static-column-header"
 import { ReadStatusCell } from "@/components/read-status-cell"
-import { Link } from "lucide-react"
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { Link, Trash2 } from "lucide-react"
 import { format, isToday, isYesterday, differenceInDays } from "date-fns"
 import { useNavigate } from "@tanstack/react-router"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { itemApi } from "@/services/api"
 import type { Item } from "@/types"
+import { useState } from "react"
 
 // Helper function to format dates as "today", "yesterday", or "September 5th"
 function formatRelativeDate(date: Date): string {
@@ -66,6 +81,54 @@ function TitleCell({ title, url, id }: { title: string | null, url: string | nul
         {title || <span className="text-gray-400">Untitled</span>}
       </button>
     </div>
+  )
+}
+
+// Delete Action Cell Component
+function DeleteActionCell({ item }: { item: Item }) {
+  const [showDialog, setShowDialog] = useState(false)
+  const queryClient = useQueryClient()
+
+  const deleteMutation = useMutation({
+    mutationFn: () => itemApi.deleteItem(item.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["items"] })
+      setShowDialog(false)
+    },
+  })
+
+  return (
+    <AlertDialog open={showDialog} onOpenChange={setShowDialog}>
+      <AlertDialogTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+          onClick={(e) => {
+            e.stopPropagation()
+          }}
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This action cannot be undone. This will permanently delete the item
+            "{item.title || 'Untitled'}" from your collection.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction asChild>
+            <Button variant="destructive" onClick={() => deleteMutation.mutate()}>
+              Delete
+            </Button>
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }
 
@@ -208,10 +271,23 @@ export const itemColumns: ColumnDef<Item>[] = [
     cell: ({ row }) => {
       const dateStr = row.getValue("created_at") as string
       const date = dateStr ? new Date(dateStr) : null
-      
+
       return (
         <div className="w-[120px] text-sm">
           {date ? formatRelativeDate(date) : <span className="text-gray-400">—</span>}
+        </div>
+      )
+    },
+  },
+  {
+    id: "actions",
+    header: () => <div className="text-center">Actions</div>,
+    cell: ({ row }) => {
+      const item = row.original
+
+      return (
+        <div className="flex justify-center">
+          <DeleteActionCell item={item} />
         </div>
       )
     },

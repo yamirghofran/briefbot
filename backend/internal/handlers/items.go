@@ -161,6 +161,35 @@ func (h *Handler) ToggleItemReadStatus(c *gin.Context) {
 	c.JSON(http.StatusOK, item)
 }
 
+func (h *Handler) PatchItem(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.ParseInt(idStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid item ID"})
+		return
+	}
+
+	var req struct {
+		Title   *string  `json:"title"`
+		Summary *string  `json:"summary"`
+		Tags    []string `json:"tags"`
+		Authors []string `json:"authors"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	item, err := h.itemService.PatchItem(c.Request.Context(), int32(id), req.Title, req.Summary, req.Tags, req.Authors)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, item)
+}
+
 func (h *Handler) DeleteItem(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseInt(idStr, 10, 32)
