@@ -253,3 +253,138 @@ func TestDeleteUser(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 	mockUserService.AssertExpectations(t)
 }
+
+func TestGetUser_ServiceError(t *testing.T) {
+	mockUserService := new(MockUserService)
+	handler := NewHandler(mockUserService, nil, nil, nil)
+
+	router := setupTestRouter()
+	router.GET("/users/:id", handler.GetUser)
+
+	mockUserService.On("GetUser", mock.Anything, int32(1)).Return(nil, errors.New("service error"))
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/users/1", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	mockUserService.AssertExpectations(t)
+}
+
+func TestGetUserByEmail_ServiceError(t *testing.T) {
+	mockUserService := new(MockUserService)
+	handler := NewHandler(mockUserService, nil, nil, nil)
+
+	router := setupTestRouter()
+	router.GET("/users/email/:email", handler.GetUserByEmail)
+
+	email := "john@example.com"
+	mockUserService.On("GetUserByEmail", mock.Anything, &email).Return(nil, errors.New("service error"))
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/users/email/john@example.com", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	mockUserService.AssertExpectations(t)
+}
+
+func TestListUsers_ServiceError(t *testing.T) {
+	mockUserService := new(MockUserService)
+	handler := NewHandler(mockUserService, nil, nil, nil)
+
+	router := setupTestRouter()
+	router.GET("/users", handler.ListUsers)
+
+	mockUserService.On("ListUsers", mock.Anything).Return([]db.User{}, errors.New("service error"))
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/users", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	mockUserService.AssertExpectations(t)
+}
+
+func TestUpdateUser_InvalidID(t *testing.T) {
+	mockUserService := new(MockUserService)
+	handler := NewHandler(mockUserService, nil, nil, nil)
+
+	router := setupTestRouter()
+	router.PUT("/users/:id", handler.UpdateUser)
+
+	name := "Updated Name"
+	reqBody := map[string]interface{}{
+		"name": name,
+	}
+	jsonBody, _ := json.Marshal(reqBody)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PUT", "/users/invalid", bytes.NewBuffer(jsonBody))
+	req.Header.Set("Content-Type", "application/json")
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestUpdateUser_ServiceError(t *testing.T) {
+	mockUserService := new(MockUserService)
+	handler := NewHandler(mockUserService, nil, nil, nil)
+
+	router := setupTestRouter()
+	router.PUT("/users/:id", handler.UpdateUser)
+
+	name := "Updated Name"
+	mockUserService.On("UpdateUser", mock.Anything, int32(1), &name, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("service error"))
+
+	reqBody := map[string]interface{}{
+		"name": name,
+	}
+	jsonBody, _ := json.Marshal(reqBody)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PUT", "/users/1", bytes.NewBuffer(jsonBody))
+	req.Header.Set("Content-Type", "application/json")
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	mockUserService.AssertExpectations(t)
+}
+
+func TestDeleteUser_InvalidID(t *testing.T) {
+	mockUserService := new(MockUserService)
+	handler := NewHandler(mockUserService, nil, nil, nil)
+
+	router := setupTestRouter()
+	router.DELETE("/users/:id", handler.DeleteUser)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("DELETE", "/users/invalid", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestDeleteUser_ServiceError(t *testing.T) {
+	mockUserService := new(MockUserService)
+	handler := NewHandler(mockUserService, nil, nil, nil)
+
+	router := setupTestRouter()
+	router.DELETE("/users/:id", handler.DeleteUser)
+
+	mockUserService.On("DeleteUser", mock.Anything, int32(1)).Return(errors.New("service error"))
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("DELETE", "/users/1", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	mockUserService.AssertExpectations(t)
+}

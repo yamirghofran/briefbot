@@ -247,3 +247,58 @@ func TestTriggerIntegratedDigestForUser_ServiceUnavailable(t *testing.T) {
 
 	assert.Equal(t, http.StatusServiceUnavailable, w.Code)
 }
+
+func TestTriggerDailyDigestForUser_GetItemsError(t *testing.T) {
+	mockDigestService := new(MockDigestService)
+	handler := NewHandler(nil, nil, mockDigestService, nil)
+
+	router := setupTestRouter()
+	router.POST("/digest/trigger/user/:userID", handler.TriggerDailyDigestForUser)
+
+	mockDigestService.On("GetDailyDigestItemsForUser", mock.Anything, int32(1)).Return([]db.Item{}, errors.New("service error"))
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/digest/trigger/user/1", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	mockDigestService.AssertExpectations(t)
+}
+
+func TestTriggerDailyDigestForUser_SendDigestError(t *testing.T) {
+	mockDigestService := new(MockDigestService)
+	handler := NewHandler(nil, nil, mockDigestService, nil)
+
+	router := setupTestRouter()
+	router.POST("/digest/trigger/user/:userID", handler.TriggerDailyDigestForUser)
+
+	expectedItems := []db.Item{
+		{ID: 1, Title: "Item 1"},
+	}
+
+	mockDigestService.On("GetDailyDigestItemsForUser", mock.Anything, int32(1)).Return(expectedItems, nil)
+	mockDigestService.On("SendDailyDigestForUser", mock.Anything, int32(1)).Return(errors.New("send error"))
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/digest/trigger/user/1", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	mockDigestService.AssertExpectations(t)
+}
+
+func TestTriggerDailyDigestForUser_ServiceUnavailable(t *testing.T) {
+	handler := NewHandler(nil, nil, nil, nil) // No digest service
+
+	router := setupTestRouter()
+	router.POST("/digest/trigger/user/:userID", handler.TriggerDailyDigestForUser)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/digest/trigger/user/1", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusServiceUnavailable, w.Code)
+}

@@ -388,3 +388,335 @@ func TestCreateItem_Error(t *testing.T) {
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
 	mockItemService.AssertExpectations(t)
 }
+
+func TestCreateItem_InvalidJSON(t *testing.T) {
+	mockItemService := new(MockItemService)
+	handler := NewHandler(nil, mockItemService, nil, nil)
+
+	router := setupTestRouter()
+	router.POST("/items", handler.CreateItem)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/items", bytes.NewBuffer([]byte("invalid json")))
+	req.Header.Set("Content-Type", "application/json")
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestGetItem_InvalidID(t *testing.T) {
+	mockItemService := new(MockItemService)
+	handler := NewHandler(nil, mockItemService, nil, nil)
+
+	router := setupTestRouter()
+	router.GET("/items/:id", handler.GetItem)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/items/invalid", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestGetItem_ServiceError(t *testing.T) {
+	mockItemService := new(MockItemService)
+	handler := NewHandler(nil, mockItemService, nil, nil)
+
+	router := setupTestRouter()
+	router.GET("/items/:id", handler.GetItem)
+
+	mockItemService.On("GetItem", mock.Anything, int32(1)).Return(nil, errors.New("service error"))
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/items/1", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	mockItemService.AssertExpectations(t)
+}
+
+func TestGetItemsByUser_InvalidID(t *testing.T) {
+	mockItemService := new(MockItemService)
+	handler := NewHandler(nil, mockItemService, nil, nil)
+
+	router := setupTestRouter()
+	router.GET("/items/user/:userID", handler.GetItemsByUser)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/items/user/invalid", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestGetItemsByUser_ServiceError(t *testing.T) {
+	mockItemService := new(MockItemService)
+	handler := NewHandler(nil, mockItemService, nil, nil)
+
+	router := setupTestRouter()
+	router.GET("/items/user/:userID", handler.GetItemsByUser)
+
+	userID := int32(1)
+	mockItemService.On("GetItemsByUser", mock.Anything, &userID).Return([]db.Item{}, errors.New("service error"))
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/items/user/1", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	mockItemService.AssertExpectations(t)
+}
+
+func TestGetUnreadItemsByUser_InvalidID(t *testing.T) {
+	mockItemService := new(MockItemService)
+	handler := NewHandler(nil, mockItemService, nil, nil)
+
+	router := setupTestRouter()
+	router.GET("/items/user/:userID/unread", handler.GetUnreadItemsByUser)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/items/user/invalid/unread", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestGetUnreadItemsByUser_ServiceError(t *testing.T) {
+	mockItemService := new(MockItemService)
+	handler := NewHandler(nil, mockItemService, nil, nil)
+
+	router := setupTestRouter()
+	router.GET("/items/user/:userID/unread", handler.GetUnreadItemsByUser)
+
+	userID := int32(1)
+	mockItemService.On("GetUnreadItemsByUser", mock.Anything, &userID).Return([]db.Item{}, errors.New("service error"))
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/items/user/1/unread", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	mockItemService.AssertExpectations(t)
+}
+
+func TestUpdateItem_InvalidID(t *testing.T) {
+	mockItemService := new(MockItemService)
+	handler := NewHandler(nil, mockItemService, nil, nil)
+
+	router := setupTestRouter()
+	router.PUT("/items/:id", handler.UpdateItem)
+
+	reqBody := map[string]interface{}{
+		"title": "Updated Title",
+	}
+	jsonBody, _ := json.Marshal(reqBody)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PUT", "/items/invalid", bytes.NewBuffer(jsonBody))
+	req.Header.Set("Content-Type", "application/json")
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestUpdateItem_ServiceError(t *testing.T) {
+	mockItemService := new(MockItemService)
+	handler := NewHandler(nil, mockItemService, nil, nil)
+
+	router := setupTestRouter()
+	router.PUT("/items/:id", handler.UpdateItem)
+
+	mockItemService.On("UpdateItem", mock.Anything, int32(1), "Updated Title", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("service error"))
+
+	reqBody := map[string]interface{}{
+		"title": "Updated Title",
+	}
+	jsonBody, _ := json.Marshal(reqBody)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PUT", "/items/1", bytes.NewBuffer(jsonBody))
+	req.Header.Set("Content-Type", "application/json")
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	mockItemService.AssertExpectations(t)
+}
+
+func TestMarkItemAsRead_InvalidID(t *testing.T) {
+	mockItemService := new(MockItemService)
+	handler := NewHandler(nil, mockItemService, nil, nil)
+
+	router := setupTestRouter()
+	router.PATCH("/items/:id/read", handler.MarkItemAsRead)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/items/invalid/read", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestMarkItemAsRead_ServiceError(t *testing.T) {
+	mockItemService := new(MockItemService)
+	handler := NewHandler(nil, mockItemService, nil, nil)
+
+	router := setupTestRouter()
+	router.PATCH("/items/:id/read", handler.MarkItemAsRead)
+
+	mockItemService.On("MarkItemAsRead", mock.Anything, int32(1)).Return(errors.New("service error"))
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/items/1/read", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	mockItemService.AssertExpectations(t)
+}
+
+func TestMarkItemAsRead_GetItemError(t *testing.T) {
+	mockItemService := new(MockItemService)
+	handler := NewHandler(nil, mockItemService, nil, nil)
+
+	router := setupTestRouter()
+	router.PATCH("/items/:id/read", handler.MarkItemAsRead)
+
+	mockItemService.On("MarkItemAsRead", mock.Anything, int32(1)).Return(nil)
+	mockItemService.On("GetItem", mock.Anything, int32(1)).Return(nil, errors.New("service error"))
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/items/1/read", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	mockItemService.AssertExpectations(t)
+}
+
+func TestToggleItemReadStatus_InvalidID(t *testing.T) {
+	mockItemService := new(MockItemService)
+	handler := NewHandler(nil, mockItemService, nil, nil)
+
+	router := setupTestRouter()
+	router.PATCH("/items/:id/toggle-read", handler.ToggleItemReadStatus)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/items/invalid/toggle-read", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestToggleItemReadStatus_ServiceError(t *testing.T) {
+	mockItemService := new(MockItemService)
+	handler := NewHandler(nil, mockItemService, nil, nil)
+
+	router := setupTestRouter()
+	router.PATCH("/items/:id/toggle-read", handler.ToggleItemReadStatus)
+
+	mockItemService.On("ToggleItemReadStatus", mock.Anything, int32(1)).Return(nil, errors.New("service error"))
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/items/1/toggle-read", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	mockItemService.AssertExpectations(t)
+}
+
+func TestDeleteItem_InvalidID(t *testing.T) {
+	mockItemService := new(MockItemService)
+	handler := NewHandler(nil, mockItemService, nil, nil)
+
+	router := setupTestRouter()
+	router.DELETE("/items/:id", handler.DeleteItem)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("DELETE", "/items/invalid", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestDeleteItem_ServiceError(t *testing.T) {
+	mockItemService := new(MockItemService)
+	handler := NewHandler(nil, mockItemService, nil, nil)
+
+	router := setupTestRouter()
+	router.DELETE("/items/:id", handler.DeleteItem)
+
+	mockItemService.On("DeleteItem", mock.Anything, int32(1)).Return(errors.New("service error"))
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("DELETE", "/items/1", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	mockItemService.AssertExpectations(t)
+}
+
+func TestGetItemProcessingStatus_InvalidID(t *testing.T) {
+	mockItemService := new(MockItemService)
+	handler := NewHandler(nil, mockItemService, nil, nil)
+
+	router := setupTestRouter()
+	router.GET("/items/:id/status", handler.GetItemProcessingStatus)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/items/invalid/status", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestGetItemProcessingStatus_ServiceError(t *testing.T) {
+	mockItemService := new(MockItemService)
+	handler := NewHandler(nil, mockItemService, nil, nil)
+
+	router := setupTestRouter()
+	router.GET("/items/:id/status", handler.GetItemProcessingStatus)
+
+	mockItemService.On("GetItemProcessingStatus", mock.Anything, int32(1)).Return(nil, errors.New("service error"))
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/items/1/status", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	mockItemService.AssertExpectations(t)
+}
+
+func TestGetItemsByProcessingStatus_ServiceError(t *testing.T) {
+	mockItemService := new(MockItemService)
+	handler := NewHandler(nil, mockItemService, nil, nil)
+
+	router := setupTestRouter()
+	router.GET("/items/status", handler.GetItemsByProcessingStatus)
+
+	status := "pending"
+	mockItemService.On("GetItemsByProcessingStatus", mock.Anything, &status).Return([]db.Item{}, errors.New("service error"))
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/items/status?status=pending", nil)
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	mockItemService.AssertExpectations(t)
+}
