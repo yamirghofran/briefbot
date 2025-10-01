@@ -31,16 +31,20 @@ export function StaticDataTable<TData, TValue>({
   // Ensure data is always an array
   const safeData = data || []
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
+  const [globalFilter, setGlobalFilter] = React.useState("")
 
   const table = useReactTable({
     data: safeData,
     columns,
     state: {
       columnFilters,
+      globalFilter,
     },
     onColumnFiltersChange: setColumnFilters,
+    onGlobalFilterChange: setGlobalFilter,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    globalFilterFn: "includesString",
   })
 
   return (

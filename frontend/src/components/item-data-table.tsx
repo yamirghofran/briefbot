@@ -32,7 +32,7 @@ export function ItemDataTable({ data, userId }: ItemDataTableProps) {
     <StaticDataTable
       columns={customColumns}
       data={data}
-      toolbar={(table) => <ItemTableToolbar table={table} data={data} />}
+      toolbar={(table) => <ItemTableToolbar table={table} data={data} userId={userId} />}
     />
   )
 }

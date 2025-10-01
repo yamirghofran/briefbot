@@ -142,9 +142,10 @@ export const itemColumns: ColumnDef<Item>[] = [
       const title = row.getValue("title") as string
       const url = row.original.url
       const id = row.original.id
-      
+
       return <TitleCell title={title} url={url} id={id} />
     },
+    enableGlobalFilter: true,
   },
   {
     accessorKey: "tags",
@@ -183,6 +184,7 @@ export const itemColumns: ColumnDef<Item>[] = [
       if (!filterValue || filterValue.length === 0) return true
       return filterValue.some((filter: string) => tags.includes(filter))
     },
+    enableGlobalFilter: true,
   },
   {
     id: "status",
@@ -222,6 +224,7 @@ export const itemColumns: ColumnDef<Item>[] = [
       if (!filterValue || filterValue.length === 0) return true
       return filterValue.includes(type)
     },
+    enableGlobalFilter: true,
   },
   {
     accessorKey: "platform",
@@ -242,6 +245,7 @@ export const itemColumns: ColumnDef<Item>[] = [
       if (!filterValue || filterValue.length === 0) return true
       return filterValue.includes(platform)
     },
+    enableGlobalFilter: true,
   },
   {
     accessorKey: "authors",
@@ -274,6 +278,7 @@ export const itemColumns: ColumnDef<Item>[] = [
       if (!filterValue || filterValue.length === 0) return true
       return filterValue.some((filter: string) => authors.includes(filter))
     },
+    enableGlobalFilter: true,
   },
   {
     accessorKey: "is_read",

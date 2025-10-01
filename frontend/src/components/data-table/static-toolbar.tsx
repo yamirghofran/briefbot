@@ -51,17 +51,7 @@ export function StaticToolbar({
 
   return (
     <div className="flex items-center justify-between" {...props}>
-      <div className="flex flex-1 items-center space-x-2">
-        <div className="relative">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search..."
-            value={searchValue}
-            onChange={(event) => setSearchValue(event.target.value)}
-            className="pl-8 w-[150px] lg:w-[250px]"
-          />
-        </div>
-      </div>
+      <div className="flex flex-1 items-center space-x-2"></div>
 
       <div className="flex items-center space-x-2">
         {userId && <UrlSubmissionDialog userId={userId} />}
