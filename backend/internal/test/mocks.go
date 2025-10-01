@@ -97,6 +97,11 @@ func (m *MockQuerier) UpdateItem(ctx context.Context, arg db.UpdateItemParams) e
 	return args.Error(0)
 }
 
+func (m *MockQuerier) PatchItem(ctx context.Context, arg db.PatchItemParams) (db.Item, error) {
+	args := m.Called(ctx, arg)
+	return args.Get(0).(db.Item), args.Error(1)
+}
+
 func (m *MockQuerier) UpdateItemAsProcessing(ctx context.Context, id int32) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)

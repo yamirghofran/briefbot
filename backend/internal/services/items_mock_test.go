@@ -72,6 +72,14 @@ func (m *MockItemService) UpdateItem(ctx context.Context, id int32, title string
 	return args.Error(0)
 }
 
+func (m *MockItemService) PatchItem(ctx context.Context, id int32, title *string, summary *string, tags []string, authors []string) (*db.Item, error) {
+	args := m.Called(ctx, id, title, summary, tags, authors)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*db.Item), args.Error(1)
+}
+
 func (m *MockItemService) MarkItemAsRead(ctx context.Context, id int32) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
