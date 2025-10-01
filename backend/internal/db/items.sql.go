@@ -377,9 +377,9 @@ func (q *Queries) GetUnreadItemsFromPreviousDay(ctx context.Context) ([]Item, er
 }
 
 const getUnreadItemsFromPreviousDayByUser = `-- name: GetUnreadItemsFromPreviousDayByUser :many
-SELECT id, user_id, url, is_read, text_content, summary, type, tags, platform, authors, created_at, modified_at, title, processing_status, processing_error FROM items 
+SELECT id, user_id, url, is_read, text_content, summary, type, tags, platform, authors, created_at, modified_at, title, processing_status, processing_error FROM items
 WHERE user_id = $1
-  AND created_at >= DATE_TRUNC('day', NOW() - INTERVAL '1 day') 
+  AND created_at >= DATE_TRUNC('day', NOW() - INTERVAL '1 day')
   AND created_at < DATE_TRUNC('day', NOW())
   AND is_read = FALSE
   AND processing_status = 'completed'
@@ -429,6 +429,55 @@ UPDATE items SET is_read = TRUE, modified_at = CURRENT_TIMESTAMP WHERE id = $1
 func (q *Queries) MarkItemAsRead(ctx context.Context, id int32) error {
 	_, err := q.db.Exec(ctx, markItemAsRead, id)
 	return err
+}
+
+const patchItem = `-- name: PatchItem :one
+UPDATE items
+SET
+  title = COALESCE(NULLIF($1, ''), title),
+  summary = CASE WHEN $2::text IS NULL THEN summary ELSE $2 END,
+  tags = CASE WHEN $3::text[] IS NULL THEN tags ELSE $3 END,
+  authors = CASE WHEN $4::text[] IS NULL THEN authors ELSE $4 END,
+  modified_at = CURRENT_TIMESTAMP
+WHERE id = $5
+RETURNING id, user_id, url, is_read, text_content, summary, type, tags, platform, authors, created_at, modified_at, title, processing_status, processing_error
+`
+
+type PatchItemParams struct {
+	Title   interface{} `json:"title"`
+	Summary *string     `json:"summary"`
+	Tags    []string    `json:"tags"`
+	Authors []string    `json:"authors"`
+	ID      int32       `json:"id"`
+}
+
+func (q *Queries) PatchItem(ctx context.Context, arg PatchItemParams) (Item, error) {
+	row := q.db.QueryRow(ctx, patchItem,
+		arg.Title,
+		arg.Summary,
+		arg.Tags,
+		arg.Authors,
+		arg.ID,
+	)
+	var i Item
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Url,
+		&i.IsRead,
+		&i.TextContent,
+		&i.Summary,
+		&i.Type,
+		&i.Tags,
+		&i.Platform,
+		&i.Authors,
+		&i.CreatedAt,
+		&i.ModifiedAt,
+		&i.Title,
+		&i.ProcessingStatus,
+		&i.ProcessingError,
+	)
+	return i, err
 }
 
 const toggleItemReadStatus = `-- name: ToggleItemReadStatus :one
