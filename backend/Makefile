@@ -1,21 +1,24 @@
-.PHONY: test test-unit test-services test-handlers test-coverage test-watch test-specific help fmt lint ci-deps clean
+.PHONY: test test-unit test-services test-handlers test-integration test-all test-coverage test-coverage-integration test-watch test-specific help fmt lint ci-deps clean
 
 # Default target
 help:
 	@echo "Available targets:"
-	@echo "  test          - Run all tests"
-	@echo "  test-unit     - Run unit tests (services + handlers)"
-	@echo "  test-services - Run service layer tests"
-	@echo "  test-handlers - Run handler layer tests"
-	@echo "  test-coverage - Run tests with coverage report"
-	@echo "  test-watch    - Run tests in watch mode"
-	@echo "  test-specific - Run specific test (TEST=TestName)"
-	@echo "  fmt           - Format code with gofmt"
-	@echo "  lint          - Run golangci-lint"
-	@echo "  ci-deps       - Install CI dependencies"
-	@echo "  clean         - Clean test artifacts"
+	@echo "  test                    - Run unit tests only (default)"
+	@echo "  test-unit               - Run unit tests (services + handlers)"
+	@echo "  test-services           - Run service layer unit tests"
+	@echo "  test-handlers           - Run handler layer tests"
+	@echo "  test-integration        - Run integration tests only"
+	@echo "  test-all                - Run all tests (unit + integration)"
+	@echo "  test-coverage           - Run unit tests with coverage report"
+	@echo "  test-coverage-integration - Run integration tests with coverage"
+	@echo "  test-watch              - Run tests in watch mode"
+	@echo "  test-specific           - Run specific test (TEST=TestName)"
+	@echo "  fmt                     - Format code with gofmt"
+	@echo "  lint                    - Run golangci-lint"
+	@echo "  ci-deps                 - Install CI dependencies"
+	@echo "  clean                   - Clean test artifacts"
 
-# Run all tests
+# Run all unit tests (excludes integration tests)
 test:
 	go test ./... -v
 
@@ -23,7 +26,7 @@ test:
 test-unit:
 	go test ./internal/services ./internal/handlers -v
 
-# Run service layer tests specifically
+# Run service layer unit tests specifically
 test-services:
 	go test ./internal/services -v
 
@@ -31,11 +34,29 @@ test-services:
 test-handlers:
 	go test ./internal/handlers -v
 
-# Run tests with coverage report
+# Run integration tests only (requires external dependencies)
+test-integration:
+	@echo "Running integration tests..."
+	@echo "Note: Requires R2 credentials and ffmpeg installed"
+	go test ./internal/services -tags=integration -v
+
+# Run all tests (unit + integration)
+test-all:
+	@echo "Running all tests (unit + integration)..."
+	go test ./... -v
+	go test ./internal/services -tags=integration -v
+
+# Run unit tests with coverage report
 test-coverage:
 	go test ./internal/services ./internal/handlers -coverprofile=coverage.out -v
 	go tool cover -html=coverage.out -o coverage.html
 	@echo "Coverage report generated: coverage.html"
+
+# Run integration tests with coverage report
+test-coverage-integration:
+	go test ./internal/services -tags=integration -coverprofile=coverage-integration.out -v
+	go tool cover -html=coverage-integration.out -o coverage-integration.html
+	@echo "Integration coverage report generated: coverage-integration.html"
 
 # Run tests in watch mode (requires gotestsum)
 test-watch:
@@ -44,7 +65,7 @@ test-watch:
 
 # Clean test artifacts
 clean:
-	rm -f coverage.out coverage.html
+	rm -f coverage.out coverage.html coverage-integration.out coverage-integration.html
 
 # Run specific test (usage: make test-specific TEST=TestCompleteItemPreservesIsRead)
 test-specific:

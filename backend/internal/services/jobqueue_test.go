@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -41,6 +42,53 @@ func TestEnqueueItem(t *testing.T) {
 	assert.Equal(t, url, *item.Url)
 	assert.Equal(t, userID, *item.UserID)
 	assert.Equal(t, "pending", *item.ProcessingStatus)
+	mockQuerier.AssertExpectations(t)
+}
+
+func TestSetSSEManager_JobQueueService(t *testing.T) {
+	mockQuerier := &test.MockQuerier{}
+	service := NewJobQueueService(mockQuerier)
+	manager := NewSSEManager()
+
+	// Access the service as the concrete type to call SetSSEManager
+	jobQueueSvc, ok := service.(*jobQueueService)
+	assert.True(t, ok)
+
+	jobQueueSvc.SetSSEManager(manager)
+	assert.Equal(t, manager, jobQueueSvc.sseManager)
+}
+
+func TestEnqueueItem_WithSSE(t *testing.T) {
+	mockQuerier := &test.MockQuerier{}
+	service := NewJobQueueService(mockQuerier)
+
+	// Add SSE manager
+	manager := NewSSEManager()
+	jobQueueSvc, _ := service.(*jobQueueService)
+	jobQueueSvc.SetSSEManager(manager)
+
+	ctx := context.Background()
+	userID := int32(1)
+	title := "Test Article"
+	url := "https://example.com/test"
+
+	expectedParams := db.CreatePendingItemParams{
+		UserID: &userID,
+		Title:  title,
+		Url:    &url,
+	}
+
+	expectedItem := test.NewTestDataBuilder().BuildPendingItem()
+	expectedItem.UserID = &userID
+	expectedItem.Title = title
+	expectedItem.Url = &url
+
+	mockQuerier.On("CreatePendingItem", ctx, expectedParams).Return(*expectedItem, nil)
+
+	item, err := service.EnqueueItem(ctx, userID, title, url)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, item)
 	mockQuerier.AssertExpectations(t)
 }
 
@@ -87,6 +135,52 @@ func TestMarkItemAsProcessing(t *testing.T) {
 	err := jobQueueService.MarkItemAsProcessing(ctx, itemID)
 
 	assert.NoError(t, err)
+	mockQuerier.AssertExpectations(t)
+}
+
+func TestMarkItemAsProcessing_WithSSE(t *testing.T) {
+	mockQuerier := &test.MockQuerier{}
+	service := NewJobQueueService(mockQuerier)
+
+	// Add SSE manager
+	manager := NewSSEManager()
+	jobQueueSvc, _ := service.(*jobQueueService)
+	jobQueueSvc.SetSSEManager(manager)
+
+	ctx := context.Background()
+	itemID := int32(1)
+	userID := int32(1)
+
+	testItem := test.NewTestDataBuilder().BuildPendingItem()
+	testItem.ID = itemID
+	testItem.UserID = &userID
+	mockQuerier.On("GetItem", ctx, itemID).Return(*testItem, nil)
+	mockQuerier.On("UpdateItemAsProcessing", ctx, itemID).Return(nil)
+
+	err := service.MarkItemAsProcessing(ctx, itemID)
+
+	assert.NoError(t, err)
+	mockQuerier.AssertExpectations(t)
+}
+
+func TestMarkItemAsProcessing_Error(t *testing.T) {
+	mockQuerier := &test.MockQuerier{}
+	service := NewJobQueueService(mockQuerier)
+
+	ctx := context.Background()
+	itemID := int32(1)
+	userID := int32(1)
+
+	testItem := test.NewTestDataBuilder().BuildPendingItem()
+	testItem.ID = itemID
+	testItem.UserID = &userID
+	mockQuerier.On("GetItem", ctx, itemID).Return(*testItem, nil)
+	mockQuerier.On("UpdateItemAsProcessing", ctx, itemID).Return(fmt.Errorf("database error"))
+
+	err := service.MarkItemAsProcessing(ctx, itemID)
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "failed to mark item as processing")
 	mockQuerier.AssertExpectations(t)
 }
 

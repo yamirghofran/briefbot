@@ -255,3 +255,29 @@ func TestSSEManager_ConcurrentAccess(t *testing.T) {
 	// Should have no clients left
 	assert.Empty(t, manager.clients)
 }
+
+func TestSSEManager_NotifyPodcastUpdate(t *testing.T) {
+	manager := NewSSEManager()
+	userID := int32(1)
+	podcastID := int32(200)
+	status := "completed"
+
+	client := manager.AddClient(userID)
+
+	// Notify in a goroutine
+	go manager.NotifyPodcastUpdate(userID, podcastID, status, "podcast-completed")
+
+	// Receive the notification
+	select {
+	case received := <-client.Channel:
+		assert.Equal(t, "podcast-update", received.Event)
+
+		data, ok := received.Data.(PodcastUpdateEvent)
+		assert.True(t, ok)
+		assert.Equal(t, podcastID, data.PodcastID)
+		assert.Equal(t, status, data.Status)
+		assert.Equal(t, "podcast-completed", data.UpdateType)
+	case <-time.After(1 * time.Second):
+		t.Fatal("Timeout waiting for podcast update notification")
+	}
+}

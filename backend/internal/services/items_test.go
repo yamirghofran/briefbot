@@ -48,6 +48,23 @@ func TestCreateItem(t *testing.T) {
 	mockQuerier.AssertExpectations(t)
 }
 
+func TestSetSSEManager_ItemService(t *testing.T) {
+	mockQuerier := new(test.MockQuerier)
+	mockAI := new(MockAIService)
+	mockScraper := new(MockScrapingService)
+	mockJobQueue := new(MockJobQueueService)
+
+	service := NewItemService(mockQuerier, mockAI, mockScraper, mockJobQueue)
+	manager := NewSSEManager()
+
+	// Access the service as the concrete type to call SetSSEManager
+	itemSvc, ok := service.(*itemService)
+	assert.True(t, ok)
+
+	itemSvc.SetSSEManager(manager)
+	assert.Equal(t, manager, itemSvc.sseManager)
+}
+
 func TestGetItem(t *testing.T) {
 	mockQuerier := new(test.MockQuerier)
 	mockAI := new(MockAIService)
@@ -72,6 +89,26 @@ func TestGetItem(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, item)
 	assert.Equal(t, itemID, item.ID)
+	mockQuerier.AssertExpectations(t)
+}
+
+func TestGetItem_Error(t *testing.T) {
+	mockQuerier := new(test.MockQuerier)
+	mockAI := new(MockAIService)
+	mockScraper := new(MockScrapingService)
+	mockJobQueue := new(MockJobQueueService)
+
+	service := NewItemService(mockQuerier, mockAI, mockScraper, mockJobQueue)
+
+	ctx := context.Background()
+	itemID := int32(1)
+
+	mockQuerier.On("GetItem", ctx, itemID).Return(db.Item{}, errors.New("database error"))
+
+	item, err := service.GetItem(ctx, itemID)
+
+	assert.Error(t, err)
+	assert.Nil(t, item)
 	mockQuerier.AssertExpectations(t)
 }
 
