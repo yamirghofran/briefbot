@@ -11,13 +11,20 @@ import (
 // PodcastHandler handles podcast-related HTTP requests
 type PodcastHandler struct {
 	podcastService services.PodcastService
+	sseManager     *services.SSEManager
 }
 
 // NewPodcastHandler creates a new podcast handler
 func NewPodcastHandler(podcastService services.PodcastService) *PodcastHandler {
 	return &PodcastHandler{
 		podcastService: podcastService,
+		sseManager:     nil, // Will be set via SetSSEManager
 	}
+}
+
+// SetSSEManager sets the SSE manager for the podcast handler
+func (h *PodcastHandler) SetSSEManager(sseManager *services.SSEManager) {
+	h.sseManager = sseManager
 }
 
 // CreatePodcast creates a new podcast from items
