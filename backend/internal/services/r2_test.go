@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -152,4 +153,21 @@ func TestNewR2Service_ValidConfig(t *testing.T) {
 	assert.Equal(t, "test-bucket", service.bucket)
 	assert.Equal(t, "test-account", service.accountId)
 	assert.Equal(t, "https://cdn.example.com", service.publicHost)
+}
+
+// Since the R2Service uses concrete *s3.Client and *s3.PresignClient types which are difficult to mock,
+// we'll test the logic through integration-style tests that validate the structure and logic
+// without actually making AWS calls. For functions that call AWS directly, we add basic validation tests.
+
+// TestDeleteFiles_EmptyKeys tests the early return optimization
+func TestDeleteFiles_EmptyKeys(t *testing.T) {
+	// Create service with nil client since we shouldn't call it
+	service := &R2Service{
+		bucket: "test-bucket",
+	}
+
+	ctx := context.Background()
+	err := service.DeleteFiles(ctx, []string{})
+	// Should return nil without calling the client
+	assert.NoError(t, err)
 }

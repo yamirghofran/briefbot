@@ -23,6 +23,24 @@ func TestDefaultPodcastConfig(t *testing.T) {
 	assert.NotNil(t, config.VoiceMapping)
 }
 
+func TestSetSSEManager_PodcastService(t *testing.T) {
+	mockQuerier := new(test.MockQuerier)
+	mockAI := new(MockAIService)
+	mockSpeech := new(MockSpeechService)
+	var mockR2 *R2Service = nil
+
+	config := DefaultPodcastConfig()
+	service := NewPodcastService(mockQuerier, mockAI, mockSpeech, mockR2, config)
+	manager := NewSSEManager()
+
+	// Access the service as the concrete type to call SetSSEManager
+	podcastSvc, ok := service.(*podcastService)
+	assert.True(t, ok)
+
+	podcastSvc.SetSSEManager(manager)
+	assert.Equal(t, manager, podcastSvc.sseManager)
+}
+
 func TestPodcastConfig_Structure(t *testing.T) {
 	config := PodcastConfig{
 		DefaultSpeed:       1.5,
@@ -365,6 +383,188 @@ func TestGetPendingPodcasts(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Len(t, podcasts, 2)
+	mockQuerier.AssertExpectations(t)
+}
+
+func TestGetPodcastsByStatus(t *testing.T) {
+	mockQuerier := new(test.MockQuerier)
+	mockAI := new(MockAIService)
+	mockSpeech := new(MockSpeechService)
+	var mockR2 *R2Service = nil
+
+	config := DefaultPodcastConfig()
+	service := NewPodcastService(mockQuerier, mockAI, mockSpeech, mockR2, config)
+
+	ctx := context.Background()
+	status := PodcastStatusPending
+
+	expectedPodcasts := []db.Podcast{
+		{ID: 1, Status: "pending"},
+		{ID: 2, Status: "pending"},
+	}
+
+	mockQuerier.On("GetPodcastsByStatus", ctx, string(status)).Return(expectedPodcasts, nil)
+
+	podcasts, err := service.GetPodcastsByStatus(ctx, status)
+
+	assert.NoError(t, err)
+	assert.Len(t, podcasts, 2)
+	mockQuerier.AssertExpectations(t)
+}
+
+func TestGetProcessingPodcasts(t *testing.T) {
+	mockQuerier := new(test.MockQuerier)
+	mockAI := new(MockAIService)
+	mockSpeech := new(MockSpeechService)
+	var mockR2 *R2Service = nil
+
+	config := DefaultPodcastConfig()
+	service := NewPodcastService(mockQuerier, mockAI, mockSpeech, mockR2, config)
+
+	ctx := context.Background()
+	limit := int32(5)
+
+	expectedPodcasts := []db.Podcast{
+		{ID: 1, Status: "processing"},
+		{ID: 2, Status: "processing"},
+	}
+
+	mockQuerier.On("GetProcessingPodcasts", ctx, limit).Return(expectedPodcasts, nil)
+
+	podcasts, err := service.GetProcessingPodcasts(ctx, limit)
+
+	assert.NoError(t, err)
+	assert.Len(t, podcasts, 2)
+	mockQuerier.AssertExpectations(t)
+}
+
+func TestGetPodcastAudio(t *testing.T) {
+	mockQuerier := new(test.MockQuerier)
+	mockAI := new(MockAIService)
+	mockSpeech := new(MockSpeechService)
+	var mockR2 *R2Service = nil
+
+	config := DefaultPodcastConfig()
+	service := NewPodcastService(mockQuerier, mockAI, mockSpeech, mockR2, config)
+
+	ctx := context.Background()
+	podcastID := int32(1)
+	audioURL := "https://example.com/audio.mp3"
+
+	podcast := db.Podcast{
+		ID:       podcastID,
+		AudioUrl: &audioURL,
+	}
+
+	mockQuerier.On("GetPodcast", ctx, podcastID).Return(podcast, nil)
+
+	_, err := service.GetPodcastAudio(ctx, podcastID)
+
+	// Should return error with URL
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), audioURL)
+	mockQuerier.AssertExpectations(t)
+}
+
+func TestGeneratePodcastUploadURL_NoR2Service(t *testing.T) {
+	mockQuerier := new(test.MockQuerier)
+	mockAI := new(MockAIService)
+	mockSpeech := new(MockSpeechService)
+	var mockR2 *R2Service = nil
+
+	config := DefaultPodcastConfig()
+	service := NewPodcastService(mockQuerier, mockAI, mockSpeech, mockR2, config)
+
+	ctx := context.Background()
+	podcastID := int32(1)
+
+	_, err := service.GeneratePodcastUploadURL(ctx, podcastID)
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "R2 service not available")
+}
+
+func TestAddItemToPodcast_ErrorCounting(t *testing.T) {
+	mockQuerier := new(test.MockQuerier)
+	mockAI := new(MockAIService)
+	mockSpeech := new(MockSpeechService)
+	var mockR2 *R2Service = nil
+
+	config := DefaultPodcastConfig()
+	service := NewPodcastService(mockQuerier, mockAI, mockSpeech, mockR2, config)
+
+	ctx := context.Background()
+	podcastID := int32(1)
+	itemID := int32(100)
+
+	// Test error when counting items
+	mockQuerier.On("CountPodcastItems", ctx, &podcastID).Return(int64(0), fmt.Errorf("database error"))
+
+	err := service.AddItemToPodcast(ctx, podcastID, itemID, -1)
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "failed to count podcast items")
+	mockQuerier.AssertExpectations(t)
+}
+
+func TestAddItemToPodcast_ErrorAdding(t *testing.T) {
+	mockQuerier := new(test.MockQuerier)
+	mockAI := new(MockAIService)
+	mockSpeech := new(MockSpeechService)
+	var mockR2 *R2Service = nil
+
+	config := DefaultPodcastConfig()
+	service := NewPodcastService(mockQuerier, mockAI, mockSpeech, mockR2, config)
+
+	ctx := context.Background()
+	podcastID := int32(1)
+	itemID := int32(100)
+
+	// Test error when adding item with explicit order
+	mockQuerier.On("AddItemToPodcast", ctx, mock.MatchedBy(func(params db.AddItemToPodcastParams) bool {
+		return *params.PodcastID == podcastID && *params.ItemID == itemID
+	})).Return(db.PodcastItem{}, fmt.Errorf("database error"))
+
+	err := service.AddItemToPodcast(ctx, podcastID, itemID, 5)
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "failed to add item to podcast")
+	mockQuerier.AssertExpectations(t)
+}
+
+func TestUpdatePodcastStatus_WithSSE(t *testing.T) {
+	mockQuerier := new(test.MockQuerier)
+	mockAI := new(MockAIService)
+	mockSpeech := new(MockSpeechService)
+	var mockR2 *R2Service = nil
+
+	config := DefaultPodcastConfig()
+	service := NewPodcastService(mockQuerier, mockAI, mockSpeech, mockR2, config)
+
+	// Set up SSE manager
+	manager := NewSSEManager()
+	podcastSvc, ok := service.(*podcastService)
+	assert.True(t, ok)
+	podcastSvc.SetSSEManager(manager)
+
+	ctx := context.Background()
+	podcastID := int32(1)
+	userID := int32(5)
+
+	// Mock GetPodcast to return podcast with user ID
+	podcast := db.Podcast{
+		ID:     podcastID,
+		UserID: &userID,
+	}
+
+	mockQuerier.On("UpdatePodcastStatus", ctx, mock.MatchedBy(func(params db.UpdatePodcastStatusParams) bool {
+		return params.ID == podcastID && params.Status == "completed"
+	})).Return(nil)
+	mockQuerier.On("GetPodcast", ctx, podcastID).Return(podcast, nil)
+
+	err := service.UpdatePodcastStatus(ctx, podcastID, PodcastStatusCompleted)
+
+	assert.NoError(t, err)
 	mockQuerier.AssertExpectations(t)
 }
 

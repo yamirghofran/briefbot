@@ -1,10 +1,12 @@
 package services
 
 import (
+	"os"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/yamirghofran/briefbot/internal/db"
 )
 
@@ -414,4 +416,104 @@ func TestGenerateIntegratedDigestText(t *testing.T) {
 			t.Errorf("Text missing timestamp metadata")
 		}
 	})
+}
+
+func TestNewEmailService_MissingEnvVars(t *testing.T) {
+	// Save original env vars
+	originalAccessKey := os.Getenv("AWS_ACCESS_KEY_ID")
+	originalSecretKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
+	originalRegion := os.Getenv("AWS_REGION")
+	originalFromEmail := os.Getenv("SES_FROM_EMAIL")
+	originalFromName := os.Getenv("SES_FROM_NAME")
+	originalReplyTo := os.Getenv("SES_REPLY_TO_EMAIL")
+
+	// Unset all required env vars
+	os.Unsetenv("AWS_ACCESS_KEY_ID")
+	os.Unsetenv("AWS_SECRET_ACCESS_KEY")
+	os.Unsetenv("AWS_REGION")
+	os.Unsetenv("SES_FROM_EMAIL")
+
+	defer func() {
+		// Restore original env vars
+		if originalAccessKey != "" {
+			os.Setenv("AWS_ACCESS_KEY_ID", originalAccessKey)
+		}
+		if originalSecretKey != "" {
+			os.Setenv("AWS_SECRET_ACCESS_KEY", originalSecretKey)
+		}
+		if originalRegion != "" {
+			os.Setenv("AWS_REGION", originalRegion)
+		}
+		if originalFromEmail != "" {
+			os.Setenv("SES_FROM_EMAIL", originalFromEmail)
+		}
+		if originalFromName != "" {
+			os.Setenv("SES_FROM_NAME", originalFromName)
+		}
+		if originalReplyTo != "" {
+			os.Setenv("SES_REPLY_TO_EMAIL", originalReplyTo)
+		}
+	}()
+
+	_, err := NewEmailService()
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "missing required AWS SES environment variables")
+}
+
+func TestNewEmailService_WithDefaults(t *testing.T) {
+	// Save original env vars
+	originalAccessKey := os.Getenv("AWS_ACCESS_KEY_ID")
+	originalSecretKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
+	originalRegion := os.Getenv("AWS_REGION")
+	originalFromEmail := os.Getenv("SES_FROM_EMAIL")
+	originalFromName := os.Getenv("SES_FROM_NAME")
+	originalReplyTo := os.Getenv("SES_REPLY_TO_EMAIL")
+
+	// Set required vars without optional ones
+	os.Setenv("AWS_ACCESS_KEY_ID", "test-key")
+	os.Setenv("AWS_SECRET_ACCESS_KEY", "test-secret")
+	os.Setenv("AWS_REGION", "us-east-1")
+	os.Setenv("SES_FROM_EMAIL", "test@example.com")
+	os.Unsetenv("SES_FROM_NAME")
+	os.Unsetenv("SES_REPLY_TO_EMAIL")
+
+	defer func() {
+		// Restore original env vars
+		if originalAccessKey != "" {
+			os.Setenv("AWS_ACCESS_KEY_ID", originalAccessKey)
+		} else {
+			os.Unsetenv("AWS_ACCESS_KEY_ID")
+		}
+		if originalSecretKey != "" {
+			os.Setenv("AWS_SECRET_ACCESS_KEY", originalSecretKey)
+		} else {
+			os.Unsetenv("AWS_SECRET_ACCESS_KEY")
+		}
+		if originalRegion != "" {
+			os.Setenv("AWS_REGION", originalRegion)
+		} else {
+			os.Unsetenv("AWS_REGION")
+		}
+		if originalFromEmail != "" {
+			os.Setenv("SES_FROM_EMAIL", originalFromEmail)
+		} else {
+			os.Unsetenv("SES_FROM_EMAIL")
+		}
+		if originalFromName != "" {
+			os.Setenv("SES_FROM_NAME", originalFromName)
+		}
+		if originalReplyTo != "" {
+			os.Setenv("SES_REPLY_TO_EMAIL", originalReplyTo)
+		}
+	}()
+
+	svc, err := NewEmailService()
+	assert.NoError(t, err)
+	assert.NotNil(t, svc)
+
+	// Cast to concrete type to check defaults
+	emailSvc, ok := svc.(*emailService)
+	assert.True(t, ok)
+	assert.Equal(t, "BriefBot", emailSvc.fromName)
+	assert.Equal(t, "test@example.com", emailSvc.replyToEmail)
 }
