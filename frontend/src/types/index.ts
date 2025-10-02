@@ -68,3 +68,29 @@ export interface SubmitUrlRequest {
   user_id: number
   url: string
 }
+
+export interface Podcast {
+  id: number
+  user_id?: number | null
+  title: string
+  description?: string | null
+  status: 'pending' | 'writing' | 'generating' | 'completed' | 'failed'
+  audio_url?: string | null
+  duration_seconds?: number | null
+  dialogues?: any | null
+  created_at?: string | null
+  modified_at?: string | null
+}
+
+export interface CreatePodcastRequest {
+  user_id: number
+  title: string
+  description?: string
+  item_ids: number[]
+}
+
+export interface PodcastResponse {
+  podcast: Podcast
+  message: string
+  processing_status: string
+}
