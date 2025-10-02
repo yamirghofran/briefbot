@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -357,4 +359,96 @@ func (h *PodcastHandler) DeletePodcast(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Podcast deleted successfully",
 	})
+}
+
+// GetPodcastProcessingStatus returns the processing status of a podcast
+func (h *PodcastHandler) GetPodcastProcessingStatus(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.ParseInt(idStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid podcast ID"})
+		return
+	}
+
+	podcast, err := h.podcastService.GetPodcast(c.Request.Context(), int32(id))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Determine processing flags based on status
+	isPending := podcast.Status == string(services.PodcastStatusPending)
+	isWriting := podcast.Status == string(services.PodcastStatusWriting)
+	isGenerating := podcast.Status == string(services.PodcastStatusGenerating)
+	isCompleted := podcast.Status == string(services.PodcastStatusCompleted)
+	isFailed := podcast.Status == string(services.PodcastStatusFailed)
+	isProcessing := isWriting || isGenerating
+
+	c.JSON(http.StatusOK, gin.H{
+		"podcast_id":   podcast.ID,
+		"status":       podcast.Status,
+		"is_pending":   isPending,
+		"is_writing":   isWriting,
+		"is_generating": isGenerating,
+		"is_processing": isProcessing,
+		"is_completed":  isCompleted,
+		"is_failed":     isFailed,
+		"audio_url":     podcast.AudioUrl,
+	})
+}
+
+// StreamPodcastUpdates streams podcast updates for a specific user via SSE
+func (h *PodcastHandler) StreamPodcastUpdates(c *gin.Context) {
+	userIDStr := c.Param("userID")
+	userID, err := strconv.ParseInt(userIDStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	if h.sseManager == nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "SSE manager not available"})
+		return
+	}
+
+	// Set SSE headers
+	c.Header("Content-Type", "text/event-stream")
+	c.Header("Cache-Control", "no-cache")
+	c.Header("Connection", "keep-alive")
+	c.Header("Access-Control-Allow-Origin", "*")
+
+	// Create a channel for writing SSE messages
+	messageChan := make(chan string, 10)
+
+	// Register client with SSE manager
+	client := h.sseManager.AddClient(int32(userID))
+	defer h.sseManager.RemoveClient(client)
+
+	// Start goroutine to write messages from the client channel
+	go func() {
+		defer close(messageChan)
+		services.WriteSSEMessage(c.Request.Context(), client, messageChan)
+	}()
+
+	// Stream messages to client
+	flusher, ok := c.Writer.(http.Flusher)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Streaming not supported"})
+		return
+	}
+
+	// Send messages
+	for {
+		select {
+		case msg, ok := <-messageChan:
+			if !ok {
+				return
+			}
+			fmt.Fprint(c.Writer, msg)
+			flusher.Flush()
+		case <-c.Request.Context().Done():
+			log.Printf("SSE: Client disconnected for user %d", userID)
+			return
+		}
+	}
 }
