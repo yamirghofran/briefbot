@@ -176,6 +176,10 @@ func main() {
 	// Connect SSE manager to job queue service
 	jobQueueService.SetSSEManager(sseManager)
 
+	// Connect SSE manager to podcast service
+	podcastService.SetSSEManager(sseManager)
+	log.Println("SSE manager connected to podcast service")
+
 	// Initialize Gin router
 	router := gin.Default()
 

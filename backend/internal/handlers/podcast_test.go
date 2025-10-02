@@ -134,6 +134,10 @@ func (m *MockPodcastService) GeneratePodcastUploadURL(ctx context.Context, podca
 	return args.Get(0).(*services.UploadURLResponse), args.Error(1)
 }
 
+func (m *MockPodcastService) SetSSEManager(sseManager *services.SSEManager) {
+	m.Called(sseManager)
+}
+
 func TestCreatePodcast(t *testing.T) {
 	mockPodcastService := new(MockPodcastService)
 	handler := NewPodcastHandler(mockPodcastService)

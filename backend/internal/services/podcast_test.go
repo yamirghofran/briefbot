@@ -412,6 +412,13 @@ func TestGeneratePodcastScript(t *testing.T) {
 
 	ctx := context.Background()
 	podcastID := int32(1)
+	userID := int32(1)
+
+	podcast := db.Podcast{
+		ID:     podcastID,
+		UserID: &userID,
+		Status: "pending",
+	}
 
 	items := []db.GetPodcastItemsRow{
 		{ID: 1, Title: "Item 1", Summary: stringPtr("Summary 1")},
@@ -427,6 +434,7 @@ func TestGeneratePodcastScript(t *testing.T) {
 
 	dialoguesJSON, _ := json.Marshal(podcastData.Dialogues)
 
+	mockQuerier.On("GetPodcast", ctx, podcastID).Return(podcast, nil)
 	mockQuerier.On("GetPodcastItems", ctx, &podcastID).Return(items, nil)
 	mockQuerier.On("UpdatePodcastStatus", ctx, mock.MatchedBy(func(params db.UpdatePodcastStatusParams) bool {
 		return params.ID == podcastID && params.Status == "writing"

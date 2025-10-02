@@ -3,13 +3,14 @@ import { DataTableFacetedFilter } from "./data-table-faceted-filter"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { UrlSubmissionDialog } from "@/components/url-submission-dialog"
-import { X, Search, Zap, Check, Loader2 } from "lucide-react"
+import { X, Search, Zap, Check, Loader2, Podcast } from "lucide-react"
 import { useMutation } from "@tanstack/react-query"
 import { toast } from "sonner"
-import { digestApi } from "@/services/api"
+import { digestApi, podcastApi } from "@/services/api"
 import type { Item } from "@/types"
 import type { Option } from "@/types/data-table"
 import { useMemo, useState } from "react"
+import { useNavigate } from "@tanstack/react-router"
 
 interface ItemTableToolbarProps {
   table: Table<Item>
@@ -19,6 +20,11 @@ interface ItemTableToolbarProps {
 
 export function ItemTableToolbar({ table, data, userId }: ItemTableToolbarProps) {
   const [showSuccess, setShowSuccess] = useState(false)
+  const navigate = useNavigate()
+
+  // Get selected rows
+  const selectedRows = table.getFilteredSelectedRowModel().rows
+  const selectedItemIds = selectedRows.map(row => row.original.id)
 
   // Mutation for triggering integrated digest
   const triggerDigestMutation = useMutation({
@@ -45,8 +51,36 @@ export function ItemTableToolbar({ table, data, userId }: ItemTableToolbarProps)
     },
   })
 
+  // Mutation for creating podcast
+  const createPodcastMutation = useMutation({
+    mutationFn: () => {
+      if (!userId) {
+        throw new Error("User ID is required")
+      }
+      return podcastApi.createPodcast({
+        user_id: userId,
+        title: `Podcast from ${selectedItemIds.length} items`,
+        description: `Generated podcast from selected items`,
+        item_ids: selectedItemIds,
+      })
+    },
+    onSuccess: (response) => {
+      toast.success("Podcast generation started!")
+      table.resetRowSelection()
+      navigate({ to: '/items/podcasts' })
+    },
+    onError: (error) => {
+      toast.error("Failed to create podcast")
+      console.error("Podcast creation error:", error)
+    },
+  })
+
   const handleTriggerDigest = () => {
     triggerDigestMutation.mutate()
+  }
+
+  const handleGeneratePodcast = () => {
+    createPodcastMutation.mutate()
   }
 
   // Extract unique values from the data for filter options
@@ -108,6 +142,24 @@ export function ItemTableToolbar({ table, data, userId }: ItemTableToolbarProps)
         </div>
         <div className="flex items-center gap-2">
           {userId && <UrlSubmissionDialog userId={userId} />}
+          <Button
+            onClick={handleGeneratePodcast}
+            disabled={selectedItemIds.length === 0 || createPodcastMutation.isPending || !userId}
+            variant="outline"
+            size="sm"
+          >
+            {createPodcastMutation.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Creating...
+              </>
+            ) : (
+              <>
+                <Podcast className="mr-2 h-4 w-4" />
+                Generate Podcast ({selectedItemIds.length})
+              </>
+            )}
+          </Button>
           <Button
             onClick={handleTriggerDigest}
             disabled={triggerDigestMutation.isPending || showSuccess}

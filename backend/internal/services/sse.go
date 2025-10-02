@@ -22,6 +22,13 @@ type ItemUpdateEvent struct {
 	UpdateType       string  `json:"update_type"` // "created", "updated", "completed", "failed"
 }
 
+// PodcastUpdateEvent represents a podcast update notification
+type PodcastUpdateEvent struct {
+	PodcastID  int32  `json:"podcast_id"`
+	Status     string `json:"status"`
+	UpdateType string `json:"update_type"` // "created", "writing", "generating", "completed", "failed"
+}
+
 // SSEClient represents a single SSE connection
 type SSEClient struct {
 	UserID  int32
@@ -112,6 +119,22 @@ func (m *SSEManager) NotifyItemUpdate(userID int32, itemID int32, processingStat
 
 	message := SSEMessage{
 		Event: "item-update",
+		Data:  event,
+	}
+
+	m.BroadcastToUser(userID, message)
+}
+
+// NotifyPodcastUpdate notifies all clients for a user about a podcast update
+func (m *SSEManager) NotifyPodcastUpdate(userID int32, podcastID int32, status string, updateType string) {
+	event := PodcastUpdateEvent{
+		PodcastID:  podcastID,
+		Status:     status,
+		UpdateType: updateType,
+	}
+
+	message := SSEMessage{
+		Event: "podcast-update",
 		Data:  event,
 	}
 

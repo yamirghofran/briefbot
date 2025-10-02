@@ -33,6 +33,8 @@ export function ItemDataTable({ data, userId }: ItemDataTableProps) {
       columns={customColumns}
       data={data}
       toolbar={(table) => <ItemTableToolbar table={table} data={data} userId={userId} />}
+      enableRowSelection={true}
+      getRowId={(row) => String(row.id)}
     />
   )
 }
