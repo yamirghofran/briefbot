@@ -143,3 +143,7 @@ func (m *MockPodcastService) GeneratePodcastUploadURL(ctx context.Context, podca
 	}
 	return args.Get(0).(*UploadURLResponse), args.Error(1)
 }
+
+func (m *MockPodcastService) SetSSEManager(sseManager *SSEManager) {
+	m.Called(sseManager)
+}
