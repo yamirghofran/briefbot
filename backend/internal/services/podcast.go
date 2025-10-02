@@ -67,6 +67,9 @@ type PodcastService interface {
 	GetPodcastAudio(ctx context.Context, podcastID int32) ([]byte, error)
 	HasPodcastAudio(ctx context.Context, podcastID int32) (bool, error)
 	GeneratePodcastUploadURL(ctx context.Context, podcastID int32) (*UploadURLResponse, error)
+
+	// SSE management
+	SetSSEManager(sseManager *SSEManager)
 }
 
 // podcastService implements PodcastService
@@ -76,6 +79,7 @@ type podcastService struct {
 	speechService SpeechService
 	r2Service     *R2Service
 	config        PodcastConfig
+	sseManager    *SSEManager
 }
 
 // PodcastConfig holds configuration for podcast service
@@ -113,7 +117,13 @@ func NewPodcastService(querier db.Querier, aiService AIService, speechService Sp
 		speechService: speechService,
 		r2Service:     r2Service,
 		config:        config,
+		sseManager:    nil, // Will be set later via SetSSEManager
 	}
+}
+
+// SetSSEManager sets the SSE manager for the podcast service
+func (s *podcastService) SetSSEManager(sseManager *SSEManager) {
+	s.sseManager = sseManager
 }
 
 // CreatePodcastFromItems creates a podcast from multiple items
@@ -154,6 +164,11 @@ func (s *podcastService) CreatePodcastFromItems(ctx context.Context, userID int3
 		}
 	}
 
+	// Notify via SSE that podcast was created
+	if s.sseManager != nil {
+		s.sseManager.NotifyPodcastUpdate(userID, podcast.ID, string(PodcastStatusPending), "created")
+	}
+
 	return &podcast, nil
 }
 
@@ -176,6 +191,12 @@ func (s *podcastService) CreatePodcastFromSingleItem(ctx context.Context, userID
 
 // GeneratePodcastScript generates the podcast script using AI service
 func (s *podcastService) GeneratePodcastScript(ctx context.Context, podcastID int32) error {
+	// Get the podcast to retrieve user ID for SSE notifications
+	podcast, err := s.querier.GetPodcast(ctx, podcastID)
+	if err != nil {
+		return fmt.Errorf("failed to get podcast: %w", err)
+	}
+
 	// Get podcast items
 	items, err := s.querier.GetPodcastItems(ctx, &podcastID)
 	if err != nil {
@@ -189,6 +210,11 @@ func (s *podcastService) GeneratePodcastScript(ctx context.Context, podcastID in
 	// Update status to writing
 	if err := s.UpdatePodcastStatus(ctx, podcastID, PodcastStatusWriting); err != nil {
 		return fmt.Errorf("failed to update podcast status: %w", err)
+	}
+
+	// Notify via SSE that script writing has started
+	if s.sseManager != nil && podcast.UserID != nil {
+		s.sseManager.NotifyPodcastUpdate(*podcast.UserID, podcastID, string(PodcastStatusWriting), "writing")
 	}
 
 	// Convert GetPodcastItemsRow to Items for content building
@@ -251,6 +277,11 @@ func (s *podcastService) GeneratePodcastAudio(ctx context.Context, podcastID int
 	// Update status to generating
 	if err := s.UpdatePodcastStatus(ctx, podcastID, PodcastStatusGenerating); err != nil {
 		return fmt.Errorf("failed to update podcast status: %w", err)
+	}
+
+	// Notify via SSE that audio generation has started
+	if s.sseManager != nil && podcast.UserID != nil {
+		s.sseManager.NotifyPodcastUpdate(*podcast.UserID, podcastID, string(PodcastStatusGenerating), "generating")
 	}
 
 	// Parse dialogues
@@ -574,14 +605,33 @@ func (s *podcastService) storePodcastAudio(ctx context.Context, podcastID int32,
 
 // ProcessPodcast processes a complete podcast (script + audio generation)
 func (s *podcastService) ProcessPodcast(ctx context.Context, podcastID int32) error {
+	// Get the podcast to retrieve user ID for SSE notifications
+	podcast, err := s.querier.GetPodcast(ctx, podcastID)
+	if err != nil {
+		return fmt.Errorf("failed to get podcast: %w", err)
+	}
+
 	// Generate script first
 	if err := s.GeneratePodcastScript(ctx, podcastID); err != nil {
+		// Notify failure via SSE
+		if s.sseManager != nil && podcast.UserID != nil {
+			s.sseManager.NotifyPodcastUpdate(*podcast.UserID, podcastID, string(PodcastStatusFailed), "failed")
+		}
 		return fmt.Errorf("failed to generate podcast script: %w", err)
 	}
 
 	// Generate audio
 	if err := s.GeneratePodcastAudio(ctx, podcastID); err != nil {
+		// Notify failure via SSE
+		if s.sseManager != nil && podcast.UserID != nil {
+			s.sseManager.NotifyPodcastUpdate(*podcast.UserID, podcastID, string(PodcastStatusFailed), "failed")
+		}
 		return fmt.Errorf("failed to generate podcast audio: %w", err)
+	}
+
+	// Notify completion via SSE
+	if s.sseManager != nil && podcast.UserID != nil {
+		s.sseManager.NotifyPodcastUpdate(*podcast.UserID, podcastID, string(PodcastStatusCompleted), "completed")
 	}
 
 	return nil
@@ -702,6 +752,15 @@ func (s *podcastService) UpdatePodcastStatus(ctx context.Context, podcastID int3
 
 	if err := s.querier.UpdatePodcastStatus(ctx, params); err != nil {
 		return fmt.Errorf("failed to update podcast status: %w", err)
+	}
+
+	// Notify via SSE if manager is available
+	if s.sseManager != nil {
+		// Get the podcast to retrieve the user ID
+		podcast, err := s.querier.GetPodcast(ctx, podcastID)
+		if err == nil && podcast.UserID != nil {
+			s.sseManager.NotifyPodcastUpdate(*podcast.UserID, podcastID, string(status), string(status))
+		}
 	}
 
 	return nil
