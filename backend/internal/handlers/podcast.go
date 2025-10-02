@@ -385,10 +385,10 @@ func (h *PodcastHandler) GetPodcastProcessingStatus(c *gin.Context) {
 	isProcessing := isWriting || isGenerating
 
 	c.JSON(http.StatusOK, gin.H{
-		"podcast_id":   podcast.ID,
-		"status":       podcast.Status,
-		"is_pending":   isPending,
-		"is_writing":   isWriting,
+		"podcast_id":    podcast.ID,
+		"status":        podcast.Status,
+		"is_pending":    isPending,
+		"is_writing":    isWriting,
 		"is_generating": isGenerating,
 		"is_processing": isProcessing,
 		"is_completed":  isCompleted,
