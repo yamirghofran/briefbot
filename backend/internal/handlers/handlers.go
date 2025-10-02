@@ -54,6 +54,7 @@ func (h *Handler) SetupRoutes(router *gin.Engine) {
 
 	// Podcast routes
 	podcastHandler := NewPodcastHandler(h.podcastService)
+	podcastHandler.SetSSEManager(h.sseManager)
 	podcastGroup := router.Group("/podcasts")
 	{
 		// Podcast creation
@@ -62,7 +63,9 @@ func (h *Handler) SetupRoutes(router *gin.Engine) {
 
 		// Podcast retrieval
 		podcastGroup.GET("/:id", podcastHandler.GetPodcast)
+		podcastGroup.GET("/:id/status", podcastHandler.GetPodcastProcessingStatus)
 		podcastGroup.GET("/user/:userID", podcastHandler.GetPodcastsByUser)
+		podcastGroup.GET("/user/:userID/stream", podcastHandler.StreamPodcastUpdates) // SSE endpoint
 		podcastGroup.GET("/status/:status", podcastHandler.GetPodcastsByStatus)
 		podcastGroup.GET("/pending", podcastHandler.GetPendingPodcasts)
 
