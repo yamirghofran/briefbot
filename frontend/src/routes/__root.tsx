@@ -6,7 +6,7 @@ import {
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanstackDevtools } from "@tanstack/react-devtools";
 
-import Header from "@/components/Header";
+import { Navbar } from "@/components/Navbar";
 
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 
@@ -50,7 +50,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        {/*<Header />*/}
+        <Navbar />
         {children}
         <TanstackDevtools
           config={{
