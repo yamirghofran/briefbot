@@ -1,3 +1,31 @@
+// @title           BriefBot API
+// @version         1.0
+// @description     BriefBot backend API for managing content items, podcasts, and daily digests
+// @description     Supports real-time updates via Server-Sent Events (SSE)
+
+// @contact.name   BriefBot Support
+// @contact.email  support@briefbot.com
+
+// @license.name  MIT
+// @license.url   https://opensource.org/licenses/MIT
+
+// @host      localhost:8080
+// @BasePath  /
+
+// @schemes http https
+
+// @tag.name users
+// @tag.description User management operations
+
+// @tag.name items
+// @tag.description Content item operations with async processing
+
+// @tag.name podcasts
+// @tag.description Podcast generation and management
+
+// @tag.name digest
+// @tag.description Daily digest email triggers
+
 package main
 
 import (
@@ -16,6 +44,9 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/openai/openai-go"
 	"github.com/openai/openai-go/option"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	_ "github.com/yamirghofran/briefbot/docs"
 	"github.com/yamirghofran/briefbot/internal/db"
 	"github.com/yamirghofran/briefbot/internal/handlers"
 	"github.com/yamirghofran/briefbot/internal/services"
@@ -199,6 +230,9 @@ func main() {
 
 	// Setup routes
 	handlers.SetupRoutes(router, userService, itemService, digestService, podcastService, sseManager)
+
+	// Swagger documentation endpoint
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// Get port from environment or use default
 	port := os.Getenv("PORT")

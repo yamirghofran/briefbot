@@ -29,14 +29,19 @@ func (h *PodcastHandler) SetSSEManager(sseManager *services.SSEManager) {
 	h.sseManager = sseManager
 }
 
-// CreatePodcast creates a new podcast from items
+// CreatePodcast godoc
+// @Summary      Create a new podcast
+// @Description  Generate a podcast from multiple content items
+// @Tags         podcasts
+// @Accept       json
+// @Produce      json
+// @Param        podcast  body      CreatePodcastRequest  true  "Podcast creation request"
+// @Success      201      {object}  CreatePodcastResponse
+// @Failure      400      {object}  ErrorResponse
+// @Failure      500      {object}  ErrorResponse
+// @Router       /podcasts [post]
 func (h *PodcastHandler) CreatePodcast(c *gin.Context) {
-	var req struct {
-		UserID      int32   `json:"user_id" binding:"required"`
-		Title       string  `json:"title" binding:"required"`
-		Description string  `json:"description"`
-		ItemIDs     []int32 `json:"item_ids" binding:"required,min=1"`
-	}
+	var req CreatePodcastRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -57,12 +62,19 @@ func (h *PodcastHandler) CreatePodcast(c *gin.Context) {
 	})
 }
 
-// CreatePodcastFromSingleItem creates a podcast from a single item
+// CreatePodcastFromSingleItem godoc
+// @Summary      Create podcast from single item
+// @Description  Generate a podcast from a single content item
+// @Tags         podcasts
+// @Accept       json
+// @Produce      json
+// @Param        podcast  body      CreatePodcastFromItemRequest  true  "Podcast from item request"
+// @Success      201      {object}  CreatePodcastResponse
+// @Failure      400      {object}  ErrorResponse
+// @Failure      500      {object}  ErrorResponse
+// @Router       /podcasts/from-item [post]
 func (h *PodcastHandler) CreatePodcastFromSingleItem(c *gin.Context) {
-	var req struct {
-		UserID int32 `json:"user_id" binding:"required"`
-		ItemID int32 `json:"item_id" binding:"required"`
-	}
+	var req CreatePodcastFromItemRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -83,7 +95,16 @@ func (h *PodcastHandler) CreatePodcastFromSingleItem(c *gin.Context) {
 	})
 }
 
-// GetPodcast retrieves a podcast by ID
+// GetPodcast godoc
+// @Summary      Get a podcast by ID
+// @Description  Retrieve a podcast's information by its ID
+// @Tags         podcasts
+// @Produce      json
+// @Param        id   path      int  true  "Podcast ID"
+// @Success      200  {object}  github_com_yamirghofran_briefbot_internal_db.Podcast
+// @Failure      400  {object}  ErrorResponse
+// @Failure      500  {object}  ErrorResponse
+// @Router       /podcasts/{id} [get]
 func (h *PodcastHandler) GetPodcast(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseInt(idStr, 10, 32)
@@ -101,7 +122,16 @@ func (h *PodcastHandler) GetPodcast(c *gin.Context) {
 	c.JSON(http.StatusOK, podcast)
 }
 
-// GetPodcastsByUser retrieves all podcasts for a user
+// GetPodcastsByUser godoc
+// @Summary      Get podcasts by user
+// @Description  Retrieve all podcasts for a specific user
+// @Tags         podcasts
+// @Produce      json
+// @Param        userID  path      int  true  "User ID"
+// @Success      200     {object}  PodcastsResponse
+// @Failure      400     {object}  ErrorResponse
+// @Failure      500     {object}  ErrorResponse
+// @Router       /podcasts/user/{userID} [get]
 func (h *PodcastHandler) GetPodcastsByUser(c *gin.Context) {
 	userIDStr := c.Param("userID")
 	userID, err := strconv.ParseInt(userIDStr, 10, 32)
@@ -122,7 +152,16 @@ func (h *PodcastHandler) GetPodcastsByUser(c *gin.Context) {
 	})
 }
 
-// GetPodcastsByStatus retrieves podcasts by status
+// GetPodcastsByStatus godoc
+// @Summary      Get podcasts by status
+// @Description  Retrieve podcasts filtered by their processing status
+// @Tags         podcasts
+// @Produce      json
+// @Param        status  path      string  true  "Podcast status (pending, writing, generating, completed, failed)"
+// @Success      200     {object}  PodcastsResponse
+// @Failure      400     {object}  ErrorResponse
+// @Failure      500     {object}  ErrorResponse
+// @Router       /podcasts/status/{status} [get]
 func (h *PodcastHandler) GetPodcastsByStatus(c *gin.Context) {
 	status := c.Param("status")
 
@@ -153,7 +192,16 @@ func (h *PodcastHandler) GetPodcastsByStatus(c *gin.Context) {
 	})
 }
 
-// GetPendingPodcasts retrieves pending podcasts for processing
+// GetPendingPodcasts godoc
+// @Summary      Get pending podcasts
+// @Description  Retrieve pending podcasts awaiting processing
+// @Tags         podcasts
+// @Produce      json
+// @Param        limit  query     int  false  "Maximum number of podcasts to return"  default(10)
+// @Success      200    {object}  PodcastsResponse
+// @Failure      400    {object}  ErrorResponse
+// @Failure      500    {object}  ErrorResponse
+// @Router       /podcasts/pending [get]
 func (h *PodcastHandler) GetPendingPodcasts(c *gin.Context) {
 	limitStr := c.DefaultQuery("limit", "10")
 	limit, err := strconv.ParseInt(limitStr, 10, 32)
@@ -174,7 +222,16 @@ func (h *PodcastHandler) GetPendingPodcasts(c *gin.Context) {
 	})
 }
 
-// GetPodcastItems retrieves all items in a podcast
+// GetPodcastItems godoc
+// @Summary      Get podcast items
+// @Description  Retrieve all content items in a podcast
+// @Tags         podcasts
+// @Produce      json
+// @Param        id   path      int  true  "Podcast ID"
+// @Success      200  {object}  PodcastItemsResponse
+// @Failure      400  {object}  ErrorResponse
+// @Failure      500  {object}  ErrorResponse
+// @Router       /podcasts/{id}/items [get]
 func (h *PodcastHandler) GetPodcastItems(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseInt(idStr, 10, 32)
@@ -195,7 +252,16 @@ func (h *PodcastHandler) GetPodcastItems(c *gin.Context) {
 	})
 }
 
-// GetPodcastAudio retrieves the audio data for a podcast
+// GetPodcastAudio godoc
+// @Summary      Get podcast audio
+// @Description  Retrieve the audio URL for a completed podcast
+// @Tags         podcasts
+// @Produce      json
+// @Param        id   path      int  true  "Podcast ID"
+// @Success      200  {object}  PodcastAudioResponse
+// @Failure      404  {object}  ErrorResponse
+// @Failure      500  {object}  ErrorResponse
+// @Router       /podcasts/{id}/audio [get]
 func (h *PodcastHandler) GetPodcastAudio(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseInt(idStr, 10, 32)
@@ -236,7 +302,16 @@ func (h *PodcastHandler) GetPodcastAudio(c *gin.Context) {
 	})
 }
 
-// GeneratePodcastUploadURL generates a presigned URL for uploading podcast audio
+// GeneratePodcastUploadURL godoc
+// @Summary      Generate podcast upload URL
+// @Description  Generate a presigned URL for uploading podcast audio to R2 storage
+// @Tags         podcasts
+// @Produce      json
+// @Param        id   path      int  true  "Podcast ID"
+// @Success      200  {object}  PodcastUploadInfo
+// @Failure      400  {object}  ErrorResponse
+// @Failure      500  {object}  ErrorResponse
+// @Router       /podcasts/{id}/upload-url [get]
 func (h *PodcastHandler) GeneratePodcastUploadURL(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseInt(idStr, 10, 32)
@@ -254,7 +329,18 @@ func (h *PodcastHandler) GeneratePodcastUploadURL(c *gin.Context) {
 	c.JSON(http.StatusOK, uploadInfo)
 }
 
-// AddItemToPodcast adds an item to a podcast
+// AddItemToPodcast godoc
+// @Summary      Add item to podcast
+// @Description  Add a content item to an existing podcast
+// @Tags         podcasts
+// @Accept       json
+// @Produce      json
+// @Param        id    path      int                        true  "Podcast ID"
+// @Param        item  body      AddItemToPodcastRequest    true  "Add item request"
+// @Success      200   {object}  MessageResponse
+// @Failure      400   {object}  ErrorResponse
+// @Failure      500   {object}  ErrorResponse
+// @Router       /podcasts/{id}/items [post]
 func (h *PodcastHandler) AddItemToPodcast(c *gin.Context) {
 	podcastIDStr := c.Param("id")
 	podcastID, err := strconv.ParseInt(podcastIDStr, 10, 32)
@@ -263,10 +349,7 @@ func (h *PodcastHandler) AddItemToPodcast(c *gin.Context) {
 		return
 	}
 
-	var req struct {
-		ItemID int32 `json:"item_id" binding:"required"`
-		Order  int   `json:"order"`
-	}
+	var req AddItemToPodcastRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -284,7 +367,17 @@ func (h *PodcastHandler) AddItemToPodcast(c *gin.Context) {
 	})
 }
 
-// RemoveItemFromPodcast removes an item from a podcast
+// RemoveItemFromPodcast godoc
+// @Summary      Remove item from podcast
+// @Description  Remove a content item from a podcast
+// @Tags         podcasts
+// @Produce      json
+// @Param        id      path      int  true  "Podcast ID"
+// @Param        itemID  path      int  true  "Item ID"
+// @Success      200     {object}  MessageResponse
+// @Failure      400     {object}  ErrorResponse
+// @Failure      500     {object}  ErrorResponse
+// @Router       /podcasts/{id}/items/{itemID} [delete]
 func (h *PodcastHandler) RemoveItemFromPodcast(c *gin.Context) {
 	podcastIDStr := c.Param("id")
 	podcastID, err := strconv.ParseInt(podcastIDStr, 10, 32)
@@ -311,7 +404,18 @@ func (h *PodcastHandler) RemoveItemFromPodcast(c *gin.Context) {
 	})
 }
 
-// UpdatePodcast updates podcast metadata
+// UpdatePodcast godoc
+// @Summary      Update podcast
+// @Description  Update podcast metadata (title and description)
+// @Tags         podcasts
+// @Accept       json
+// @Produce      json
+// @Param        id       path      int                     true  "Podcast ID"
+// @Param        podcast  body      UpdatePodcastRequest    true  "Podcast update request"
+// @Success      200      {object}  MessageResponse
+// @Failure      400      {object}  ErrorResponse
+// @Failure      500      {object}  ErrorResponse
+// @Router       /podcasts/{id} [put]
 func (h *PodcastHandler) UpdatePodcast(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseInt(idStr, 10, 32)
@@ -320,10 +424,7 @@ func (h *PodcastHandler) UpdatePodcast(c *gin.Context) {
 		return
 	}
 
-	var req struct {
-		Title       string `json:"title" binding:"required"`
-		Description string `json:"description"`
-	}
+	var req UpdatePodcastRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -341,7 +442,16 @@ func (h *PodcastHandler) UpdatePodcast(c *gin.Context) {
 	})
 }
 
-// DeletePodcast deletes a podcast
+// DeletePodcast godoc
+// @Summary      Delete podcast
+// @Description  Delete a podcast from the system
+// @Tags         podcasts
+// @Produce      json
+// @Param        id   path      int  true  "Podcast ID"
+// @Success      200  {object}  MessageResponse
+// @Failure      400  {object}  ErrorResponse
+// @Failure      500  {object}  ErrorResponse
+// @Router       /podcasts/{id} [delete]
 func (h *PodcastHandler) DeletePodcast(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseInt(idStr, 10, 32)
@@ -361,7 +471,16 @@ func (h *PodcastHandler) DeletePodcast(c *gin.Context) {
 	})
 }
 
-// GetPodcastProcessingStatus returns the processing status of a podcast
+// GetPodcastProcessingStatus godoc
+// @Summary      Get podcast processing status
+// @Description  Retrieve the processing status of a podcast
+// @Tags         podcasts
+// @Produce      json
+// @Param        id   path      int  true  "Podcast ID"
+// @Success      200  {object}  PodcastProcessingStatusResponse
+// @Failure      400  {object}  ErrorResponse
+// @Failure      500  {object}  ErrorResponse
+// @Router       /podcasts/{id}/status [get]
 func (h *PodcastHandler) GetPodcastProcessingStatus(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseInt(idStr, 10, 32)
@@ -397,7 +516,16 @@ func (h *PodcastHandler) GetPodcastProcessingStatus(c *gin.Context) {
 	})
 }
 
-// StreamPodcastUpdates streams podcast updates for a specific user via SSE
+// StreamPodcastUpdates godoc
+// @Summary      Stream podcast updates
+// @Description  Server-Sent Events endpoint for real-time podcast processing updates
+// @Tags         podcasts
+// @Produce      text/event-stream
+// @Param        userID  path      int  true  "User ID"
+// @Success      200     {string}  string "SSE stream"
+// @Failure      400     {object}  ErrorResponse
+// @Failure      500     {object}  ErrorResponse
+// @Router       /podcasts/user/{userID}/stream [get]
 func (h *PodcastHandler) StreamPodcastUpdates(c *gin.Context) {
 	userIDStr := c.Param("userID")
 	userID, err := strconv.ParseInt(userIDStr, 10, 32)

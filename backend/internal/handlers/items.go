@@ -7,11 +7,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// CreateItem godoc
+// @Summary      Create a new content item
+// @Description  Create a new content item from URL with async processing
+// @Tags         items
+// @Accept       json
+// @Produce      json
+// @Param        item  body      CreateItemRequest  true  "Item creation request"
+// @Success      201   {object}  CreateItemResponse
+// @Failure      400   {object}  ErrorResponse
+// @Failure      500   {object}  ErrorResponse
+// @Router       /items [post]
 func (h *Handler) CreateItem(c *gin.Context) {
-	var req struct {
-		UserID *int32  `json:"user_id"`
-		URL    *string `json:"url"`
-	}
+	var req CreateItemRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -33,6 +41,16 @@ func (h *Handler) CreateItem(c *gin.Context) {
 	})
 }
 
+// GetItem godoc
+// @Summary      Get an item by ID
+// @Description  Retrieve a content item's information by its ID
+// @Tags         items
+// @Produce      json
+// @Param        id   path      int  true  "Item ID"
+// @Success      200  {object}  github_com_yamirghofran_briefbot_internal_db.Item
+// @Failure      400  {object}  ErrorResponse
+// @Failure      500  {object}  ErrorResponse
+// @Router       /items/{id} [get]
 func (h *Handler) GetItem(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseInt(idStr, 10, 32)
@@ -50,6 +68,16 @@ func (h *Handler) GetItem(c *gin.Context) {
 	c.JSON(http.StatusOK, item)
 }
 
+// GetItemsByUser godoc
+// @Summary      Get items by user
+// @Description  Retrieve all content items for a specific user
+// @Tags         items
+// @Produce      json
+// @Param        userID  path      int  true  "User ID"
+// @Success      200     {array}   github_com_yamirghofran_briefbot_internal_db.Item
+// @Failure      400     {object}  ErrorResponse
+// @Failure      500     {object}  ErrorResponse
+// @Router       /items/user/{userID} [get]
 func (h *Handler) GetItemsByUser(c *gin.Context) {
 	userIDStr := c.Param("userID")
 	userID, err := strconv.ParseInt(userIDStr, 10, 32)
@@ -68,6 +96,16 @@ func (h *Handler) GetItemsByUser(c *gin.Context) {
 	c.JSON(http.StatusOK, items)
 }
 
+// GetUnreadItemsByUser godoc
+// @Summary      Get unread items by user
+// @Description  Retrieve all unread content items for a specific user
+// @Tags         items
+// @Produce      json
+// @Param        userID  path      int  true  "User ID"
+// @Success      200     {array}   github_com_yamirghofran_briefbot_internal_db.Item
+// @Failure      400     {object}  ErrorResponse
+// @Failure      500     {object}  ErrorResponse
+// @Router       /items/user/{userID}/unread [get]
 func (h *Handler) GetUnreadItemsByUser(c *gin.Context) {
 	userIDStr := c.Param("userID")
 	userID, err := strconv.ParseInt(userIDStr, 10, 32)
@@ -86,6 +124,18 @@ func (h *Handler) GetUnreadItemsByUser(c *gin.Context) {
 	c.JSON(http.StatusOK, items)
 }
 
+// UpdateItem godoc
+// @Summary      Update an item
+// @Description  Update a content item's information
+// @Tags         items
+// @Accept       json
+// @Produce      json
+// @Param        id    path      int                 true  "Item ID"
+// @Param        item  body      UpdateItemRequest   true  "Item update request"
+// @Success      200   {object}  MessageResponse
+// @Failure      400   {object}  ErrorResponse
+// @Failure      500   {object}  ErrorResponse
+// @Router       /items/{id} [put]
 func (h *Handler) UpdateItem(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseInt(idStr, 10, 32)
@@ -94,17 +144,7 @@ func (h *Handler) UpdateItem(c *gin.Context) {
 		return
 	}
 
-	var req struct {
-		Title       string   `json:"title"`
-		URL         *string  `json:"url"`
-		TextContent *string  `json:"text_content"`
-		Summary     *string  `json:"summary"`
-		Type        *string  `json:"type"`
-		Platform    *string  `json:"platform"`
-		Tags        []string `json:"tags"`
-		Authors     []string `json:"authors"`
-		IsRead      *bool    `json:"is_read"`
-	}
+	var req UpdateItemRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -120,6 +160,16 @@ func (h *Handler) UpdateItem(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Item updated successfully"})
 }
 
+// MarkItemAsRead godoc
+// @Summary      Mark item as read
+// @Description  Mark a content item as read
+// @Tags         items
+// @Produce      json
+// @Param        id   path      int  true  "Item ID"
+// @Success      200  {object}  github_com_yamirghofran_briefbot_internal_db.Item
+// @Failure      400  {object}  ErrorResponse
+// @Failure      500  {object}  ErrorResponse
+// @Router       /items/{id}/read [patch]
 func (h *Handler) MarkItemAsRead(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseInt(idStr, 10, 32)
@@ -144,6 +194,16 @@ func (h *Handler) MarkItemAsRead(c *gin.Context) {
 	c.JSON(http.StatusOK, item)
 }
 
+// ToggleItemReadStatus godoc
+// @Summary      Toggle item read status
+// @Description  Toggle a content item's read/unread status
+// @Tags         items
+// @Produce      json
+// @Param        id   path      int  true  "Item ID"
+// @Success      200  {object}  github_com_yamirghofran_briefbot_internal_db.Item
+// @Failure      400  {object}  ErrorResponse
+// @Failure      500  {object}  ErrorResponse
+// @Router       /items/{id}/toggle-read [patch]
 func (h *Handler) ToggleItemReadStatus(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseInt(idStr, 10, 32)
@@ -161,6 +221,18 @@ func (h *Handler) ToggleItemReadStatus(c *gin.Context) {
 	c.JSON(http.StatusOK, item)
 }
 
+// PatchItem godoc
+// @Summary      Patch an item
+// @Description  Partially update a content item's information
+// @Tags         items
+// @Accept       json
+// @Produce      json
+// @Param        id    path      int                true  "Item ID"
+// @Param        item  body      PatchItemRequest   true  "Item patch request"
+// @Success      200   {object}  github_com_yamirghofran_briefbot_internal_db.Item
+// @Failure      400   {object}  ErrorResponse
+// @Failure      500   {object}  ErrorResponse
+// @Router       /items/{id} [patch]
 func (h *Handler) PatchItem(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseInt(idStr, 10, 32)
@@ -169,12 +241,7 @@ func (h *Handler) PatchItem(c *gin.Context) {
 		return
 	}
 
-	var req struct {
-		Title   *string  `json:"title"`
-		Summary *string  `json:"summary"`
-		Tags    []string `json:"tags"`
-		Authors []string `json:"authors"`
-	}
+	var req PatchItemRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -190,6 +257,16 @@ func (h *Handler) PatchItem(c *gin.Context) {
 	c.JSON(http.StatusOK, item)
 }
 
+// DeleteItem godoc
+// @Summary      Delete an item
+// @Description  Delete a content item from the system
+// @Tags         items
+// @Produce      json
+// @Param        id   path      int  true  "Item ID"
+// @Success      200  {object}  MessageResponse
+// @Failure      400  {object}  ErrorResponse
+// @Failure      500  {object}  ErrorResponse
+// @Router       /items/{id} [delete]
 func (h *Handler) DeleteItem(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseInt(idStr, 10, 32)
@@ -207,6 +284,16 @@ func (h *Handler) DeleteItem(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Item deleted successfully"})
 }
 
+// GetItemProcessingStatus godoc
+// @Summary      Get item processing status
+// @Description  Retrieve the processing status of a content item
+// @Tags         items
+// @Produce      json
+// @Param        id   path      int  true  "Item ID"
+// @Success      200  {object}  ItemProcessingStatusResponse
+// @Failure      400  {object}  ErrorResponse
+// @Failure      500  {object}  ErrorResponse
+// @Router       /items/{id}/status [get]
 func (h *Handler) GetItemProcessingStatus(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseInt(idStr, 10, 32)
@@ -231,6 +318,16 @@ func (h *Handler) GetItemProcessingStatus(c *gin.Context) {
 	})
 }
 
+// GetItemsByProcessingStatus godoc
+// @Summary      Get items by processing status
+// @Description  Retrieve content items filtered by their processing status
+// @Tags         items
+// @Produce      json
+// @Param        status  query     string  false  "Processing status (pending, processing, completed, failed)"  default(pending)
+// @Success      200     {object}  ItemsByStatusResponse
+// @Failure      400     {object}  ErrorResponse
+// @Failure      500     {object}  ErrorResponse
+// @Router       /items/status [get]
 func (h *Handler) GetItemsByProcessingStatus(c *gin.Context) {
 	status := c.Query("status")
 	if status == "" {

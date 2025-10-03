@@ -293,9 +293,65 @@ golangci-lint run  # Run linter
 
 ## 📚 API Documentation
 
-The API uses Swagger/OpenAPI annotations. When running the server, documentation is available at:
-- Swagger UI: `http://localhost:8080/swagger/index.html`
-- OpenAPI JSON: `http://localhost:8080/swagger/doc.json`
+The API uses Swagger/OpenAPI 3.0 for comprehensive documentation. All endpoints are documented with request/response schemas, examples, and error codes.
+
+### Viewing Documentation
+
+1. **Start the server**:
+   ```bash
+   go run cmd/server/main.go
+   ```
+
+2. **Open Swagger UI** in your browser:
+   ```
+   http://localhost:8080/swagger/index.html
+   ```
+
+3. **Available Documentation Formats**:
+   - **Interactive UI**: `http://localhost:8080/swagger/index.html` - Try out endpoints directly
+   - **OpenAPI JSON**: `http://localhost:8080/swagger/doc.json` - Machine-readable spec
+   - **OpenAPI YAML**: `docs/swagger.yaml` - Human-readable spec file
+
+### Regenerating Documentation
+
+After modifying API handlers or adding new endpoints:
+
+```bash
+# Regenerate Swagger docs
+make swagger
+
+# Or manually
+swag init -g cmd/server/main.go -o docs --parseDependency --parseInternal
+```
+
+### API Overview
+
+The API is organized into 4 main groups:
+
+- **👥 Users** (`/users`) - User management and authentication
+- **📄 Items** (`/items`) - Content item operations with async processing
+- **🎙️ Podcasts** (`/podcasts`) - Podcast generation and management
+- **📧 Digest** (`/digest`) - Daily digest email triggers
+
+**Total Endpoints**: 28 documented endpoints across all groups
+
+### Example: Using Swagger UI
+
+1. Navigate to `http://localhost:8080/swagger/index.html`
+2. Expand any endpoint group (e.g., "items")
+3. Click "Try it out" on any endpoint
+4. Fill in the required parameters
+5. Click "Execute" to make a real API call
+6. View the response with status code and body
+
+### Swagger Annotations
+
+All handlers include comprehensive Swagger annotations:
+- Request/response schemas with examples
+- Path and query parameters
+- HTTP status codes (200, 201, 400, 500, etc.)
+- Content types (JSON, SSE streams)
+- Detailed descriptions
 
 ## 🤝 Contributing
 
