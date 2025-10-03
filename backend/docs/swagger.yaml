@@ -1,0 +1,1442 @@
+basePath: /
+definitions:
+  github_com_yamirghofran_briefbot_internal_db.Item:
+    properties:
+      authors:
+        items:
+          type: string
+        type: array
+      created_at:
+        type: string
+      id:
+        type: integer
+      is_read:
+        type: boolean
+      modified_at:
+        type: string
+      platform:
+        type: string
+      processing_error:
+        type: string
+      processing_status:
+        type: string
+      summary:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      text_content:
+        type: string
+      title:
+        type: string
+      type:
+        type: string
+      url:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  github_com_yamirghofran_briefbot_internal_db.Podcast:
+    properties:
+      audio_url:
+        type: string
+      completed_at:
+        $ref: '#/definitions/pgtype.Timestamp'
+      created_at:
+        $ref: '#/definitions/pgtype.Timestamp'
+      description:
+        type: string
+      dialogues:
+        items:
+          type: integer
+        type: array
+      duration_seconds:
+        type: integer
+      id:
+        type: integer
+      status:
+        type: string
+      title:
+        type: string
+      updated_at:
+        $ref: '#/definitions/pgtype.Timestamp'
+      user_id:
+        type: integer
+    type: object
+  github_com_yamirghofran_briefbot_internal_db.User:
+    properties:
+      auth_provider:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      oauth_id:
+        type: string
+      password_hash:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  internal_handlers.AddItemToPodcastRequest:
+    properties:
+      item_id:
+        example: 1
+        type: integer
+      order:
+        example: 1
+        type: integer
+    required:
+    - item_id
+    type: object
+  internal_handlers.CreateItemRequest:
+    properties:
+      url:
+        example: https://example.com/article
+        type: string
+      user_id:
+        example: 1
+        type: integer
+    required:
+    - url
+    - user_id
+    type: object
+  internal_handlers.CreateItemResponse:
+    properties:
+      item:
+        $ref: '#/definitions/github_com_yamirghofran_briefbot_internal_db.Item'
+      message:
+        type: string
+      processing_status:
+        type: string
+    type: object
+  internal_handlers.CreatePodcastFromItemRequest:
+    properties:
+      item_id:
+        example: 1
+        type: integer
+      user_id:
+        example: 1
+        type: integer
+    required:
+    - item_id
+    - user_id
+    type: object
+  internal_handlers.CreatePodcastRequest:
+    properties:
+      description:
+        example: Today's top articles
+        type: string
+      item_ids:
+        example:
+        - 1
+        - 2
+        - 3
+        items:
+          type: integer
+        minItems: 1
+        type: array
+      title:
+        example: My Daily Digest
+        type: string
+      user_id:
+        example: 1
+        type: integer
+    required:
+    - item_ids
+    - title
+    - user_id
+    type: object
+  internal_handlers.CreatePodcastResponse:
+    properties:
+      message:
+        type: string
+      podcast:
+        $ref: '#/definitions/github_com_yamirghofran_briefbot_internal_db.Podcast'
+      processing_status:
+        type: string
+    type: object
+  internal_handlers.CreateUserRequest:
+    properties:
+      auth_provider:
+        example: google
+        type: string
+      email:
+        example: john@example.com
+        type: string
+      name:
+        example: John Doe
+        type: string
+      oauth_id:
+        example: google_123456
+        type: string
+      password_hash:
+        type: string
+    type: object
+  internal_handlers.ErrorResponse:
+    properties:
+      error:
+        example: Invalid request
+        type: string
+    type: object
+  internal_handlers.ItemProcessingStatusResponse:
+    properties:
+      is_completed:
+        type: boolean
+      is_failed:
+        type: boolean
+      is_processing:
+        type: boolean
+      item_id:
+        type: integer
+      processing_error:
+        type: string
+      processing_status:
+        type: string
+    type: object
+  internal_handlers.ItemsByStatusResponse:
+    properties:
+      count:
+        type: integer
+      items:
+        items:
+          $ref: '#/definitions/github_com_yamirghofran_briefbot_internal_db.Item'
+        type: array
+      status:
+        type: string
+    type: object
+  internal_handlers.MessageResponse:
+    properties:
+      message:
+        example: Operation successful
+        type: string
+    type: object
+  internal_handlers.PatchItemRequest:
+    properties:
+      authors:
+        example:
+        - John Doe
+        items:
+          type: string
+        type: array
+      summary:
+        example: Updated summary
+        type: string
+      tags:
+        example:
+        - tech
+        - news
+        items:
+          type: string
+        type: array
+      title:
+        example: Updated Title
+        type: string
+    type: object
+  internal_handlers.PodcastAudioResponse:
+    properties:
+      audio_url:
+        type: string
+      duration:
+        type: integer
+      message:
+        type: string
+    type: object
+  internal_handlers.PodcastItemsResponse:
+    properties:
+      count:
+        type: integer
+      items:
+        items:
+          $ref: '#/definitions/github_com_yamirghofran_briefbot_internal_db.Item'
+        type: array
+    type: object
+  internal_handlers.PodcastProcessingStatusResponse:
+    properties:
+      audio_url:
+        type: string
+      is_completed:
+        type: boolean
+      is_failed:
+        type: boolean
+      is_generating:
+        type: boolean
+      is_pending:
+        type: boolean
+      is_processing:
+        type: boolean
+      is_writing:
+        type: boolean
+      podcast_id:
+        type: integer
+      status:
+        type: string
+    type: object
+  internal_handlers.PodcastUploadInfo:
+    properties:
+      expires_at:
+        type: string
+      public_url:
+        type: string
+      upload_url:
+        type: string
+    type: object
+  internal_handlers.PodcastsResponse:
+    properties:
+      count:
+        type: integer
+      podcasts:
+        items:
+          $ref: '#/definitions/github_com_yamirghofran_briefbot_internal_db.Podcast'
+        type: array
+    type: object
+  internal_handlers.UpdateItemRequest:
+    properties:
+      authors:
+        items:
+          type: string
+        type: array
+      is_read:
+        type: boolean
+      platform:
+        example: web
+        type: string
+      summary:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      text_content:
+        type: string
+      title:
+        example: Article Title
+        type: string
+      type:
+        example: article
+        type: string
+      url:
+        type: string
+    type: object
+  internal_handlers.UpdatePodcastRequest:
+    properties:
+      description:
+        example: Updated description
+        type: string
+      title:
+        example: Updated Title
+        type: string
+    required:
+    - title
+    type: object
+  internal_handlers.UpdateUserRequest:
+    properties:
+      auth_provider:
+        type: string
+      email:
+        example: jane@example.com
+        type: string
+      name:
+        example: Jane Doe
+        type: string
+      oauth_id:
+        type: string
+      password_hash:
+        type: string
+    type: object
+  pgtype.InfinityModifier:
+    enum:
+    - 1
+    - 0
+    - -1
+    format: int32
+    type: integer
+    x-enum-varnames:
+    - Infinity
+    - Finite
+    - NegativeInfinity
+  pgtype.Timestamp:
+    properties:
+      infinityModifier:
+        $ref: '#/definitions/pgtype.InfinityModifier'
+      time:
+        description: Time zone will be ignored when encoding to PostgreSQL.
+        type: string
+      valid:
+        type: boolean
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@briefbot.com
+    name: BriefBot Support
+  description: |-
+    BriefBot backend API for managing content items, podcasts, and daily digests
+    Supports real-time updates via Server-Sent Events (SSE)
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  title: BriefBot API
+  version: "1.0"
+paths:
+  /digest/trigger:
+    post:
+      consumes:
+      - application/json
+      description: Manually trigger the daily digest email sending process for all
+        users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handlers.MessageResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+      summary: Trigger daily digest for all users
+      tags:
+      - digest
+  /digest/trigger/integrated:
+    post:
+      consumes:
+      - application/json
+      description: Manually trigger the integrated digest (podcast generation + email)
+        process for all users
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/internal_handlers.MessageResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+      summary: Trigger integrated digest for all users
+      tags:
+      - digest
+  /digest/trigger/integrated/user/{userID}:
+    post:
+      consumes:
+      - application/json
+      description: Manually trigger the integrated digest (podcast generation + email)
+        for a specific user
+      parameters:
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/internal_handlers.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+      summary: Trigger integrated digest for specific user
+      tags:
+      - digest
+  /digest/trigger/user/{userID}:
+    post:
+      consumes:
+      - application/json
+      description: Manually trigger the daily digest email sending process for a specific
+        user
+      parameters:
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handlers.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+      summary: Trigger daily digest for specific user
+      tags:
+      - digest
+  /items:
+    post:
+      consumes:
+      - application/json
+      description: Create a new content item from URL with async processing
+      parameters:
+      - description: Item creation request
+        in: body
+        name: item
+        required: true
+        schema:
+          $ref: '#/definitions/internal_handlers.CreateItemRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/internal_handlers.CreateItemResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+      summary: Create a new content item
+      tags:
+      - items
+  /items/{id}:
+    delete:
+      description: Delete a content item from the system
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handlers.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+      summary: Delete an item
+      tags:
+      - items
+    get:
+      description: Retrieve a content item's information by its ID
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_yamirghofran_briefbot_internal_db.Item'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+      summary: Get an item by ID
+      tags:
+      - items
+    patch:
+      consumes:
+      - application/json
+      description: Partially update a content item's information
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Item patch request
+        in: body
+        name: item
+        required: true
+        schema:
+          $ref: '#/definitions/internal_handlers.PatchItemRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_yamirghofran_briefbot_internal_db.Item'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+      summary: Patch an item
+      tags:
+      - items
+    put:
+      consumes:
+      - application/json
+      description: Update a content item's information
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Item update request
+        in: body
+        name: item
+        required: true
+        schema:
+          $ref: '#/definitions/internal_handlers.UpdateItemRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handlers.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+      summary: Update an item
+      tags:
+      - items
+  /items/{id}/read:
+    patch:
+      description: Mark a content item as read
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_yamirghofran_briefbot_internal_db.Item'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+      summary: Mark item as read
+      tags:
+      - items
+  /items/{id}/status:
+    get:
+      description: Retrieve the processing status of a content item
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handlers.ItemProcessingStatusResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+      summary: Get item processing status
+      tags:
+      - items
+  /items/{id}/toggle-read:
+    patch:
+      description: Toggle a content item's read/unread status
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_yamirghofran_briefbot_internal_db.Item'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+      summary: Toggle item read status
+      tags:
+      - items
+  /items/status:
+    get:
+      description: Retrieve content items filtered by their processing status
+      parameters:
+      - default: pending
+        description: Processing status (pending, processing, completed, failed)
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handlers.ItemsByStatusResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+      summary: Get items by processing status
+      tags:
+      - items
+  /items/user/{userID}:
+    get:
+      description: Retrieve all content items for a specific user
+      parameters:
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_yamirghofran_briefbot_internal_db.Item'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+      summary: Get items by user
+      tags:
+      - items
+  /items/user/{userID}/stream:
+    get:
+      description: Server-Sent Events endpoint for real-time item processing updates
+      parameters:
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: integer
+      produces:
+      - text/event-stream
+      responses:
+        "200":
+          description: SSE stream
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+      summary: Stream item processing updates
+      tags:
+      - items
+  /items/user/{userID}/unread:
+    get:
+      description: Retrieve all unread content items for a specific user
+      parameters:
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_yamirghofran_briefbot_internal_db.Item'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+      summary: Get unread items by user
+      tags:
+      - items
+  /podcasts:
+    post:
+      consumes:
+      - application/json
+      description: Generate a podcast from multiple content items
+      parameters:
+      - description: Podcast creation request
+        in: body
+        name: podcast
+        required: true
+        schema:
+          $ref: '#/definitions/internal_handlers.CreatePodcastRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/internal_handlers.CreatePodcastResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+      summary: Create a new podcast
+      tags:
+      - podcasts
+  /podcasts/{id}:
+    delete:
+      description: Delete a podcast from the system
+      parameters:
+      - description: Podcast ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handlers.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+      summary: Delete podcast
+      tags:
+      - podcasts
+    get:
+      description: Retrieve a podcast's information by its ID
+      parameters:
+      - description: Podcast ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_yamirghofran_briefbot_internal_db.Podcast'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+      summary: Get a podcast by ID
+      tags:
+      - podcasts
+    put:
+      consumes:
+      - application/json
+      description: Update podcast metadata (title and description)
+      parameters:
+      - description: Podcast ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Podcast update request
+        in: body
+        name: podcast
+        required: true
+        schema:
+          $ref: '#/definitions/internal_handlers.UpdatePodcastRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handlers.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+      summary: Update podcast
+      tags:
+      - podcasts
+  /podcasts/{id}/audio:
+    get:
+      description: Retrieve the audio URL for a completed podcast
+      parameters:
+      - description: Podcast ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handlers.PodcastAudioResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+      summary: Get podcast audio
+      tags:
+      - podcasts
+  /podcasts/{id}/items:
+    get:
+      description: Retrieve all content items in a podcast
+      parameters:
+      - description: Podcast ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handlers.PodcastItemsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+      summary: Get podcast items
+      tags:
+      - podcasts
+    post:
+      consumes:
+      - application/json
+      description: Add a content item to an existing podcast
+      parameters:
+      - description: Podcast ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Add item request
+        in: body
+        name: item
+        required: true
+        schema:
+          $ref: '#/definitions/internal_handlers.AddItemToPodcastRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handlers.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+      summary: Add item to podcast
+      tags:
+      - podcasts
+  /podcasts/{id}/items/{itemID}:
+    delete:
+      description: Remove a content item from a podcast
+      parameters:
+      - description: Podcast ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Item ID
+        in: path
+        name: itemID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handlers.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+      summary: Remove item from podcast
+      tags:
+      - podcasts
+  /podcasts/{id}/status:
+    get:
+      description: Retrieve the processing status of a podcast
+      parameters:
+      - description: Podcast ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handlers.PodcastProcessingStatusResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+      summary: Get podcast processing status
+      tags:
+      - podcasts
+  /podcasts/{id}/upload-url:
+    get:
+      description: Generate a presigned URL for uploading podcast audio to R2 storage
+      parameters:
+      - description: Podcast ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handlers.PodcastUploadInfo'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+      summary: Generate podcast upload URL
+      tags:
+      - podcasts
+  /podcasts/from-item:
+    post:
+      consumes:
+      - application/json
+      description: Generate a podcast from a single content item
+      parameters:
+      - description: Podcast from item request
+        in: body
+        name: podcast
+        required: true
+        schema:
+          $ref: '#/definitions/internal_handlers.CreatePodcastFromItemRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/internal_handlers.CreatePodcastResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+      summary: Create podcast from single item
+      tags:
+      - podcasts
+  /podcasts/pending:
+    get:
+      description: Retrieve pending podcasts awaiting processing
+      parameters:
+      - default: 10
+        description: Maximum number of podcasts to return
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handlers.PodcastsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+      summary: Get pending podcasts
+      tags:
+      - podcasts
+  /podcasts/status/{status}:
+    get:
+      description: Retrieve podcasts filtered by their processing status
+      parameters:
+      - description: Podcast status (pending, writing, generating, completed, failed)
+        in: path
+        name: status
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handlers.PodcastsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+      summary: Get podcasts by status
+      tags:
+      - podcasts
+  /podcasts/user/{userID}:
+    get:
+      description: Retrieve all podcasts for a specific user
+      parameters:
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handlers.PodcastsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+      summary: Get podcasts by user
+      tags:
+      - podcasts
+  /podcasts/user/{userID}/stream:
+    get:
+      description: Server-Sent Events endpoint for real-time podcast processing updates
+      parameters:
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: integer
+      produces:
+      - text/event-stream
+      responses:
+        "200":
+          description: SSE stream
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+      summary: Stream podcast updates
+      tags:
+      - podcasts
+  /users:
+    get:
+      description: Retrieve a list of all users in the system
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_yamirghofran_briefbot_internal_db.User'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+      summary: List all users
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account with optional OAuth or password authentication
+      parameters:
+      - description: User creation request
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/internal_handlers.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_yamirghofran_briefbot_internal_db.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+      summary: Create a new user
+      tags:
+      - users
+  /users/{id}:
+    delete:
+      description: Delete a user from the system
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handlers.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+      summary: Delete a user
+      tags:
+      - users
+    get:
+      description: Retrieve a user's information by their ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_yamirghofran_briefbot_internal_db.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+      summary: Get a user by ID
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: Update a user's information
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: User update request
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/internal_handlers.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handlers.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+      summary: Update a user
+      tags:
+      - users
+  /users/email/{email}:
+    get:
+      description: Retrieve a user's information by their email address
+      parameters:
+      - description: User Email
+        in: path
+        name: email
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_yamirghofran_briefbot_internal_db.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrorResponse'
+      summary: Get a user by email
+      tags:
+      - users
+schemes:
+- http
+- https
+swagger: "2.0"
+tags:
+- description: User management operations
+  name: users
+- description: Content item operations with async processing
+  name: items
+- description: Podcast generation and management
+  name: podcasts
+- description: Daily digest email triggers
+  name: digest
