@@ -9,15 +9,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// TriggerDailyDigest manually triggers the daily digest email for all users
-// @Summary Trigger daily digest for all users
-// @Description Manually trigger the daily digest email sending process for all users
-// @Tags daily-digest
-// @Accept json
-// @Produce json
-// @Success 200 {object} map[string]string "message": "Daily digest sent successfully"
-// @Failure 500 {object} map[string]string "error": "Failed to send daily digest"
-// @Router /daily-digest/trigger [post]
+// TriggerDailyDigest godoc
+// @Summary      Trigger daily digest for all users
+// @Description  Manually trigger the daily digest email sending process for all users
+// @Tags         digest
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  MessageResponse
+// @Failure      500  {object}  ErrorResponse
+// @Failure      503  {object}  ErrorResponse
+// @Router       /digest/trigger [post]
 func (h *Handler) TriggerDailyDigest(c *gin.Context) {
 	if h.digestService == nil {
 		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Digest service not available"})
@@ -35,17 +36,18 @@ func (h *Handler) TriggerDailyDigest(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Daily digest sent successfully to all users"})
 }
 
-// TriggerDailyDigestForUser manually triggers the daily digest email for a specific user
-// @Summary Trigger daily digest for specific user
-// @Description Manually trigger the daily digest email sending process for a specific user
-// @Tags daily-digest
-// @Accept json
-// @Produce json
-// @Param userID path int true "User ID"
-// @Success 200 {object} map[string]string "message": "Daily digest sent successfully"
-// @Success 200 {object} map[string]string "message": "No unread items from previous day"
-// @Failure 500 {object} map[string]string "error": "Failed to send daily digest"
-// @Router /daily-digest/trigger/user/{userID} [post]
+// TriggerDailyDigestForUser godoc
+// @Summary      Trigger daily digest for specific user
+// @Description  Manually trigger the daily digest email sending process for a specific user
+// @Tags         digest
+// @Accept       json
+// @Produce      json
+// @Param        userID  path      int  true  "User ID"
+// @Success      200     {object}  MessageResponse
+// @Failure      400     {object}  ErrorResponse
+// @Failure      500     {object}  ErrorResponse
+// @Failure      503     {object}  ErrorResponse
+// @Router       /digest/trigger/user/{userID} [post]
 func (h *Handler) TriggerDailyDigestForUser(c *gin.Context) {
 	if h.digestService == nil {
 		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Digest service not available"})
@@ -82,15 +84,15 @@ func (h *Handler) TriggerDailyDigestForUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Daily digest sent successfully to user"})
 }
 
-// TriggerIntegratedDigest manually triggers the integrated digest (podcast + email) for all users
-// @Summary Trigger integrated digest for all users
-// @Description Manually trigger the integrated digest (podcast generation + email) process for all users
-// @Tags integrated-digest
-// @Accept json
-// @Produce json
-// @Success 202 {object} map[string]string "message": "Integrated digest processing started"
-// @Failure 503 {object} map[string]string "error": "Digest service not available"
-// @Router /integrated-digest/trigger [post]
+// TriggerIntegratedDigest godoc
+// @Summary      Trigger integrated digest for all users
+// @Description  Manually trigger the integrated digest (podcast generation + email) process for all users
+// @Tags         digest
+// @Accept       json
+// @Produce      json
+// @Success      202  {object}  MessageResponse
+// @Failure      503  {object}  ErrorResponse
+// @Router       /digest/trigger/integrated [post]
 func (h *Handler) TriggerIntegratedDigest(c *gin.Context) {
 	if h.digestService == nil {
 		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Digest service not available"})
@@ -110,18 +112,17 @@ func (h *Handler) TriggerIntegratedDigest(c *gin.Context) {
 	c.JSON(http.StatusAccepted, gin.H{"message": "Integrated digest processing started in background"})
 }
 
-// TriggerIntegratedDigestForUser manually triggers the integrated digest for a specific user
-// @Summary Trigger integrated digest for specific user
-// @Description Manually trigger the integrated digest (podcast generation + email) for a specific user
-// @Tags integrated-digest
-// @Accept json
-// @Produce json
-// @Param userID path int true "User ID"
-// @Success 202 {object} map[string]string "message": "Integrated digest processing started for user"
-// @Success 202 {object} map[string]string "message": "No items to process for this user"
-// @Failure 400 {object} map[string]string "error": "Invalid user ID"
-// @Failure 503 {object} map[string]string "error": "Digest service not available"
-// @Router /integrated-digest/trigger/user/{userID} [post]
+// TriggerIntegratedDigestForUser godoc
+// @Summary      Trigger integrated digest for specific user
+// @Description  Manually trigger the integrated digest (podcast generation + email) for a specific user
+// @Tags         digest
+// @Accept       json
+// @Produce      json
+// @Param        userID  path      int  true  "User ID"
+// @Success      202     {object}  MessageResponse
+// @Failure      400     {object}  ErrorResponse
+// @Failure      503     {object}  ErrorResponse
+// @Router       /digest/trigger/integrated/user/{userID} [post]
 func (h *Handler) TriggerIntegratedDigestForUser(c *gin.Context) {
 	if h.digestService == nil {
 		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Digest service not available"})
