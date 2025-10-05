@@ -53,9 +53,9 @@ import (
 )
 
 func main() {
-	// Load .env file into the environment
+	// Load .env file into the environment (optional - Docker Compose may provide env vars directly)
 	if err := godotenv.Load(); err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
+		log.Printf("Note: .env file not found, using environment variables from Docker/system: %v", err)
 	}
 	// Get database URL from environment or use default
 	databaseURL := os.Getenv("DATABASE_URL")
