@@ -1,0 +1,13 @@
+# Dockerfile for pkgsite (Go documentation server)
+FROM golang:1.25.1-alpine
+
+# Install pkgsite
+RUN go install golang.org/x/pkgsite/cmd/pkgsite@latest
+
+WORKDIR /app
+
+# Expose pkgsite port
+EXPOSE 8081
+
+# Run pkgsite
+CMD ["pkgsite", "-http=:8081"]

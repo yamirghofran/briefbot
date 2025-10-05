@@ -1,0 +1,129 @@
+version: "3.8"
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:latest
+    container_name: briefbot-postgres
+    environment:
+      POSTGRES_USER: briefbot
+      POSTGRES_PASSWORD: briefbot
+      POSTGRES_DB: briefbot
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U briefbot -d briefbot"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - briefbot-network
+
+  # Run database migrations
+  migrations:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: briefbot-migrations
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://briefbot:briefbot@postgres:5432/briefbot?sslmode=disable
+      GOOSE_DRIVER: postgres
+      GOOSE_DBSTRING: postgres://briefbot:briefbot@postgres:5432/briefbot?sslmode=disable
+      GOOSE_MIGRATION_DIR: /app/sql/migrations
+    command:
+      [
+        "/app/scripts/wait-for-postgres.sh",
+        "postgres",
+        "briefbot",
+        "briefbot",
+        "briefbot",
+        "/app/migrate.sh",
+      ]
+    networks:
+      - briefbot-network
+    restart: on-failure
+
+  # Seed database with test data
+  seed:
+    image: postgres:latest
+    container_name: briefbot-seed
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+    environment:
+      PGPASSWORD: briefbot
+    volumes:
+      - ./backend/scripts/seed-data.sql:/seed-data.sql
+    command: >
+      sh -c "
+        sleep 5 &&
+        psql -h postgres -U briefbot -d briefbot -f /seed-data.sql
+      "
+    networks:
+      - briefbot-network
+    restart: on-failure
+
+  # Go Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: briefbot-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      seed:
+        condition: service_completed_successfully
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgres://briefbot:briefbot@postgres:5432/briefbot?sslmode=disable
+      PORT: 8080
+      FRONTEND_BASE_URL: http://localhost:3000
+    ports:
+      - "8080:8080"
+    networks:
+      - briefbot-network
+    restart: unless-stopped
+
+  # React Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: briefbot-frontend
+    depends_on:
+      - backend
+    environment:
+      VITE_API_URL: http://localhost:8080
+    ports:
+      - "3000:80"
+    networks:
+      - briefbot-network
+    restart: unless-stopped
+
+  # Go Documentation Server (pkgsite)
+  pkgsite:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.pkgsite
+    container_name: briefbot-pkgsite
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./backend:/app
+    networks:
+      - briefbot-network
+    restart: unless-stopped
+
+networks:
+  briefbot-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
