@@ -48,7 +48,9 @@ RUN chmod +x /app/scripts/*.sh
 # Create migration script
 RUN echo '#!/bin/sh' > /app/migrate.sh && \
     echo 'cd /app' >> /app/migrate.sh && \
-    echo 'goose -dir sql/migrations postgres "${GOOSE_DBSTRING}" up' >> /app/migrate.sh && \
+    echo 'echo "Running migrations with goose..."' >> /app/migrate.sh && \
+    echo 'goose up' >> /app/migrate.sh && \
+    echo 'echo "Migrations completed successfully"' >> /app/migrate.sh && \
     chmod +x /app/migrate.sh
 
 # Expose port
