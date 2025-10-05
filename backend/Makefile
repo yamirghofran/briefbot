@@ -1,4 +1,4 @@
-.PHONY: test test-unit test-services test-handlers test-integration test-all test-coverage test-coverage-integration test-watch test-specific help fmt lint ci-deps clean
+.PHONY: test test-unit test-services test-handlers test-integration test-all test-coverage test-coverage-integration test-watch test-specific help fmt lint ci-deps clean swagger swagger-init swagger-validate swagger-fmt
 
 # Default target
 help:
@@ -13,6 +13,10 @@ help:
 	@echo "  test-coverage-integration - Run integration tests with coverage"
 	@echo "  test-watch              - Run tests in watch mode"
 	@echo "  test-specific           - Run specific test (TEST=TestName)"
+	@echo "  swagger                 - Generate swagger documentation"
+	@echo "  swagger-init            - Initialize swagger (first time setup)"
+	@echo "  swagger-validate        - Validate swagger spec"
+	@echo "  swagger-fmt             - Format swagger comments"
 	@echo "  fmt                     - Format code with gofmt"
 	@echo "  lint                    - Run golangci-lint"
 	@echo "  ci-deps                 - Install CI dependencies"
@@ -70,3 +74,19 @@ clean:
 # Run specific test (usage: make test-specific TEST=TestCompleteItemPreservesIsRead)
 test-specific:
 	go test ./... -v -run $(TEST)
+
+# Generate swagger documentation
+swagger:
+	swag init -g cmd/server/main.go -o docs --parseDependency --parseInternal
+
+# Initialize swagger (first time setup)
+swagger-init:
+	swag init -g cmd/server/main.go -o docs --parseDependency --parseInternal
+
+# Validate swagger spec
+swagger-validate:
+	swag init -g cmd/server/main.go -o docs --parseDependency --parseInternal --parseDepth 1
+
+# Format swagger comments
+swagger-fmt:
+	swag fmt -g cmd/server/main.go

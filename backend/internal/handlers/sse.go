@@ -10,7 +10,16 @@ import (
 	"github.com/yamirghofran/briefbot/internal/services"
 )
 
-// StreamItemUpdates streams item updates for a specific user via SSE
+// StreamItemUpdates godoc
+// @Summary      Stream item processing updates
+// @Description  Server-Sent Events endpoint for real-time item processing updates
+// @Tags         items
+// @Produce      text/event-stream
+// @Param        userID  path      int  true  "User ID"
+// @Success      200     {string}  string "SSE stream"
+// @Failure      400     {object}  ErrorResponse
+// @Failure      500     {object}  ErrorResponse
+// @Router       /items/user/{userID}/stream [get]
 func (h *Handler) StreamItemUpdates(c *gin.Context) {
 	userIDStr := c.Param("userID")
 	userID, err := strconv.ParseInt(userIDStr, 10, 32)
