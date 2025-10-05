@@ -25,8 +25,8 @@ RUN go install github.com/pressly/goose/v3/cmd/goose@latest
 # Stage 2: Runtime image
 FROM alpine:latest
 
-# Install runtime dependencies
-RUN apk add --no-cache ca-certificates postgresql-client bash
+# Install runtime dependencies including ffmpeg for audio processing
+RUN apk add --no-cache ca-certificates postgresql-client bash ffmpeg
 
 WORKDIR /app
 
