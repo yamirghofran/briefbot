@@ -201,16 +201,15 @@ docker-compose restart backend
 ### 5. Frontend Service
 
 **Build**: `./frontend/Dockerfile`
-**Port**: `3000:80`
+**Port**: `3000:3000`
 **Purpose**: React web application
 
 **Tech Stack**:
 
 - React 19
-- Vite build tool
+- Vite dev server
 - Bun package manager
 - TanStack Router & Query
-- Served by nginx
 
 **Logs**:
 
@@ -501,11 +500,8 @@ docker-compose logs frontend
 docker-compose build --no-cache frontend
 docker-compose up -d frontend
 
-# Check nginx config
-docker-compose exec frontend cat /etc/nginx/conf.d/default.conf
-
-# Verify build output
-docker-compose exec frontend ls -la /usr/share/nginx/html
+# Check frontend is running
+docker-compose exec frontend bun --version
 ```
 
 ### Slow Build Times
@@ -610,7 +606,7 @@ docker-compose exec backend env
 ### Runtime Optimization
 
 - PostgreSQL connection pooling (configured in backend)
-- nginx gzip compression for frontend assets
+- Vite dev server with HMR (Hot Module Replacement)
 - Health checks prevent premature requests
 
 ### Resource Limits (Optional)

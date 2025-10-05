@@ -93,7 +93,6 @@ Verify these files exist in your repository:
 
 **Frontend:**
 - [ ] `frontend/Dockerfile`
-- [ ] `frontend/nginx.conf`
 - [ ] `frontend/.dockerignore`
 
 ### 4. Git Status Check 🔍
@@ -118,10 +117,10 @@ git status
 # Add all Docker files
 git add docker-compose.yml
 git add .env.example
-git add SETUP.md README.docker.md DOCKER_SUMMARY.md
+git add SETUP.md README.docker.md
 git add backend/Dockerfile backend/Dockerfile.pkgsite backend/.dockerignore
 git add backend/scripts/
-git add frontend/Dockerfile frontend/nginx.conf frontend/.dockerignore
+git add frontend/Dockerfile frontend/.dockerignore
 git add .gitignore
 git add README.md
 
@@ -129,11 +128,11 @@ git add README.md
 git commit -m "Add Docker setup for one-command deployment
 
 - Add docker-compose.yml with all services (postgres, backend, frontend, pkgsite)
-- Add Dockerfiles for backend and frontend with multi-stage builds
+- Add Dockerfiles for backend and frontend
 - Add database migrations and seeding scripts
 - Add comprehensive documentation (SETUP.md, README.docker.md)
 - Add .env.example template
-- Configure nginx for frontend serving
+- Configure Bun dev server for frontend
 - Include professor user and test data in seed script
 - Update .gitignore to exclude .env files"
 
