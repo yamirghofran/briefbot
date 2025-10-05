@@ -4,25 +4,32 @@
 
 An AI-enabled platform for managing links and extracting knowledge faster.
 
-- Browser Plugin
-- Web UI
-- Daily Digest Email Notifications
+When you save a link with Briefbot, it extracts the metadata such as a proper title, authors, platform, and tags. It also generates a summary that covers the key topics for when you want to skim over it.
+You also have the option to select multiple items and generate an engaging NotebookLM style podcast about those items.
+Finally, when you click the "Trigger Digest" button, it sends you the summaries and a podcast about the items you saved yesterday but didn't read.
+You can filter you items based on type, author, platform or search over them.
 
 ## 🐳 Quick Start with Docker
 
 **For evaluators/professors**: The easiest way to run BriefBot is with Docker.
 
+1. Make sure you have Docker Desktop installed and running.
+2. Create a `.env` file in project root similar to the example.
+3. Run `docker-compose up --build`
+4. Navigate to http://localhost:3000 to use the app.
+
 ```bash
 # 1. Ensure you have the .env file in the project root
 # 2. Run everything with one command
 docker-compose up --build
-
-# 3. Access the application
-# Frontend: http://localhost:3000
-# Backend API: http://localhost:8080
-# Swagger Docs: http://localhost:8080/swagger/index.html
-# Go Docs: http://localhost:8081
 ```
+
+You can access:
+
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8080
+- Swagger Docs: http://localhost:8080/swagger/index.html
+- Go Docs: http://localhost:8081/github.com/yamirghofran/briefbot
 
 **📖 Full Docker Instructions**: See [SETUP.md](SETUP.md) for detailed setup instructions.
 
@@ -34,7 +41,17 @@ docker-compose up --build
 - `.env` file in project root (provided separately)
 - No other dependencies needed!
 
-## 📚 Built-in Documentation
+### Setting Up the Extension
+
+1. Navigate to you browsers Extensions -> Manage Extensions settings
+2. Turn on "Developer Mode"
+3. Click on "Load Unpacked"
+4. Select the "browser-plugin" folder from this repo.
+5. Pin the extension.
+
+You can then use the extension on the webpage you want to save without having to go to the briefbot website.
+
+## Built-in Documentation
 
 BriefBot includes comprehensive documentation tools that run automatically with Docker:
 
@@ -92,6 +109,7 @@ Together, they provide complete documentation from API consumer perspective (Swa
 ## Tech Stack
 
 - React (Tanstack)
+- HTML/CSS/Javascript for the browser extension
 - ShadcnUI
 - Go
 - Gin
