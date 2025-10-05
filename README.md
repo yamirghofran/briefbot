@@ -14,9 +14,10 @@ You can filter you items based on type, author, platform or search over them.
 **For evaluators/professors**: The easiest way to run BriefBot is with Docker.
 
 1. Make sure you have Docker Desktop installed and running.
-2. Create a `.env` file in project root similar to the example.
-3. Run `docker-compose up --build`
-4. Navigate to http://localhost:3000 to use the app.
+2. Clone this repository and navigate to it.
+3. Create a `.env` file in project root similar to the example.
+4. Run `docker-compose up --build`
+5. Navigate to http://localhost:3000 to use the app.
 
 ```bash
 # 1. Ensure you have the .env file in the project root
