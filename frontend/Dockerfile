@@ -1,6 +1,5 @@
-# Multi-stage build for React frontend with Bun
-# Stage 1: Build the application
-FROM oven/bun:1 AS builder
+# Dockerfile for React frontend with Bun
+FROM oven/bun:1
 
 WORKDIR /app
 
@@ -13,20 +12,8 @@ RUN bun install --frozen-lockfile
 # Copy source code
 COPY . .
 
-# Build the application
-RUN bun run build
+# Expose port 3000
+EXPOSE 3000
 
-# Stage 2: Serve with nginx
-FROM nginx:alpine
-
-# Copy built assets from builder
-COPY --from=builder /app/dist /usr/share/nginx/html
-
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Expose port 80
-EXPOSE 80
-
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Run the dev server
+CMD ["bun", "run", "dev", "--host", "0.0.0.0"]
