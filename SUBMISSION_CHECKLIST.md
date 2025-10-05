@@ -29,9 +29,9 @@ Create a **separate .env file** with your **real API keys**:
 # Copy this template and fill with REAL values
 
 # Database (keep as-is for Docker)
-DATABASE_URL=postgres://briefbot:briefbot123@postgres:5432/briefbot?sslmode=disable
+DATABASE_URL=postgres://briefbot:briefbot@postgres:5432/briefbot?sslmode=disable
 GOOSE_DRIVER=postgres
-GOOSE_DBSTRING=postgres://briefbot:briefbot123@postgres:5432/briefbot?sslmode=disable
+GOOSE_DBSTRING=postgres://briefbot:briefbot@postgres:5432/briefbot?sslmode=disable
 GOOSE_MIGRATION_DIR=sql/migrations
 
 # Application
@@ -149,7 +149,7 @@ git push origin main
 ```
 Dear Professor [Name],
 
-I've completed the BriefBot assignment with a Docker setup that allows you to run 
+I've completed the BriefBot assignment with a Docker setup that allows you to run
 the entire application with a single command.
 
 ATTACHED FILES:
@@ -181,7 +181,7 @@ ACCESS POINTS:
 - Backend API: http://localhost:8080
 - API Documentation: http://localhost:8080/swagger/index.html
 - Go Package Docs: http://localhost:8081
-- Database: localhost:5432 (user: briefbot, pass: briefbot123)
+- Database: localhost:5432 (user: briefbot, pass: briefbot)
 
 PRE-SEEDED DATA:
 - User ID 1: Professor Demo (professor@university.edu)
@@ -200,7 +200,7 @@ ESTIMATED SETUP TIME:
 - First-time build: 8-10 minutes
 - Subsequent starts: 30-60 seconds
 
-If you encounter any issues, please refer to the troubleshooting section in 
+If you encounter any issues, please refer to the troubleshooting section in
 SETUP.md or README.docker.md.
 
 Thank you for your time!
@@ -285,6 +285,6 @@ Your submission is successful when professor can:
 
 **Good luck with your submission! 🚀**
 
-Remember: The goal is to make it as easy as possible for your professor to run 
-and evaluate your application. Clear documentation and a working Docker setup 
+Remember: The goal is to make it as easy as possible for your professor to run
+and evaluate your application. Clear documentation and a working Docker setup
 will make a great impression!

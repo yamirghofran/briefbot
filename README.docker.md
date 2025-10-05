@@ -120,7 +120,7 @@ pkgsite (independent)
 
 - Database: `briefbot`
 - Username: `briefbot`
-- Password: `briefbot123`
+- Password: `briefbot`
 - Persistent volume: `postgres_data`
 
 **Health Check**: Runs `pg_isready` every 5 seconds
@@ -243,9 +243,9 @@ The `.env` file should be placed in the **project root** (same directory as `doc
 
 ```env
 # Database (Docker internal networking)
-DATABASE_URL=postgres://briefbot:briefbot123@postgres:5432/briefbot?sslmode=disable
+DATABASE_URL=postgres://briefbot:briefbot@postgres:5432/briefbot?sslmode=disable
 GOOSE_DRIVER=postgres
-GOOSE_DBSTRING=postgres://briefbot:briefbot123@postgres:5432/briefbot?sslmode=disable
+GOOSE_DBSTRING=postgres://briefbot:briefbot@postgres:5432/briefbot?sslmode=disable
 GOOSE_MIGRATION_DIR=sql/migrations
 
 # Application
@@ -456,8 +456,8 @@ docker-compose ps postgres
 docker-compose logs postgres
 
 # Verify DATABASE_URL uses 'postgres' as host (not 'localhost')
-# Correct: postgres://briefbot:briefbot123@postgres:5432/...
-# Wrong:   postgres://briefbot:briefbot123@localhost:5432/...
+# Correct: postgres://briefbot:briefbot@postgres:5432/...
+# Wrong:   postgres://briefbot:briefbot@localhost:5432/...
 
 # Restart services in order
 docker-compose down
