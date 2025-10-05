@@ -1,0 +1,29 @@
+# Environment files with secrets
+.env
+.env.local
+.env.*.local
+
+# Keep example files
+!.env.example
+
+# Docker
+.dockerignore
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
