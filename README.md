@@ -107,6 +107,10 @@ Official Go documentation server (same as pkg.go.dev) running locally for BriefB
 
 Together, they provide complete documentation from API consumer perspective (Swagger) and developer perspective (pkgsite).
 
+### DeepWiki
+
+Extensive documentation is also available at [DeepWiki](https://deepwiki.com/yamirghofran/briefbot)
+
 ## Tech Stack
 
 - React (Tanstack)
