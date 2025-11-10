@@ -1,0 +1,23 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'briefbot'
+    environment: 'development'
+
+scrape_configs:
+  # Backend Go application
+  - job_name: 'briefbot-backend'
+    static_configs:
+      - targets: ['backend:8080']
+    metrics_path: '/metrics'
+
+  # PostgreSQL database
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
