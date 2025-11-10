@@ -3,8 +3,11 @@ package services
 import (
 	"context"
 	"fmt"
+	"strings"
+	"time"
 
 	"github.com/yamirghofran/briefbot/internal/db"
+	"github.com/yamirghofran/briefbot/internal/metrics"
 )
 
 // ProcessingStatus constants
@@ -72,6 +75,9 @@ func (s *jobQueueService) EnqueueItem(ctx context.Context, userID int32, title s
 		return nil, fmt.Errorf("failed to enqueue item: %w", err)
 	}
 
+	// Record metrics
+	metrics.IncrementJobsEnqueued()
+
 	// Notify SSE clients about new item
 	if s.sseManager != nil && item.ProcessingStatus != nil {
 		s.sseManager.NotifyItemUpdate(userID, item.ID, item.ProcessingStatus, "created")
@@ -101,6 +107,9 @@ func (s *jobQueueService) MarkItemAsProcessing(ctx context.Context, itemID int32
 		return fmt.Errorf("failed to mark item as processing: %w", err)
 	}
 
+	// Record metrics
+	metrics.IncrementJobsProcessing()
+
 	// Notify SSE clients about processing status
 	if s.sseManager != nil && item.UserID != nil {
 		processingStatus := ProcessingStatusProcessing
@@ -111,6 +120,12 @@ func (s *jobQueueService) MarkItemAsProcessing(ctx context.Context, itemID int32
 }
 
 func (s *jobQueueService) CompleteItem(ctx context.Context, itemID int32, title, textContent, summary, itemType, platform string, tags, authors []string) error {
+	start := time.Now()
+	defer func() {
+		duration := time.Since(start).Seconds()
+		metrics.RecordJobProcessingDuration(duration)
+	}()
+
 	// Get the current item to preserve existing URL
 	item, err := s.querier.GetItem(ctx, itemID)
 	if err != nil {
@@ -149,6 +164,10 @@ func (s *jobQueueService) CompleteItem(ctx context.Context, itemID int32, title,
 		return fmt.Errorf("failed to mark item as completed: %w", err)
 	}
 
+	// Record metrics
+	metrics.DecrementJobsProcessing()
+	metrics.IncrementJobsCompleted()
+
 	// Notify SSE clients about completion
 	if s.sseManager != nil && item.UserID != nil {
 		s.sseManager.NotifyItemUpdate(*item.UserID, itemID, &completedStatus, "completed")
@@ -176,12 +195,33 @@ func (s *jobQueueService) FailItem(ctx context.Context, itemID int32, errorMsg s
 		return fmt.Errorf("failed to mark item as failed: %w", err)
 	}
 
+	// Record metrics
+	metrics.DecrementJobsProcessing()
+	metrics.IncrementJobsFailed(categorizeError(errorMsg))
+
 	// Notify SSE clients about failure
 	if s.sseManager != nil && item.UserID != nil {
 		s.sseManager.NotifyItemUpdate(*item.UserID, itemID, &failedStatus, "failed")
 	}
 
 	return nil
+}
+
+// categorizeError categorizes error messages for metrics
+func categorizeError(errorMsg string) string {
+	errorLower := strings.ToLower(errorMsg)
+	if strings.Contains(errorLower, "network") || strings.Contains(errorLower, "connection") {
+		return "network"
+	} else if strings.Contains(errorLower, "timeout") {
+		return "timeout"
+	} else if strings.Contains(errorLower, "parse") || strings.Contains(errorLower, "parsing") {
+		return "parse"
+	} else if strings.Contains(errorLower, "scrape") || strings.Contains(errorLower, "scraping") {
+		return "scraping"
+	} else if strings.Contains(errorLower, "ai") || strings.Contains(errorLower, "llm") {
+		return "ai"
+	}
+	return "unknown"
 }
 
 func (s *jobQueueService) GetItemStatus(ctx context.Context, itemID int32) (*ItemStatus, error) {
