@@ -44,11 +44,14 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/openai/openai-go"
 	"github.com/openai/openai-go/option"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	_ "github.com/yamirghofran/briefbot/docs"
 	"github.com/yamirghofran/briefbot/internal/db"
 	"github.com/yamirghofran/briefbot/internal/handlers"
+	"github.com/yamirghofran/briefbot/internal/metrics"
+	"github.com/yamirghofran/briefbot/internal/middleware"
 	"github.com/yamirghofran/briefbot/internal/services"
 )
 
@@ -92,6 +95,21 @@ func main() {
 	}
 
 	fmt.Println("Successfully connected to database with connection pool")
+
+	// Start database metrics collector
+	go func() {
+		ticker := time.NewTicker(15 * time.Second)
+		defer ticker.Stop()
+
+		for range ticker.C {
+			stats := pool.Stat()
+			metrics.UpdateDBConnectionStats(
+				stats.AcquiredConns(),
+				stats.IdleConns(),
+				int32(stats.EmptyAcquireCount()),
+			)
+		}
+	}()
 
 	// Initialize querier
 	querier := db.New(pool)
@@ -214,6 +232,9 @@ func main() {
 	// Initialize Gin router
 	router := gin.Default()
 
+	// Add Prometheus middleware
+	router.Use(middleware.PrometheusMiddleware())
+
 	// Add CORS middleware
 	router.Use(func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", "*")
@@ -230,6 +251,9 @@ func main() {
 
 	// Setup routes
 	handlers.SetupRoutes(router, userService, itemService, digestService, podcastService, sseManager)
+
+	// Metrics endpoint
+	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	// Swagger documentation endpoint
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
