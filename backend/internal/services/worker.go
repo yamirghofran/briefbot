@@ -155,6 +155,25 @@ func (s *workerService) worker(id int) {
 	}
 }
 
+// Code smell: hardcoded worker service (OCP violation)
+// Solution: Strategy pattern
+
+// func (s *workerService) processBatch() error {
+// 	// Process items first
+// 	if err := s.processItemBatch(); err != nil {
+// 		return fmt.Errorf("failed to process item batch: %w", err)
+// 	}
+
+// 	// Process podcasts if enabled
+// 	if s.enablePodcasts && s.podcastService != nil {
+// 		if err := s.processPodcastBatch(); err != nil {
+// 			return fmt.Errorf("failed to process podcast batch: %w", err)
+// 		}
+// 	}
+
+// 	return nil
+// }
+
 func (s *workerService) processBatch() error {
 	// Process items first
 	if err := s.processItemBatch(); err != nil {
