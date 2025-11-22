@@ -12,7 +12,8 @@ import type {
   PodcastResponse,
 } from '@/types'
 
-const API_BASE_URL = 'http://localhost:8080'
+// Use environment variable with fallback to localhost for development
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -20,6 +21,9 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 })
+
+// Export API_BASE_URL for use in SSE connections
+export { API_BASE_URL }
 
 // User API functions
 export const userApi = {

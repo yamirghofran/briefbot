@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { podcastApi } from '@/services/api'
+import { podcastApi, API_BASE_URL } from '@/services/api'
 import { StaticDataTable } from '@/components/data-table/static-data-table'
 import { podcastColumns } from '@/components/data-table/podcast-columns'
 import { Podcast } from '@/types'
@@ -29,7 +29,7 @@ function PodcastsPage() {
 
   // Setup SSE for real-time updates
   useEffect(() => {
-    const eventSource = new EventSource(`http://localhost:8080/podcasts/user/${userId}/stream`)
+    const eventSource = new EventSource(`${API_BASE_URL}/podcasts/user/${userId}/stream`)
 
     eventSource.addEventListener('podcast-update', (event) => {
       const updateData = JSON.parse(event.data)
