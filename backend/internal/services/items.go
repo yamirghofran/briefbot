@@ -28,6 +28,26 @@ type ItemService interface {
 	GetItemsByProcessingStatus(ctx context.Context, status *string) ([]db.Item, error)
 }
 
+// Problem: The ItemService interface has 15+ methods mixing CRUD operations, background processing, and status management. Clients might only need a subset.
+// Solution: Split into focused interfaces:
+
+// type ItemCRUD interface {
+//     CreateItem(ctx context.Context, userID *int32, title string, url *string, ...) (*db.Item, error)
+//     GetItem(ctx context.Context, id int32) (*db.Item, error)
+//     UpdateItem(ctx context.Context, id int32, ...) error
+//     DeleteItem(ctx context.Context, id int32) error
+// }
+// type ItemProcessing interface {
+//     CreateItemAsync(ctx context.Context, userID int32, url string) (*db.Item, error)
+//     GetItemProcessingStatus(ctx context.Context, itemID int32) (*ItemStatus, error)
+//     GetItemsByProcessingStatus(ctx context.Context, status *string) ([]db.Item, error)
+// }
+// type ItemReadStatus interface {
+//     MarkItemAsRead(ctx context.Context, id int32) error
+//     ToggleItemReadStatus(ctx context.Context, id int32) (*db.Item, error)
+//     GetUnreadItemsByUser(ctx context.Context, userID *int32) ([]db.Item, error)
+// }
+
 type itemService struct {
 	querier         db.Querier
 	aiService       AIService
