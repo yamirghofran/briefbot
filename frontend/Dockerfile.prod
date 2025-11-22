@@ -1,4 +1,4 @@
-# Multi-stage build for React frontend with Bun
+# Multi-stage build for TanStack Start (SSR) frontend with Bun
 # Stage 1: Build the application
 FROM oven/bun:1 AS builder
 
@@ -17,27 +17,27 @@ RUN bun install --frozen-lockfile
 # Copy source code
 COPY . .
 
-# Build the application
+# Build the application (outputs to .output/)
 RUN bun run build
 
-# Stage 2: Production server with nginx
-FROM nginx:alpine
+# Stage 2: Production runtime with Node.js
+FROM node:20-alpine
 
 # Install curl for healthchecks
 RUN apk add --no-cache curl
 
-# Copy built assets from builder
-COPY --from=builder /app/dist /usr/share/nginx/html
+WORKDIR /app
 
-# Copy nginx configuration for SPA routing
-COPY nginx.conf /etc/nginx/nginx.conf
+# Copy built output from builder
+COPY --from=builder /app/.output ./.output
+COPY --from=builder /app/package.json ./package.json
 
-# Expose port 80
-EXPOSE 80
+# Expose port 3000
+EXPOSE 3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost/health || exit 1
+  CMD curl -f http://localhost:3000/ || exit 1
 
-# Run nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Run the TanStack Start server
+CMD ["node", ".output/server/index.mjs"]
