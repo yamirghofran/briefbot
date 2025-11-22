@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
+import { API_BASE_URL } from '@/services/api'
 
 interface ItemUpdateEvent {
   item_id: number
@@ -26,7 +27,7 @@ export function useItemUpdates(userId: number | undefined) {
     try {
       // Create EventSource connection
       eventSource = new EventSource(
-        `http://localhost:8080/items/user/${userId}/stream`
+        `${API_BASE_URL}/items/user/${userId}/stream`
       )
 
       eventSourceRef.current = eventSource
