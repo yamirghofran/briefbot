@@ -23,7 +23,14 @@ func NewHandler(userService services.UserService, itemService services.ItemServi
 	}
 }
 
+func (h *Handler) Health(c *gin.Context) {
+	c.JSON(200, gin.H{"status": "up"})
+}
+
 func (h *Handler) SetupRoutes(router *gin.Engine) {
+	// Health check endpoint
+	router.GET("/health", h.Health)
+
 	// User routes
 	userGroup := router.Group("/users")
 	{
