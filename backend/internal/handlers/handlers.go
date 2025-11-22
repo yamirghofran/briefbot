@@ -23,6 +23,25 @@ func NewHandler(userService services.UserService, itemService services.ItemServi
 	}
 }
 
+// Code smell Improvement
+// Problem: The Handler struct depends on 5 different services and handles routing for multiple domains (users, items, podcasts, digests). This violates SRP as it has too many reasons to change.
+// The solution is to split into separate handlers
+
+// type UserHandler struct {
+//     userService services.UserService
+// }
+// type ItemHandler struct {
+//     itemService services.ItemService
+//     sseManager  *services.SSEManager
+// }
+// type PodcastHandler struct {
+//     podcastService services.PodcastService
+//     sseManager     *services.SSEManager
+// }
+// type DigestHandler struct {
+//     digestService services.DigestService
+// }
+
 func (h *Handler) Health(c *gin.Context) {
 	c.JSON(200, gin.H{"status": "up"})
 }
