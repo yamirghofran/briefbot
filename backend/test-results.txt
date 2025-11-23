@@ -1,0 +1,854 @@
+?   	github.com/yamirghofran/briefbot/cmd/server	[no test files]
+?   	github.com/yamirghofran/briefbot/docs	[no test files]
+?   	github.com/yamirghofran/briefbot/internal/db	[no test files]
+=== RUN   TestTriggerDailyDigest
+--- PASS: TestTriggerDailyDigest (0.00s)
+=== RUN   TestTriggerDailyDigest_ServiceUnavailable
+--- PASS: TestTriggerDailyDigest_ServiceUnavailable (0.00s)
+=== RUN   TestTriggerDailyDigest_Error
+--- PASS: TestTriggerDailyDigest_Error (0.00s)
+=== RUN   TestTriggerDailyDigestForUser
+--- PASS: TestTriggerDailyDigestForUser (0.00s)
+=== RUN   TestTriggerDailyDigestForUser_NoItems
+--- PASS: TestTriggerDailyDigestForUser_NoItems (0.00s)
+=== RUN   TestTriggerDailyDigestForUser_InvalidID
+--- PASS: TestTriggerDailyDigestForUser_InvalidID (0.00s)
+=== RUN   TestTriggerIntegratedDigest
+--- PASS: TestTriggerIntegratedDigest (0.00s)
+=== RUN   TestTriggerIntegratedDigest_ServiceUnavailable
+--- PASS: TestTriggerIntegratedDigest_ServiceUnavailable (0.00s)
+=== RUN   TestTriggerIntegratedDigestForUser
+--- PASS: TestTriggerIntegratedDigestForUser (0.00s)
+=== RUN   TestTriggerIntegratedDigestForUser_InvalidID
+--- PASS: TestTriggerIntegratedDigestForUser_InvalidID (0.00s)
+=== RUN   TestTriggerIntegratedDigestForUser_ServiceUnavailable
+--- PASS: TestTriggerIntegratedDigestForUser_ServiceUnavailable (0.00s)
+=== RUN   TestTriggerDailyDigestForUser_GetItemsError
+2025/11/23 12:17:10 Background integrated digest completed successfully
+2025/11/23 12:17:10 Background integrated digest completed for user 1: emailSent=true, podcastGenerated=false
+--- PASS: TestTriggerDailyDigestForUser_GetItemsError (0.00s)
+=== RUN   TestTriggerDailyDigestForUser_SendDigestError
+--- PASS: TestTriggerDailyDigestForUser_SendDigestError (0.00s)
+=== RUN   TestTriggerDailyDigestForUser_ServiceUnavailable
+--- PASS: TestTriggerDailyDigestForUser_ServiceUnavailable (0.00s)
+=== RUN   TestCreateItem
+--- PASS: TestCreateItem (0.00s)
+=== RUN   TestGetItem
+--- PASS: TestGetItem (0.00s)
+=== RUN   TestGetItemsByUser
+--- PASS: TestGetItemsByUser (0.00s)
+=== RUN   TestGetUnreadItemsByUser
+--- PASS: TestGetUnreadItemsByUser (0.00s)
+=== RUN   TestUpdateItem
+--- PASS: TestUpdateItem (0.00s)
+=== RUN   TestPatchItem
+--- PASS: TestPatchItem (0.00s)
+=== RUN   TestPatchItem_PartialUpdate
+--- PASS: TestPatchItem_PartialUpdate (0.00s)
+=== RUN   TestPatchItem_InvalidID
+--- PASS: TestPatchItem_InvalidID (0.00s)
+=== RUN   TestPatchItem_InvalidJSON
+--- PASS: TestPatchItem_InvalidJSON (0.00s)
+=== RUN   TestPatchItem_ServiceError
+--- PASS: TestPatchItem_ServiceError (0.00s)
+=== RUN   TestMarkItemAsRead
+--- PASS: TestMarkItemAsRead (0.00s)
+=== RUN   TestToggleItemReadStatus
+--- PASS: TestToggleItemReadStatus (0.00s)
+=== RUN   TestDeleteItem
+--- PASS: TestDeleteItem (0.00s)
+=== RUN   TestGetItemProcessingStatus
+--- PASS: TestGetItemProcessingStatus (0.00s)
+=== RUN   TestGetItemsByProcessingStatus
+--- PASS: TestGetItemsByProcessingStatus (0.00s)
+=== RUN   TestGetItemsByProcessingStatus_InvalidStatus
+--- PASS: TestGetItemsByProcessingStatus_InvalidStatus (0.00s)
+=== RUN   TestCreateItem_Error
+--- PASS: TestCreateItem_Error (0.00s)
+=== RUN   TestCreateItem_InvalidJSON
+--- PASS: TestCreateItem_InvalidJSON (0.00s)
+=== RUN   TestGetItem_InvalidID
+--- PASS: TestGetItem_InvalidID (0.00s)
+=== RUN   TestGetItem_ServiceError
+--- PASS: TestGetItem_ServiceError (0.00s)
+=== RUN   TestGetItemsByUser_InvalidID
+--- PASS: TestGetItemsByUser_InvalidID (0.00s)
+=== RUN   TestGetItemsByUser_ServiceError
+--- PASS: TestGetItemsByUser_ServiceError (0.00s)
+=== RUN   TestGetUnreadItemsByUser_InvalidID
+--- PASS: TestGetUnreadItemsByUser_InvalidID (0.00s)
+=== RUN   TestGetUnreadItemsByUser_ServiceError
+--- PASS: TestGetUnreadItemsByUser_ServiceError (0.00s)
+=== RUN   TestUpdateItem_InvalidID
+--- PASS: TestUpdateItem_InvalidID (0.00s)
+=== RUN   TestUpdateItem_ServiceError
+--- PASS: TestUpdateItem_ServiceError (0.00s)
+=== RUN   TestMarkItemAsRead_InvalidID
+--- PASS: TestMarkItemAsRead_InvalidID (0.00s)
+=== RUN   TestMarkItemAsRead_ServiceError
+--- PASS: TestMarkItemAsRead_ServiceError (0.00s)
+=== RUN   TestMarkItemAsRead_GetItemError
+--- PASS: TestMarkItemAsRead_GetItemError (0.00s)
+=== RUN   TestToggleItemReadStatus_InvalidID
+--- PASS: TestToggleItemReadStatus_InvalidID (0.00s)
+=== RUN   TestToggleItemReadStatus_ServiceError
+--- PASS: TestToggleItemReadStatus_ServiceError (0.00s)
+=== RUN   TestDeleteItem_InvalidID
+--- PASS: TestDeleteItem_InvalidID (0.00s)
+=== RUN   TestDeleteItem_ServiceError
+--- PASS: TestDeleteItem_ServiceError (0.00s)
+=== RUN   TestGetItemProcessingStatus_InvalidID
+--- PASS: TestGetItemProcessingStatus_InvalidID (0.00s)
+=== RUN   TestGetItemProcessingStatus_ServiceError
+--- PASS: TestGetItemProcessingStatus_ServiceError (0.00s)
+=== RUN   TestGetItemsByProcessingStatus_ServiceError
+--- PASS: TestGetItemsByProcessingStatus_ServiceError (0.00s)
+=== RUN   TestCreatePodcast
+--- PASS: TestCreatePodcast (0.00s)
+=== RUN   TestCreatePodcastFromSingleItem
+--- PASS: TestCreatePodcastFromSingleItem (0.00s)
+=== RUN   TestGetPodcast
+--- PASS: TestGetPodcast (0.00s)
+=== RUN   TestCreatePodcast_ValidationError
+--- PASS: TestCreatePodcast_ValidationError (0.00s)
+=== RUN   TestCreatePodcast_ServiceError
+--- PASS: TestCreatePodcast_ServiceError (0.00s)
+=== RUN   TestGetPodcastsByUser
+--- PASS: TestGetPodcastsByUser (0.00s)
+=== RUN   TestGetPodcastsByUser_InvalidID
+--- PASS: TestGetPodcastsByUser_InvalidID (0.00s)
+=== RUN   TestGetPodcastsByStatus
+--- PASS: TestGetPodcastsByStatus (0.00s)
+=== RUN   TestGetPodcastsByStatus_InvalidStatus
+--- PASS: TestGetPodcastsByStatus_InvalidStatus (0.00s)
+=== RUN   TestGetPendingPodcasts
+--- PASS: TestGetPendingPodcasts (0.00s)
+=== RUN   TestGetPendingPodcasts_WithLimit
+--- PASS: TestGetPendingPodcasts_WithLimit (0.00s)
+=== RUN   TestGetPodcastItems
+--- PASS: TestGetPodcastItems (0.00s)
+=== RUN   TestGetPodcastAudio
+--- PASS: TestGetPodcastAudio (0.00s)
+=== RUN   TestGetPodcastAudio_NotAvailable
+--- PASS: TestGetPodcastAudio_NotAvailable (0.00s)
+=== RUN   TestGeneratePodcastUploadURL
+--- PASS: TestGeneratePodcastUploadURL (0.00s)
+=== RUN   TestAddItemToPodcast
+--- PASS: TestAddItemToPodcast (0.00s)
+=== RUN   TestRemoveItemFromPodcast
+--- PASS: TestRemoveItemFromPodcast (0.00s)
+=== RUN   TestUpdatePodcast
+--- PASS: TestUpdatePodcast (0.00s)
+=== RUN   TestDeletePodcast
+--- PASS: TestDeletePodcast (0.00s)
+=== RUN   TestGetPodcast_InvalidID
+--- PASS: TestGetPodcast_InvalidID (0.00s)
+=== RUN   TestGetPodcast_ServiceError
+--- PASS: TestGetPodcast_ServiceError (0.00s)
+=== RUN   TestGetPodcastsByUser_ServiceError
+--- PASS: TestGetPodcastsByUser_ServiceError (0.00s)
+=== RUN   TestGetPodcastsByStatus_ServiceError
+--- PASS: TestGetPodcastsByStatus_ServiceError (0.00s)
+=== RUN   TestGetPendingPodcasts_InvalidLimit
+--- PASS: TestGetPendingPodcasts_InvalidLimit (0.00s)
+=== RUN   TestGetPendingPodcasts_ServiceError
+--- PASS: TestGetPendingPodcasts_ServiceError (0.00s)
+=== RUN   TestGetPodcastItems_InvalidID
+--- PASS: TestGetPodcastItems_InvalidID (0.00s)
+=== RUN   TestGetPodcastItems_ServiceError
+--- PASS: TestGetPodcastItems_ServiceError (0.00s)
+=== RUN   TestGetPodcastAudio_InvalidID
+--- PASS: TestGetPodcastAudio_InvalidID (0.00s)
+=== RUN   TestGetPodcastAudio_HasAudioError
+--- PASS: TestGetPodcastAudio_HasAudioError (0.00s)
+=== RUN   TestGetPodcastAudio_GetPodcastError
+--- PASS: TestGetPodcastAudio_GetPodcastError (0.00s)
+=== RUN   TestGetPodcastAudio_NoAudioURL
+--- PASS: TestGetPodcastAudio_NoAudioURL (0.00s)
+=== RUN   TestGeneratePodcastUploadURL_InvalidID
+--- PASS: TestGeneratePodcastUploadURL_InvalidID (0.00s)
+=== RUN   TestGeneratePodcastUploadURL_ServiceError
+--- PASS: TestGeneratePodcastUploadURL_ServiceError (0.00s)
+=== RUN   TestAddItemToPodcast_InvalidPodcastID
+--- PASS: TestAddItemToPodcast_InvalidPodcastID (0.00s)
+=== RUN   TestAddItemToPodcast_ValidationError
+--- PASS: TestAddItemToPodcast_ValidationError (0.00s)
+=== RUN   TestAddItemToPodcast_ServiceError
+--- PASS: TestAddItemToPodcast_ServiceError (0.00s)
+=== RUN   TestRemoveItemFromPodcast_InvalidPodcastID
+--- PASS: TestRemoveItemFromPodcast_InvalidPodcastID (0.00s)
+=== RUN   TestRemoveItemFromPodcast_InvalidItemID
+--- PASS: TestRemoveItemFromPodcast_InvalidItemID (0.00s)
+=== RUN   TestRemoveItemFromPodcast_ServiceError
+--- PASS: TestRemoveItemFromPodcast_ServiceError (0.00s)
+=== RUN   TestUpdatePodcast_InvalidID
+--- PASS: TestUpdatePodcast_InvalidID (0.00s)
+=== RUN   TestUpdatePodcast_ValidationError
+--- PASS: TestUpdatePodcast_ValidationError (0.00s)
+=== RUN   TestUpdatePodcast_ServiceError
+--- PASS: TestUpdatePodcast_ServiceError (0.00s)
+=== RUN   TestDeletePodcast_InvalidID
+--- PASS: TestDeletePodcast_InvalidID (0.00s)
+=== RUN   TestDeletePodcast_ServiceError
+--- PASS: TestDeletePodcast_ServiceError (0.00s)
+=== RUN   TestCreatePodcastFromSingleItem_ValidationError
+--- PASS: TestCreatePodcastFromSingleItem_ValidationError (0.00s)
+=== RUN   TestCreatePodcastFromSingleItem_ServiceError
+--- PASS: TestCreatePodcastFromSingleItem_ServiceError (0.00s)
+=== RUN   TestCreateUser
+--- PASS: TestCreateUser (0.00s)
+=== RUN   TestCreateUser_Error
+--- PASS: TestCreateUser_Error (0.00s)
+=== RUN   TestGetUser
+--- PASS: TestGetUser (0.00s)
+=== RUN   TestGetUser_InvalidID
+--- PASS: TestGetUser_InvalidID (0.00s)
+=== RUN   TestGetUserByEmail
+--- PASS: TestGetUserByEmail (0.00s)
+=== RUN   TestListUsers
+--- PASS: TestListUsers (0.00s)
+=== RUN   TestUpdateUser
+--- PASS: TestUpdateUser (0.00s)
+=== RUN   TestDeleteUser
+--- PASS: TestDeleteUser (0.00s)
+=== RUN   TestGetUser_ServiceError
+--- PASS: TestGetUser_ServiceError (0.00s)
+=== RUN   TestGetUserByEmail_ServiceError
+--- PASS: TestGetUserByEmail_ServiceError (0.00s)
+=== RUN   TestListUsers_ServiceError
+--- PASS: TestListUsers_ServiceError (0.00s)
+=== RUN   TestUpdateUser_InvalidID
+--- PASS: TestUpdateUser_InvalidID (0.00s)
+=== RUN   TestUpdateUser_ServiceError
+--- PASS: TestUpdateUser_ServiceError (0.00s)
+=== RUN   TestDeleteUser_InvalidID
+--- PASS: TestDeleteUser_InvalidID (0.00s)
+=== RUN   TestDeleteUser_ServiceError
+--- PASS: TestDeleteUser_ServiceError (0.00s)
+PASS
+ok  	github.com/yamirghofran/briefbot/internal/handlers	0.244s
+=== RUN   TestRecordHTTPRequest
+--- PASS: TestRecordHTTPRequest (0.00s)
+=== RUN   TestRecordHTTPDuration
+--- PASS: TestRecordHTTPDuration (0.00s)
+=== RUN   TestRecordHTTPRequestSize
+--- PASS: TestRecordHTTPRequestSize (0.00s)
+=== RUN   TestRecordHTTPResponseSize
+--- PASS: TestRecordHTTPResponseSize (0.00s)
+=== RUN   TestIncrementActiveRequests
+--- PASS: TestIncrementActiveRequests (0.00s)
+=== RUN   TestDecrementActiveRequests
+--- PASS: TestDecrementActiveRequests (0.00s)
+=== RUN   TestIncrementJobsEnqueued
+--- PASS: TestIncrementJobsEnqueued (0.00s)
+=== RUN   TestIncrementJobsProcessing
+--- PASS: TestIncrementJobsProcessing (0.00s)
+=== RUN   TestDecrementJobsProcessing
+--- PASS: TestDecrementJobsProcessing (0.00s)
+=== RUN   TestIncrementJobsCompleted
+--- PASS: TestIncrementJobsCompleted (0.00s)
+=== RUN   TestIncrementJobsFailed
+--- PASS: TestIncrementJobsFailed (0.00s)
+=== RUN   TestRecordJobProcessingDuration
+--- PASS: TestRecordJobProcessingDuration (0.00s)
+=== RUN   TestSetJobQueueDepth
+--- PASS: TestSetJobQueueDepth (0.00s)
+=== RUN   TestSetWorkersActive
+--- PASS: TestSetWorkersActive (0.00s)
+=== RUN   TestIncrementWorkerJobsProcessed
+--- PASS: TestIncrementWorkerJobsProcessed (0.00s)
+=== RUN   TestIncrementWorkerErrors
+--- PASS: TestIncrementWorkerErrors (0.00s)
+=== RUN   TestRecordWorkerBatchDuration
+--- PASS: TestRecordWorkerBatchDuration (0.00s)
+=== RUN   TestUpdateDBConnectionStats
+--- PASS: TestUpdateDBConnectionStats (0.00s)
+=== RUN   TestIncrementPodcastsGenerated
+--- PASS: TestIncrementPodcastsGenerated (0.00s)
+=== RUN   TestRecordPodcastGenerationDuration
+--- PASS: TestRecordPodcastGenerationDuration (0.00s)
+=== RUN   TestIncrementPodcastAudioRequests
+--- PASS: TestIncrementPodcastAudioRequests (0.00s)
+=== RUN   TestDecrementPodcastAudioRequests
+--- PASS: TestDecrementPodcastAudioRequests (0.00s)
+=== RUN   TestIncrementPodcastGenerationFailures
+--- PASS: TestIncrementPodcastGenerationFailures (0.00s)
+=== RUN   TestRecordAIAPICall
+--- PASS: TestRecordAIAPICall (0.00s)
+=== RUN   TestIncrementAIAPIErrors
+--- PASS: TestIncrementAIAPIErrors (0.00s)
+=== RUN   TestIncrementEmailsSent
+--- PASS: TestIncrementEmailsSent (0.00s)
+=== RUN   TestIncrementEmailFailures
+--- PASS: TestIncrementEmailFailures (0.00s)
+=== RUN   TestIncrementScrapingRequests
+--- PASS: TestIncrementScrapingRequests (0.00s)
+=== RUN   TestIncrementScrapingFailures
+--- PASS: TestIncrementScrapingFailures (0.00s)
+=== RUN   TestIncrementSSEConnections
+--- PASS: TestIncrementSSEConnections (0.00s)
+=== RUN   TestDecrementSSEConnections
+--- PASS: TestDecrementSSEConnections (0.00s)
+=== RUN   TestIncrementSSEEventsSent
+--- PASS: TestIncrementSSEEventsSent (0.00s)
+=== RUN   TestHTTPMetricsIntegration
+--- PASS: TestHTTPMetricsIntegration (0.00s)
+=== RUN   TestJobQueueMetricsIntegration
+--- PASS: TestJobQueueMetricsIntegration (0.00s)
+=== RUN   TestWorkerMetricsIntegration
+--- PASS: TestWorkerMetricsIntegration (0.00s)
+=== RUN   TestPodcastGenerationMetricsIntegration
+--- PASS: TestPodcastGenerationMetricsIntegration (0.00s)
+=== RUN   TestAIServiceMetricsIntegration
+--- PASS: TestAIServiceMetricsIntegration (0.00s)
+PASS
+ok  	github.com/yamirghofran/briefbot/internal/metrics	(cached)
+=== RUN   TestComputeApproximateRequestSize
+=== RUN   TestComputeApproximateRequestSize/minimal_request
+=== RUN   TestComputeApproximateRequestSize/request_with_URL
+=== RUN   TestComputeApproximateRequestSize/request_with_headers
+=== RUN   TestComputeApproximateRequestSize/request_with_content_length
+=== RUN   TestComputeApproximateRequestSize/request_with_nil_URL
+=== RUN   TestComputeApproximateRequestSize/large_request_with_multiple_headers_and_content
+--- PASS: TestComputeApproximateRequestSize (0.00s)
+    --- PASS: TestComputeApproximateRequestSize/minimal_request (0.00s)
+    --- PASS: TestComputeApproximateRequestSize/request_with_URL (0.00s)
+    --- PASS: TestComputeApproximateRequestSize/request_with_headers (0.00s)
+    --- PASS: TestComputeApproximateRequestSize/request_with_content_length (0.00s)
+    --- PASS: TestComputeApproximateRequestSize/request_with_nil_URL (0.00s)
+    --- PASS: TestComputeApproximateRequestSize/large_request_with_multiple_headers_and_content (0.00s)
+=== RUN   TestComputeApproximateRequestSize_Components
+--- PASS: TestComputeApproximateRequestSize_Components (0.00s)
+=== RUN   TestPrometheusMiddleware_SkipsMetricsEndpoint
+--- PASS: TestPrometheusMiddleware_SkipsMetricsEndpoint (0.00s)
+=== RUN   TestPrometheusMiddleware_RecordsMetrics
+--- PASS: TestPrometheusMiddleware_RecordsMetrics (0.00s)
+=== RUN   TestPrometheusMiddleware_HandlesUnknownRoute
+--- PASS: TestPrometheusMiddleware_HandlesUnknownRoute (0.00s)
+=== RUN   TestPrometheusMiddleware_HandlesMultipleMethods
+=== RUN   TestPrometheusMiddleware_HandlesMultipleMethods/GET
+=== RUN   TestPrometheusMiddleware_HandlesMultipleMethods/POST
+=== RUN   TestPrometheusMiddleware_HandlesMultipleMethods/PUT
+=== RUN   TestPrometheusMiddleware_HandlesMultipleMethods/DELETE
+=== RUN   TestPrometheusMiddleware_HandlesMultipleMethods/PATCH
+--- PASS: TestPrometheusMiddleware_HandlesMultipleMethods (0.00s)
+    --- PASS: TestPrometheusMiddleware_HandlesMultipleMethods/GET (0.00s)
+    --- PASS: TestPrometheusMiddleware_HandlesMultipleMethods/POST (0.00s)
+    --- PASS: TestPrometheusMiddleware_HandlesMultipleMethods/PUT (0.00s)
+    --- PASS: TestPrometheusMiddleware_HandlesMultipleMethods/DELETE (0.00s)
+    --- PASS: TestPrometheusMiddleware_HandlesMultipleMethods/PATCH (0.00s)
+=== RUN   TestPrometheusMiddleware_HandlesErrors
+--- PASS: TestPrometheusMiddleware_HandlesErrors (0.00s)
+=== RUN   TestPrometheusMiddleware_RecordsResponseSize
+--- PASS: TestPrometheusMiddleware_RecordsResponseSize (0.00s)
+=== RUN   TestPrometheusMiddleware_ActiveRequestsTracking
+--- PASS: TestPrometheusMiddleware_ActiveRequestsTracking (0.00s)
+=== RUN   TestPrometheusMiddleware_WithRequestBody
+--- PASS: TestPrometheusMiddleware_WithRequestBody (0.00s)
+=== RUN   TestPrometheusMiddleware_Integration
+=== RUN   TestPrometheusMiddleware_Integration/GET_/api/users
+=== RUN   TestPrometheusMiddleware_Integration/POST_/api/users
+=== RUN   TestPrometheusMiddleware_Integration/GET_/api/users/123
+--- PASS: TestPrometheusMiddleware_Integration (0.00s)
+    --- PASS: TestPrometheusMiddleware_Integration/GET_/api/users (0.00s)
+    --- PASS: TestPrometheusMiddleware_Integration/POST_/api/users (0.00s)
+    --- PASS: TestPrometheusMiddleware_Integration/GET_/api/users/123 (0.00s)
+=== RUN   TestPrometheusMiddleware_ChainedWithOtherMiddleware
+--- PASS: TestPrometheusMiddleware_ChainedWithOtherMiddleware (0.00s)
+PASS
+ok  	github.com/yamirghofran/briefbot/internal/middleware	(cached)
+=== RUN   TestGenerateSchema
+--- PASS: TestGenerateSchema (0.00s)
+=== RUN   TestSchemaGeneration
+--- PASS: TestSchemaGeneration (0.00s)
+=== RUN   TestNewAIService_MissingAPIKey
+--- PASS: TestNewAIService_MissingAPIKey (0.00s)
+=== RUN   TestNewAIService_Success
+--- PASS: TestNewAIService_Success (0.00s)
+=== RUN   TestExtractContent_ValidatesStructure
+--- PASS: TestExtractContent_ValidatesStructure (0.00s)
+=== RUN   TestSummarizeContent_ValidatesStructure
+--- PASS: TestSummarizeContent_ValidatesStructure (0.00s)
+=== RUN   TestWritePodcast_ValidatesStructure
+--- PASS: TestWritePodcast_ValidatesStructure (0.00s)
+=== RUN   TestWritePodcastSection_ValidatesStructure
+--- PASS: TestWritePodcastSection_ValidatesStructure (0.00s)
+=== RUN   TestGenerateDailyDigestEmail
+--- PASS: TestGenerateDailyDigestEmail (0.00s)
+=== RUN   TestGenerateDailyDigestEmail_MultipleItems
+--- PASS: TestGenerateDailyDigestEmail_MultipleItems (0.00s)
+=== RUN   TestGenerateDailyDigestEmail_NoSummary
+--- PASS: TestGenerateDailyDigestEmail_NoSummary (0.00s)
+=== RUN   TestSetPodcastGenerationEnabled
+--- PASS: TestSetPodcastGenerationEnabled (0.00s)
+=== RUN   TestGetDailyDigestItemsForUser
+--- PASS: TestGetDailyDigestItemsForUser (0.00s)
+=== RUN   TestSendDailyDigestForUser
+--- PASS: TestSendDailyDigestForUser (0.00s)
+=== RUN   TestSendDailyDigestForUser_NoItems
+--- PASS: TestSendDailyDigestForUser_NoItems (0.00s)
+=== RUN   TestSendDailyDigestForUser_NoEmail
+--- PASS: TestSendDailyDigestForUser_NoEmail (0.00s)
+=== RUN   TestSendDailyDigest
+--- PASS: TestSendDailyDigest (0.00s)
+=== RUN   TestSendIntegratedDigestForUser_WithoutPodcast
+2025/11/23 12:17:11 Integrated digest sent successfully for user 1: podcastGenerated=false
+--- PASS: TestSendIntegratedDigestForUser_WithoutPodcast (0.00s)
+=== RUN   TestSendIntegratedDigestForUser_WithPodcast
+2025/11/23 12:17:11 Generating podcast for integrated digest for user 1 with 1 items
+2025/11/23 12:17:16 Podcast generated successfully for user 1: audioURL=https://cdn.example.com/podcast.mp3
+2025/11/23 12:17:16 Integrated digest sent successfully for user 1: podcastGenerated=true
+--- PASS: TestSendIntegratedDigestForUser_WithPodcast (5.00s)
+=== RUN   TestSendIntegratedDigestForUser_NoItems
+2025/11/23 12:17:16 No items for integrated digest for user 1, skipping
+--- PASS: TestSendIntegratedDigestForUser_NoItems (0.00s)
+=== RUN   TestSendIntegratedDigest
+2025/11/23 12:17:16 Integrated digest sent successfully for user 1: podcastGenerated=false
+2025/11/23 12:17:16 Integrated digest batch completed: totalUsers=1, successfulEmails=1, successfulPodcasts=0
+--- PASS: TestSendIntegratedDigest (0.00s)
+=== RUN   TestWaitForPodcastCompletion_Success
+--- PASS: TestWaitForPodcastCompletion_Success (5.00s)
+=== RUN   TestWaitForPodcastCompletion_Failed
+--- PASS: TestWaitForPodcastCompletion_Failed (5.00s)
+=== RUN   TestWaitForPodcastCompletion_Timeout
+    digest_test.go:346: Skipping timeout test - takes 5 minutes to run
+--- SKIP: TestWaitForPodcastCompletion_Timeout (0.00s)
+=== RUN   TestSendIntegratedDigestForUser_PodcastCreationFails
+2025/11/23 12:17:26 Generating podcast for integrated digest for user 1 with 1 items
+2025/11/23 12:17:26 Failed to create podcast for user 1: podcast creation failed, continuing without audio
+2025/11/23 12:17:26 Integrated digest sent successfully for user 1: podcastGenerated=false
+--- PASS: TestSendIntegratedDigestForUser_PodcastCreationFails (0.00s)
+=== RUN   TestGenerateIntegratedDigestEmail
+=== RUN   TestGenerateIntegratedDigestEmail/with_podcast_URL_and_duration
+=== RUN   TestGenerateIntegratedDigestEmail/without_podcast_URL
+=== RUN   TestGenerateIntegratedDigestEmail/with_empty_podcast_URL
+=== RUN   TestGenerateIntegratedDigestEmail/with_podcast_URL_but_no_duration
+=== RUN   TestGenerateIntegratedDigestEmail/with_empty_items
+--- PASS: TestGenerateIntegratedDigestEmail (0.00s)
+    --- PASS: TestGenerateIntegratedDigestEmail/with_podcast_URL_and_duration (0.00s)
+    --- PASS: TestGenerateIntegratedDigestEmail/without_podcast_URL (0.00s)
+    --- PASS: TestGenerateIntegratedDigestEmail/with_empty_podcast_URL (0.00s)
+    --- PASS: TestGenerateIntegratedDigestEmail/with_podcast_URL_but_no_duration (0.00s)
+    --- PASS: TestGenerateIntegratedDigestEmail/with_empty_items (0.00s)
+=== RUN   TestGenerateIntegratedDigestHTML
+=== RUN   TestGenerateIntegratedDigestHTML/HTML_structure
+=== RUN   TestGenerateIntegratedDigestHTML/includes_all_item_fields
+=== RUN   TestGenerateIntegratedDigestHTML/duration_formatting
+=== RUN   TestGenerateIntegratedDigestHTML/items_without_optional_fields
+--- PASS: TestGenerateIntegratedDigestHTML (0.00s)
+    --- PASS: TestGenerateIntegratedDigestHTML/HTML_structure (0.00s)
+    --- PASS: TestGenerateIntegratedDigestHTML/includes_all_item_fields (0.00s)
+    --- PASS: TestGenerateIntegratedDigestHTML/duration_formatting (0.00s)
+    --- PASS: TestGenerateIntegratedDigestHTML/items_without_optional_fields (0.00s)
+=== RUN   TestGenerateIntegratedDigestText
+=== RUN   TestGenerateIntegratedDigestText/text_structure_with_podcast
+=== RUN   TestGenerateIntegratedDigestText/includes_all_item_fields
+=== RUN   TestGenerateIntegratedDigestText/numbered_list_format
+=== RUN   TestGenerateIntegratedDigestText/duration_formatting
+=== RUN   TestGenerateIntegratedDigestText/separator_lines_with_and_without_podcast
+=== RUN   TestGenerateIntegratedDigestText/items_without_optional_fields
+--- PASS: TestGenerateIntegratedDigestText (0.00s)
+    --- PASS: TestGenerateIntegratedDigestText/text_structure_with_podcast (0.00s)
+    --- PASS: TestGenerateIntegratedDigestText/includes_all_item_fields (0.00s)
+    --- PASS: TestGenerateIntegratedDigestText/numbered_list_format (0.00s)
+    --- PASS: TestGenerateIntegratedDigestText/duration_formatting (0.00s)
+    --- PASS: TestGenerateIntegratedDigestText/separator_lines_with_and_without_podcast (0.00s)
+    --- PASS: TestGenerateIntegratedDigestText/items_without_optional_fields (0.00s)
+=== RUN   TestNewEmailService_MissingEnvVars
+--- PASS: TestNewEmailService_MissingEnvVars (0.00s)
+=== RUN   TestNewEmailService_WithDefaults
+--- PASS: TestNewEmailService_WithDefaults (0.00s)
+=== RUN   TestCreateItem
+--- PASS: TestCreateItem (0.00s)
+=== RUN   TestSetSSEManager_ItemService
+--- PASS: TestSetSSEManager_ItemService (0.00s)
+=== RUN   TestGetItem
+--- PASS: TestGetItem (0.00s)
+=== RUN   TestGetItem_Error
+--- PASS: TestGetItem_Error (0.00s)
+=== RUN   TestGetItemsByUser
+--- PASS: TestGetItemsByUser (0.00s)
+=== RUN   TestGetUnreadItemsByUser
+--- PASS: TestGetUnreadItemsByUser (0.00s)
+=== RUN   TestUpdateItem
+--- PASS: TestUpdateItem (0.00s)
+=== RUN   TestPatchItem
+--- PASS: TestPatchItem (0.00s)
+=== RUN   TestPatchItem_PartialUpdate
+--- PASS: TestPatchItem_PartialUpdate (0.00s)
+=== RUN   TestPatchItem_Error
+--- PASS: TestPatchItem_Error (0.00s)
+=== RUN   TestMarkItemAsRead
+--- PASS: TestMarkItemAsRead (0.00s)
+=== RUN   TestToggleItemReadStatus
+--- PASS: TestToggleItemReadStatus (0.00s)
+=== RUN   TestDeleteItem
+--- PASS: TestDeleteItem (0.00s)
+=== RUN   TestCreateItemAsync
+--- PASS: TestCreateItemAsync (0.00s)
+=== RUN   TestProcessURL
+--- PASS: TestProcessURL (0.00s)
+=== RUN   TestProcessURL_ScrapingError
+--- PASS: TestProcessURL_ScrapingError (0.00s)
+=== RUN   TestGetItemProcessingStatus
+--- PASS: TestGetItemProcessingStatus (0.00s)
+=== RUN   TestGetUnreadItemsFromPreviousDay
+--- PASS: TestGetUnreadItemsFromPreviousDay (0.00s)
+=== RUN   TestConcatenateSummary
+--- PASS: TestConcatenateSummary (0.00s)
+=== RUN   TestGetItemsByProcessingStatus
+--- PASS: TestGetItemsByProcessingStatus (0.00s)
+=== RUN   TestEnqueueItem
+--- PASS: TestEnqueueItem (0.00s)
+=== RUN   TestSetSSEManager_JobQueueService
+--- PASS: TestSetSSEManager_JobQueueService (0.00s)
+=== RUN   TestEnqueueItem_WithSSE
+--- PASS: TestEnqueueItem_WithSSE (0.00s)
+=== RUN   TestDequeuePendingItems
+--- PASS: TestDequeuePendingItems (0.00s)
+=== RUN   TestMarkItemAsProcessing
+--- PASS: TestMarkItemAsProcessing (0.00s)
+=== RUN   TestMarkItemAsProcessing_WithSSE
+--- PASS: TestMarkItemAsProcessing_WithSSE (0.00s)
+=== RUN   TestMarkItemAsProcessing_Error
+--- PASS: TestMarkItemAsProcessing_Error (0.00s)
+=== RUN   TestFailItem
+--- PASS: TestFailItem (0.00s)
+=== RUN   TestGetItemStatus
+--- PASS: TestGetItemStatus (0.00s)
+=== RUN   TestGetItemsByStatus
+--- PASS: TestGetItemsByStatus (0.00s)
+=== RUN   TestRetryItem
+--- PASS: TestRetryItem (0.00s)
+=== RUN   TestCompleteItemPreservesIsRead
+--- PASS: TestCompleteItemPreservesIsRead (0.00s)
+=== RUN   TestCompleteItemWithNullIsRead
+--- PASS: TestCompleteItemWithNullIsRead (0.00s)
+=== RUN   TestCompleteItemWithTrueIsRead
+--- PASS: TestCompleteItemWithTrueIsRead (0.00s)
+=== RUN   TestCompleteItemErrorHandling
+=== RUN   TestCompleteItemErrorHandling/GetItemError
+=== RUN   TestCompleteItemErrorHandling/UpdateItemError
+--- PASS: TestCompleteItemErrorHandling (0.00s)
+    --- PASS: TestCompleteItemErrorHandling/GetItemError (0.00s)
+    --- PASS: TestCompleteItemErrorHandling/UpdateItemError (0.00s)
+=== RUN   TestGetFailedItemsForRetry
+--- PASS: TestGetFailedItemsForRetry (0.00s)
+=== RUN   TestDefaultPodcastConfig
+--- PASS: TestDefaultPodcastConfig (0.00s)
+=== RUN   TestSetSSEManager_PodcastService
+--- PASS: TestSetSSEManager_PodcastService (0.00s)
+=== RUN   TestPodcastConfig_Structure
+--- PASS: TestPodcastConfig_Structure (0.00s)
+=== RUN   TestCreatePodcastFromItems
+--- PASS: TestCreatePodcastFromItems (0.00s)
+=== RUN   TestCreatePodcastFromItems_TooManyItems
+--- PASS: TestCreatePodcastFromItems_TooManyItems (0.00s)
+=== RUN   TestCreatePodcastFromSingleItem
+--- PASS: TestCreatePodcastFromSingleItem (0.00s)
+=== RUN   TestGetPodcast
+--- PASS: TestGetPodcast (0.00s)
+=== RUN   TestGetPodcastsByUser
+--- PASS: TestGetPodcastsByUser (0.00s)
+=== RUN   TestUpdatePodcast
+--- PASS: TestUpdatePodcast (0.00s)
+=== RUN   TestDeletePodcast
+--- PASS: TestDeletePodcast (0.00s)
+=== RUN   TestAddItemToPodcast
+--- PASS: TestAddItemToPodcast (0.00s)
+=== RUN   TestRemoveItemFromPodcast
+--- PASS: TestRemoveItemFromPodcast (0.00s)
+=== RUN   TestUpdatePodcastStatus
+--- PASS: TestUpdatePodcastStatus (0.00s)
+=== RUN   TestGetPodcastItems
+--- PASS: TestGetPodcastItems (0.00s)
+=== RUN   TestGetPendingPodcasts
+--- PASS: TestGetPendingPodcasts (0.00s)
+=== RUN   TestGetPodcastsByStatus
+--- PASS: TestGetPodcastsByStatus (0.00s)
+=== RUN   TestGetProcessingPodcasts
+--- PASS: TestGetProcessingPodcasts (0.00s)
+=== RUN   TestGetPodcastAudio
+--- PASS: TestGetPodcastAudio (0.00s)
+=== RUN   TestGeneratePodcastUploadURL_NoR2Service
+--- PASS: TestGeneratePodcastUploadURL_NoR2Service (0.00s)
+=== RUN   TestAddItemToPodcast_ErrorCounting
+--- PASS: TestAddItemToPodcast_ErrorCounting (0.00s)
+=== RUN   TestAddItemToPodcast_ErrorAdding
+--- PASS: TestAddItemToPodcast_ErrorAdding (0.00s)
+=== RUN   TestUpdatePodcastStatus_WithSSE
+--- PASS: TestUpdatePodcastStatus_WithSSE (0.00s)
+=== RUN   TestAcquirePendingPodcasts
+--- PASS: TestAcquirePendingPodcasts (0.00s)
+=== RUN   TestGeneratePodcastScript
+--- PASS: TestGeneratePodcastScript (0.00s)
+=== RUN   TestProcessPodcast
+    podcast_test.go:656: Skipping - ProcessPodcast requires complex mocking of audio generation with file I/O
+--- SKIP: TestProcessPodcast (0.00s)
+=== RUN   TestHasPodcastAudio
+--- PASS: TestHasPodcastAudio (0.00s)
+=== RUN   TestGetPublicURL
+=== RUN   TestGetPublicURL/WithCustomDomain
+=== RUN   TestGetPublicURL/WithoutCustomDomain
+--- PASS: TestGetPublicURL (0.00s)
+    --- PASS: TestGetPublicURL/WithCustomDomain (0.00s)
+    --- PASS: TestGetPublicURL/WithoutCustomDomain (0.00s)
+=== RUN   TestExtractKeyFromURL
+=== RUN   TestExtractKeyFromURL/CustomDomainURL
+=== RUN   TestExtractKeyFromURL/R2PublicURL
+=== RUN   TestExtractKeyFromURL/PlainKey
+--- PASS: TestExtractKeyFromURL (0.00s)
+    --- PASS: TestExtractKeyFromURL/CustomDomainURL (0.00s)
+    --- PASS: TestExtractKeyFromURL/R2PublicURL (0.00s)
+    --- PASS: TestExtractKeyFromURL/PlainKey (0.00s)
+=== RUN   TestNewR2Service_MissingConfig
+=== RUN   TestNewR2Service_MissingConfig/MissingAccessKeyID
+=== RUN   TestNewR2Service_MissingConfig/MissingSecretAccessKey
+=== RUN   TestNewR2Service_MissingConfig/MissingAccountID
+=== RUN   TestNewR2Service_MissingConfig/MissingBucketName
+--- PASS: TestNewR2Service_MissingConfig (0.00s)
+    --- PASS: TestNewR2Service_MissingConfig/MissingAccessKeyID (0.00s)
+    --- PASS: TestNewR2Service_MissingConfig/MissingSecretAccessKey (0.00s)
+    --- PASS: TestNewR2Service_MissingConfig/MissingAccountID (0.00s)
+    --- PASS: TestNewR2Service_MissingConfig/MissingBucketName (0.00s)
+=== RUN   TestNewR2Service_ValidConfig
+--- PASS: TestNewR2Service_ValidConfig (0.00s)
+=== RUN   TestDeleteFiles_EmptyKeys
+--- PASS: TestDeleteFiles_EmptyKeys (0.00s)
+=== RUN   TestScrapingService
+=== RUN   TestScrapingService/BasicScraping
+--- PASS: TestScrapingService (0.00s)
+    --- PASS: TestScrapingService/BasicScraping (0.00s)
+=== RUN   TestScrapingServiceScrape
+    scraping_test.go:25: Skipping actual scraping test - requires network access
+--- SKIP: TestScrapingServiceScrape (0.00s)
+=== RUN   TestScrapeBlogPost
+--- PASS: TestScrapeBlogPost (0.15s)
+=== RUN   TestScrapingServiceErrorHandling
+    scraping_test.go:75: Skipping error handling test - requires network access
+--- SKIP: TestScrapingServiceErrorHandling (0.00s)
+=== RUN   TestSpeechService_Basic
+--- PASS: TestSpeechService_Basic (0.00s)
+=== RUN   TestNewSpeechService
+--- PASS: TestNewSpeechService (0.00s)
+=== RUN   TestNewFalClient
+--- PASS: TestNewFalClient (0.00s)
+=== RUN   TestAPIError_Error
+--- PASS: TestAPIError_Error (0.00s)
+=== RUN   TestCreateEnglishRequest
+--- PASS: TestCreateEnglishRequest (0.00s)
+=== RUN   TestSpeechService_SaveAudio
+--- PASS: TestSpeechService_SaveAudio (0.00s)
+=== RUN   TestFalClient_MakeRequest_Success
+--- PASS: TestFalClient_MakeRequest_Success (0.00s)
+=== RUN   TestFalClient_MakeRequest_Error
+--- PASS: TestFalClient_MakeRequest_Error (0.00s)
+=== RUN   TestFalClient_SubmitEnglishRequest
+--- PASS: TestFalClient_SubmitEnglishRequest (0.00s)
+=== RUN   TestFalClient_GetRequestStatus
+--- PASS: TestFalClient_GetRequestStatus (0.00s)
+=== RUN   TestFalClient_GetRequestResult
+--- PASS: TestFalClient_GetRequestResult (0.00s)
+=== RUN   TestFalClient_WaitForResult_Completed
+2025/11/23 12:17:26 Dialogue 1/1 [req:test-req] - Status check 1: IN_PROGRESS (50%)
+2025/11/23 12:17:26 Dialogue 1/1 still processing, will continue polling...
+2025/11/23 12:17:26 Dialogue 1/1 [req:test-req] - Status check 2: COMPLETED (100%)
+2025/11/23 12:17:26 Dialogue 1/1 completed after 2 attempts (0.0s)
+--- PASS: TestFalClient_WaitForResult_Completed (0.01s)
+=== RUN   TestFalClient_WaitForResult_Failed
+2025/11/23 12:17:26 Dialogue 1/1 [req:test-req] - Status check 1: FAILED
+--- PASS: TestFalClient_WaitForResult_Failed (0.00s)
+=== RUN   TestFalClient_SubmitAndWait
+2025/11/23 12:17:26 Status check 1: COMPLETED
+--- PASS: TestFalClient_SubmitAndWait (0.00s)
+=== RUN   TestWithRetry_Success
+--- PASS: TestWithRetry_Success (0.01s)
+=== RUN   TestWithRetry_AllAttemptsFail
+--- PASS: TestWithRetry_AllAttemptsFail (0.03s)
+=== RUN   TestFalClient_DownloadAudioFile
+--- PASS: TestFalClient_DownloadAudioFile (0.00s)
+=== RUN   TestFalClient_DownloadAudioFile_Error
+--- PASS: TestFalClient_DownloadAudioFile_Error (0.00s)
+=== RUN   TestSpeechService_TextToSpeech_NoClient
+--- PASS: TestSpeechService_TextToSpeech_NoClient (0.00s)
+=== RUN   TestSpeechService_DownloadAudio_NoClient
+--- PASS: TestSpeechService_DownloadAudio_NoClient (0.00s)
+=== RUN   TestSSEManager_AddClient
+2025/11/23 12:17:26 SSE: Added client for user 1 (total: 1)
+--- PASS: TestSSEManager_AddClient (0.00s)
+=== RUN   TestSSEManager_AddMultipleClientsForSameUser
+2025/11/23 12:17:26 SSE: Added client for user 1 (total: 1)
+2025/11/23 12:17:26 SSE: Added client for user 1 (total: 2)
+--- PASS: TestSSEManager_AddMultipleClientsForSameUser (0.00s)
+=== RUN   TestSSEManager_RemoveClient
+2025/11/23 12:17:26 SSE: Added client for user 1 (total: 1)
+2025/11/23 12:17:26 SSE: Removed client for user 1 (remaining: 0)
+--- PASS: TestSSEManager_RemoveClient (0.00s)
+=== RUN   TestSSEManager_RemoveOneOfMultipleClients
+2025/11/23 12:17:26 SSE: Added client for user 1 (total: 1)
+2025/11/23 12:17:26 SSE: Added client for user 1 (total: 2)
+2025/11/23 12:17:26 SSE: Removed client for user 1 (remaining: 1)
+--- PASS: TestSSEManager_RemoveOneOfMultipleClients (0.00s)
+=== RUN   TestSSEManager_BroadcastToUser
+2025/11/23 12:17:26 SSE: Added client for user 1 (total: 1)
+2025/11/23 12:17:26 SSE: Broadcasting to 1 clients for user 1: test-event
+--- PASS: TestSSEManager_BroadcastToUser (0.00s)
+=== RUN   TestSSEManager_BroadcastToNonExistentUser
+--- PASS: TestSSEManager_BroadcastToNonExistentUser (0.00s)
+=== RUN   TestSSEManager_BroadcastToMultipleClients
+2025/11/23 12:17:26 SSE: Added client for user 1 (total: 1)
+2025/11/23 12:17:26 SSE: Added client for user 1 (total: 2)
+2025/11/23 12:17:26 SSE: Broadcasting to 2 clients for user 1: test-event
+--- PASS: TestSSEManager_BroadcastToMultipleClients (0.00s)
+=== RUN   TestSSEManager_NotifyItemUpdate
+2025/11/23 12:17:26 SSE: Added client for user 1 (total: 1)
+2025/11/23 12:17:26 SSE: Broadcasting to 1 clients for user 1: item-update
+--- PASS: TestSSEManager_NotifyItemUpdate (0.00s)
+=== RUN   TestWriteSSEMessage
+2025/11/23 12:17:26 SSE: Added client for user 1 (total: 1)
+2025/11/23 12:17:26 SSE: Removed client for user 1 (remaining: 0)
+--- PASS: TestWriteSSEMessage (0.10s)
+=== RUN   TestWriteSSEMessage_Keepalive
+2025/11/23 12:17:26 SSE: Added client for user 1 (total: 1)
+2025/11/23 12:17:26 SSE: Removed client for user 1 (remaining: 0)
+--- PASS: TestWriteSSEMessage_Keepalive (0.10s)
+=== RUN   TestSSEManager_ConcurrentAccess
+2025/11/23 12:17:26 SSE: Added client for user 0 (total: 1)
+2025/11/23 12:17:26 SSE: Added client for user 9 (total: 1)
+2025/11/23 12:17:26 SSE: Added client for user 1 (total: 1)
+2025/11/23 12:17:26 SSE: Added client for user 2 (total: 1)
+2025/11/23 12:17:26 SSE: Added client for user 3 (total: 1)
+2025/11/23 12:17:26 SSE: Added client for user 4 (total: 1)
+2025/11/23 12:17:26 SSE: Added client for user 5 (total: 1)
+2025/11/23 12:17:26 SSE: Added client for user 6 (total: 1)
+2025/11/23 12:17:26 SSE: Added client for user 7 (total: 1)
+2025/11/23 12:17:26 SSE: Added client for user 8 (total: 1)
+2025/11/23 12:17:26 SSE: Removed client for user 8 (remaining: 0)
+2025/11/23 12:17:26 SSE: Removed client for user 3 (remaining: 0)
+2025/11/23 12:17:26 SSE: Removed client for user 1 (remaining: 0)
+2025/11/23 12:17:26 SSE: Removed client for user 2 (remaining: 0)
+2025/11/23 12:17:26 SSE: Removed client for user 4 (remaining: 0)
+2025/11/23 12:17:26 SSE: Removed client for user 5 (remaining: 0)
+2025/11/23 12:17:26 SSE: Removed client for user 6 (remaining: 0)
+2025/11/23 12:17:26 SSE: Removed client for user 7 (remaining: 0)
+2025/11/23 12:17:26 SSE: Removed client for user 0 (remaining: 0)
+2025/11/23 12:17:26 SSE: Removed client for user 9 (remaining: 0)
+--- PASS: TestSSEManager_ConcurrentAccess (0.01s)
+=== RUN   TestSSEManager_NotifyPodcastUpdate
+2025/11/23 12:17:26 SSE: Added client for user 1 (total: 1)
+2025/11/23 12:17:26 SSE: Broadcasting to 1 clients for user 1: podcast-update
+--- PASS: TestSSEManager_NotifyPodcastUpdate (0.00s)
+=== RUN   TestCreateUser
+--- PASS: TestCreateUser (0.00s)
+=== RUN   TestCreateUser_Error
+--- PASS: TestCreateUser_Error (0.00s)
+=== RUN   TestGetUser
+--- PASS: TestGetUser (0.00s)
+=== RUN   TestGetUserByEmail
+--- PASS: TestGetUserByEmail (0.00s)
+=== RUN   TestListUsers
+--- PASS: TestListUsers (0.00s)
+=== RUN   TestUpdateUser
+--- PASS: TestUpdateUser (0.00s)
+=== RUN   TestDeleteUser
+--- PASS: TestDeleteUser (0.00s)
+=== RUN   TestNewWorkerService
+=== RUN   TestNewWorkerService/valid_config
+=== RUN   TestNewWorkerService/zero_values_use_defaults
+=== RUN   TestNewWorkerService/negative_values_use_defaults
+--- PASS: TestNewWorkerService (0.00s)
+    --- PASS: TestNewWorkerService/valid_config (0.00s)
+    --- PASS: TestNewWorkerService/zero_values_use_defaults (0.00s)
+    --- PASS: TestNewWorkerService/negative_values_use_defaults (0.00s)
+=== RUN   TestWorkerService_StartStop
+2025/11/23 12:17:26 Worker service started with 1 workers
+2025/11/23 12:17:26 Stopping worker service...
+2025/11/23 12:17:26 Worker 1 started
+2025/11/23 12:17:26 Worker 1 stopping
+2025/11/23 12:17:26 Worker service stopped
+--- PASS: TestWorkerService_StartStop (0.00s)
+=== RUN   TestWorkerService_ProcessItem_Success
+2025/11/23 12:17:26 Processing item 1: https://example.com/article
+2025/11/23 12:17:26 Successfully processed item 1
+--- PASS: TestWorkerService_ProcessItem_Success (0.00s)
+=== RUN   TestWorkerService_ProcessItem_ScrapingFails
+2025/11/23 12:17:26 Processing item 1: https://example.com/article
+2025/11/23 12:17:26 Attempt 1 failed for item 1: failed to scrape URL: scraping failed
+2025/11/23 12:17:27 Attempt 2 failed for item 1: failed to scrape URL: scraping failed
+--- PASS: TestWorkerService_ProcessItem_ScrapingFails (1.00s)
+=== RUN   TestWorkerService_ProcessItem_ExtractionFails
+2025/11/23 12:17:27 Processing item 1: https://example.com/article
+2025/11/23 12:17:27 Attempt 1 failed for item 1: failed to extract content: extraction failed
+2025/11/23 12:17:28 Attempt 2 failed for item 1: failed to extract content: extraction failed
+--- PASS: TestWorkerService_ProcessItem_ExtractionFails (1.00s)
+=== RUN   TestWorkerService_ProcessItem_SummarizationFails
+2025/11/23 12:17:28 Processing item 1: https://example.com/article
+2025/11/23 12:17:28 Attempt 1 failed for item 1: failed to summarize content: summarization failed
+2025/11/23 12:17:29 Attempt 2 failed for item 1: failed to summarize content: summarization failed
+--- PASS: TestWorkerService_ProcessItem_SummarizationFails (1.00s)
+=== RUN   TestWorkerService_ProcessItem_RetrySuccess
+2025/11/23 12:17:29 Processing item 1: https://example.com/article
+2025/11/23 12:17:29 Attempt 1 failed for item 1: failed to scrape URL: scraping failed
+2025/11/23 12:17:30 Attempt 2 failed for item 1: failed to scrape URL: scraping failed
+2025/11/23 12:17:32 Successfully processed item 1
+--- PASS: TestWorkerService_ProcessItem_RetrySuccess (3.00s)
+=== RUN   TestWorkerService_ProcessItemBatch_NoItems
+--- PASS: TestWorkerService_ProcessItemBatch_NoItems (0.01s)
+=== RUN   TestWorkerService_ProcessItemBatch_DequeueError
+--- PASS: TestWorkerService_ProcessItemBatch_DequeueError (0.00s)
+=== RUN   TestWorkerService_ProcessPodcast_Success
+2025/11/23 12:17:32 Processing podcast 1: Test Podcast
+2025/11/23 12:17:32 Successfully processed podcast 1
+--- PASS: TestWorkerService_ProcessPodcast_Success (0.00s)
+=== RUN   TestWorkerService_ProcessPodcast_Failure
+2025/11/23 12:17:32 Processing podcast 1: Test Podcast
+2025/11/23 12:17:32 Attempt 1 failed for podcast 1: processing failed
+2025/11/23 12:17:33 Attempt 2 failed for podcast 1: processing failed
+--- PASS: TestWorkerService_ProcessPodcast_Failure (1.00s)
+=== RUN   TestWorkerService_ProcessPodcast_RetrySuccess
+2025/11/23 12:17:33 Processing podcast 1: Test Podcast
+2025/11/23 12:17:33 Attempt 1 failed for podcast 1: temporary error
+2025/11/23 12:17:34 Attempt 2 failed for podcast 1: temporary error
+2025/11/23 12:17:36 Successfully processed podcast 1
+--- PASS: TestWorkerService_ProcessPodcast_RetrySuccess (3.00s)
+=== RUN   TestWorkerService_ProcessPodcastBatch_NoPodcasts
+--- PASS: TestWorkerService_ProcessPodcastBatch_NoPodcasts (0.01s)
+=== RUN   TestWorkerService_ProcessPodcastBatch_AcquireError
+--- PASS: TestWorkerService_ProcessPodcastBatch_AcquireError (0.00s)
+=== RUN   TestWorkerService_ProcessBatch_PodcastsDisabled
+--- PASS: TestWorkerService_ProcessBatch_PodcastsDisabled (0.01s)
+=== RUN   TestWorkerService_ProcessBatch_PodcastsEnabled
+--- PASS: TestWorkerService_ProcessBatch_PodcastsEnabled (0.02s)
+=== RUN   TestWorkerService_ProcessBatch_PodcastServiceNil
+--- PASS: TestWorkerService_ProcessBatch_PodcastServiceNil (0.01s)
+=== RUN   TestWorkerService_ProcessURL_Success
+--- PASS: TestWorkerService_ProcessURL_Success (0.00s)
+=== RUN   TestWorkerService_MarkItemAsProcessingError
+--- PASS: TestWorkerService_MarkItemAsProcessingError (0.00s)
+=== RUN   TestWorkerService_CompleteItemError
+2025/11/23 12:17:36 Processing item 1: https://example.com/article
+--- PASS: TestWorkerService_CompleteItemError (0.00s)
+=== RUN   TestWorkerService_ContextCancellation
+2025/11/23 12:17:36 Worker service started with 1 workers
+2025/11/23 12:17:36 Worker 1 started
+2025/11/23 12:17:36 Worker 1 stopping
+2025/11/23 12:17:36 Stopping worker service...
+2025/11/23 12:17:36 Worker service stopped
+--- PASS: TestWorkerService_ContextCancellation (0.20s)
+=== RUN   TestWorkerService_ProcessItemBatch_MultipleItems
+2025/11/23 12:17:36 Processing batch of 2 items
+2025/11/23 12:17:36 Processing item 1: https://example.com/article1
+2025/11/23 12:17:36 Successfully processed item 1
+2025/11/23 12:17:36 Processing item 2: https://example.com/article2
+2025/11/23 12:17:36 Successfully processed item 2
+--- PASS: TestWorkerService_ProcessItemBatch_MultipleItems (0.00s)
+=== RUN   TestWorkerService_ProcessPodcastBatch_MultiplePodcasts
+2025/11/23 12:17:36 Processing batch of 2 podcasts
+2025/11/23 12:17:36 Processing podcast 1: Podcast 1
+2025/11/23 12:17:36 Successfully processed podcast 1
+2025/11/23 12:17:36 Processing podcast 2: Podcast 2
+2025/11/23 12:17:36 Successfully processed podcast 2
+--- PASS: TestWorkerService_ProcessPodcastBatch_MultiplePodcasts (0.00s)
+PASS
+ok  	github.com/yamirghofran/briefbot/internal/services	25.977s
+?   	github.com/yamirghofran/briefbot/internal/test	[no test files]
