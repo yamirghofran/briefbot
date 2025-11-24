@@ -298,7 +298,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-            VITE_API_URL=${{ vars.VITE_API_URL || 'http://localhost:8080' }}
+            VITE_API_URL=${{ vars.VITE_API_URL || 'https://briefbot-backend.azurewebsites.net' }}
 
       - name: Docker Build Summary
         run: |
