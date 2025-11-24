@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ItemDataTable } from "@/components/item-data-table";
 import { itemApi } from "@/services/api";
+import { UrlSubmissionDialog } from "@/components/url-submission-dialog";
 import { Button } from "@/components/ui/button";
 import { useItemUpdates } from "@/hooks/use-item-updates";
 import type { Item } from "@/types";
@@ -56,8 +57,9 @@ function App() {
             </Button>
           </div>
         ) : items.length === 0 ? (
-          <div className="text-center p-8 text-muted-foreground">
-            <p>No items found. Submit a URL above to get started!</p>
+          <div className="flex flex-col items-center gap-4 rounded-lg border border-dashed p-8 text-center text-muted-foreground">
+            <p>No items yet. Add one to kick things off.</p>
+            <UrlSubmissionDialog userId={userId} />
           </div>
         ) : (
           <ItemDataTable
