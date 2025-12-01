@@ -1,7 +1,7 @@
 services:
   # PostgreSQL Database
   postgres:
-    image: postgres:latest
+    image: postgres:17-alpine
     container_name: briefbot-postgres
     environment:
       POSTGRES_USER: briefbot
@@ -47,7 +47,7 @@ services:
 
   # Seed database with test data
   seed:
-    image: postgres:latest
+    image: postgres:17-alpine
     container_name: briefbot-seed
     depends_on:
       migrations:
