@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router"
 import { FileText, Podcast, Sparkles } from "lucide-react"
-import { cn } from "@/lib/utils"
 
 export function Navbar() {
   return (
@@ -12,6 +11,14 @@ export function Navbar() {
             <Sparkles className="h-6 w-6 text-primary" />
             <span>BriefBot</span>
           </Link>
+          <a
+            href="https://github.com/yamirghofran/briefbot"
+            target="_blank"
+            rel="noreferrer"
+            className="ml-4 text-sm font-semibold text-gray-600 hover:text-gray-900"
+          >
+            View GitHub
+          </a>
 
           {/* Navigation Links */}
           <div className="flex items-center gap-1">
